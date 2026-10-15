@@ -1,36 +1,31 @@
 import XCTest
 
 /// Smoke tests for the main window shell.
+@MainActor
 final class MainWindowUITests: XCTestCase {
-    private var app: XCUIApplication?
-
-    override func setUp() {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launch()
-        self.app = app
-    }
-
-    override func tearDown() {
-        app?.terminate()
-        app = nil
-    }
-
-    func testSidebarListsTopLevelDestinations() throws {
-        let window = try XCTUnwrap(app).windows.firstMatch
-        XCTAssertTrue(window.waitForExistence(timeout: 10))
+    func testSidebarListsTopLevelDestinations() {
+        let window = launchMainWindow()
 
         for identifier in ["sidebar.devices", "sidebar.profiles", "sidebar.permissions"] {
             XCTAssertTrue(window.descendants(matching: .any)[identifier].exists, "missing \(identifier)")
         }
     }
 
-    func testSelectingPermissionsShowsPermissionOverview() throws {
-        let window = try XCTUnwrap(app).windows.firstMatch
-        XCTAssertTrue(window.waitForExistence(timeout: 10))
+    func testSelectingPermissionsShowsPermissionOverview() {
+        let window = launchMainWindow()
 
         window.descendants(matching: .any)["sidebar.permissions"].click()
 
         XCTAssertTrue(window.staticTexts["Permissions"].waitForExistence(timeout: 5))
+    }
+
+    private func launchMainWindow() -> XCUIElement {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launch()
+        addTeardownBlock { @MainActor in app.terminate() }
+        let window = app.windows.firstMatch
+        XCTAssertTrue(window.waitForExistence(timeout: 10))
+        return window
     }
 }

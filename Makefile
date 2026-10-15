@@ -8,7 +8,7 @@ DERIVED_DATA  := build/DerivedData
 SWIFT_FORMAT  := xcrun swift-format
 SOURCES       := App UITests $(PACKAGE_DIR)/Sources $(PACKAGE_DIR)/Tests $(PACKAGE_DIR)/Package.swift
 
-.PHONY: help bootstrap project build test package-test app-test ui-test lint analyze format format-check hygiene architecture check clean
+.PHONY: help bootstrap project build build-for-testing test package-test app-test ui-test lint analyze format format-check hygiene architecture check clean
 
 help: ## List available targets.
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-14s %s\n", $$1, $$2}'
@@ -23,6 +23,10 @@ project: ## Regenerate LogiDuo.xcodeproj from project.yml.
 build: ## Build the macOS app (Debug).
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration Debug \
 		-derivedDataPath $(DERIVED_DATA) -destination 'platform=macOS' -quiet build
+
+build-for-testing: ## Compile the app and every test target, including UI tests.
+	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -derivedDataPath $(DERIVED_DATA) \
+		-destination 'platform=macOS' -quiet build-for-testing
 
 package-test: ## Run Swift package tests (domain, protocol, infrastructure, features).
 	swift test --package-path $(PACKAGE_DIR) -Xswiftc -warnings-as-errors

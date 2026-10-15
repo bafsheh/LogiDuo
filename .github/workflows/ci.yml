@@ -82,6 +82,8 @@ jobs:
         run: |
           make project
           git diff --exit-code -- LogiDuo.xcodeproj
+      - name: Compile all test targets
+        run: make build-for-testing
       - name: App unit tests
         run: make app-test
       - name: Release build (universal, unsigned)
