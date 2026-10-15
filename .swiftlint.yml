@@ -1,0 +1,185 @@
+# SwiftLint configuration (validated against SwiftLint 0.65.x).
+# Layout/whitespace is owned by swift-format (.swift-format); rules that would
+# fight the formatter are disabled below. CI runs with --strict, so every
+# warning fails the build.
+
+included:
+  - App
+  - Packages/LogiDuoKit/Sources
+  - Packages/LogiDuoKit/Tests
+  - Packages/LogiDuoKit/Package.swift
+  - UITests
+
+excluded:
+  - Packages/LogiDuoKit/.build
+  - DerivedData
+  - build
+
+disabled_rules:
+  - trailing_comma          # swift-format inserts trailing commas in multi-line literals.
+  - opening_brace           # swift-format owns brace placement.
+  - todo                    # Replaced by expiring_todo, which forces a deadline.
+
+opt_in_rules:
+  # Safety
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - unhandled_throwing_task
+  - unowned_variable_capture
+  - discouraged_optional_boolean
+  - fatal_error_message
+  - expiring_todo
+  - private_swiftui_state
+  - async_without_await
+  - unneeded_throws_rethrows
+  - discarded_notification_center_observer
+  - weak_delegate
+  # Correctness / idiom
+  - identical_operands
+  - yoda_condition
+  - legacy_multiple
+  - legacy_objc_type
+  - toggle_bool
+  - shorthand_optional_binding
+  - redundant_nil_coalescing
+  - prefer_self_type_over_type_of_self
+  - prefer_zero_over_explicit_init
+  - explicit_init
+  - convenience_type
+  - fallthrough
+  - static_operator
+  - strict_fileprivate
+  - unavailable_function
+  - lower_acl_than_parent
+  - override_in_extension
+  - no_extension_access_modifier
+  - return_value_from_void_function
+  - nslocalizedstring_key
+  # Collections and performance
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - contains_over_range_nil_comparison
+  - empty_collection_literal
+  - empty_count
+  - empty_string
+  - first_where
+  - last_where
+  - flatmap_over_map_reduce
+  - reduce_into
+  - sorted_first_last
+  - array_init
+  # Closures
+  - closure_body_length
+  - unneeded_parentheses_in_closure_argument
+  - anonymous_argument_in_multiline_closure
+  # Documentation
+  - missing_docs
+  - local_doc_comment
+  # Accessibility
+  - accessibility_label_for_image
+  - accessibility_trait_for_button
+  # Tests
+  - final_test_case
+  - test_case_accessibility
+  - balanced_xctest_lifecycle
+  - empty_xctest_method
+  - single_test_class
+  # Naming / structure
+  - file_name_no_space
+  - sorted_imports
+  - modifier_order
+
+analyzer_rules:
+  - unused_declaration
+  - unused_import
+  - capture_variable
+
+force_cast: error
+force_try: error
+force_unwrapping: error
+implicitly_unwrapped_optional: error
+
+line_length:
+  warning: 120
+  error: 160
+  ignores_comments: false
+  ignores_urls: true
+
+file_length:
+  warning: 400
+  error: 600
+  ignore_comment_only_lines: true
+
+type_body_length:
+  warning: 250
+  error: 400
+
+function_body_length:
+  warning: 40
+  error: 80
+
+closure_body_length:
+  warning: 30
+  error: 60
+
+cyclomatic_complexity:
+  warning: 10
+  error: 20
+  ignores_case_statements: true
+
+nesting:
+  type_level: 2
+  function_level: 3
+
+function_parameter_count:
+  warning: 6
+  error: 8
+
+large_tuple:
+  warning: 3
+  error: 4
+
+identifier_name:
+  min_length:
+    warning: 2
+  excluded:
+    - id
+    - x
+    - y
+    - dx
+    - dy
+    - ok
+
+type_name:
+  min_length: 3
+  max_length: 50
+
+missing_docs:
+  warning:
+    - open
+    - public
+
+custom_rules:
+  no_print:
+    name: "No print"
+    regex: '(?<![\w.])(print|debugPrint|dump)\s*\('
+    match_kinds: identifier
+    message: "Use the Logger from os instead of print/debugPrint/dump."
+    severity: error
+    excluded: '(Tests|UITests)/'
+  no_unchecked_sendable_without_reason:
+    name: "Justify @unchecked Sendable"
+    regex: '@unchecked\s+Sendable(?![^\n]*//\s*Invariant:)'
+    message: "@unchecked Sendable requires a trailing '// Invariant: …' comment proving synchronization."
+    severity: error
+  no_detached_task:
+    name: "Avoid Task.detached"
+    regex: 'Task\.detached'
+    message: "Prefer structured concurrency; justify detached tasks with a swiftlint:disable:next and a reason."
+    severity: warning
+  no_dispatch_sleep:
+    name: "No sleeping for synchronization"
+    regex: '\b(usleep|sleep|Thread\.sleep)\s*\('
+    message: "Do not sleep to synchronize; await a signal or inject a clock."
+    severity: error
