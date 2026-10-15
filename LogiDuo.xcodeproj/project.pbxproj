@@ -1,0 +1,600 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1B606F6EA50B265890BAB95B /* AppCompositionRootTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA86672CA839D85C3CDFEA8 /* AppCompositionRootTests.swift */; };
+		323DA8E1851CA49FEA46A985 /* AppCompositionRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40626EBF4C1B113631325F7D /* AppCompositionRoot.swift */; };
+		615A0636501CF5AB65285EE3 /* LogiDuoDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 02314A38A473E9EBF74FB629 /* LogiDuoDomain */; };
+		67BD70EACE71B6470637E20A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A6B59151A1E5F24CC2CC755 /* Assets.xcassets */; };
+		8580681C8CEDFEC284C4CDE9 /* MainWindowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F89DEE158C91A95676B8BF3 /* MainWindowUITests.swift */; };
+		8CD108B51EB50243ADD905AB /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 74B21E9416DAB3C32CF74CEF /* Localizable.xcstrings */; };
+		9DDD296712C6B306FD337068 /* LogiDuoFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = BF4EEC8DE3BBC7C0775F94F9 /* LogiDuoFeatures */; };
+		C1D086802BD1C7CB9ED5BB97 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 0A5E678C171BE10EAE164B5C /* LICENSE */; };
+		CBF3A79033D677089D0510AD /* LogiDuoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBDC38398F11B7253D9C696 /* LogiDuoApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		52FB2A66E8A263B966468EB7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F9746F028D7042C441F71886 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 981121388DBE1247F3F4E2D8;
+			remoteInfo = LogiDuo;
+		};
+		F77233EB4E6806187D9A549D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F9746F028D7042C441F71886 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 981121388DBE1247F3F4E2D8;
+			remoteInfo = LogiDuo;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0A5E678C171BE10EAE164B5C /* LICENSE */ = {isa = PBXFileReference; path = LICENSE; sourceTree = "<group>"; };
+		1F89DEE158C91A95676B8BF3 /* MainWindowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowUITests.swift; sourceTree = "<group>"; };
+		262F5000495EB4BFEE263F0C /* LogiDuoAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LogiDuoAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		40626EBF4C1B113631325F7D /* AppCompositionRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCompositionRoot.swift; sourceTree = "<group>"; };
+		4A6B59151A1E5F24CC2CC755 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		514F08C9A9B4840E4E7CDB54 /* LogiDuo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LogiDuo.entitlements; sourceTree = "<group>"; };
+		5322A96065628078824944F3 /* LogiDuoKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogiDuoKit; path = Packages/LogiDuoKit; sourceTree = SOURCE_ROOT; };
+		74B21E9416DAB3C32CF74CEF /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		7BA86672CA839D85C3CDFEA8 /* AppCompositionRootTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCompositionRootTests.swift; sourceTree = "<group>"; };
+		A64B275F7723E32708CB2F75 /* LogiDuo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LogiDuo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEBDC38398F11B7253D9C696 /* LogiDuoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogiDuoApp.swift; sourceTree = "<group>"; };
+		CBEE7CB66FE5AE3CDD3E70DC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		E21EA326B990FDDC7B940E8B /* LogiDuoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LogiDuoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0F4541B099E64475032BEB92 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				615A0636501CF5AB65285EE3 /* LogiDuoDomain in Frameworks */,
+				9DDD296712C6B306FD337068 /* LogiDuoFeatures in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0E79FA2B0C226C5A0EC0FAFF /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				1F89DEE158C91A95676B8BF3 /* MainWindowUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		7ECCC5B39A8D53D77696A36C /* AppTests */ = {
+			isa = PBXGroup;
+			children = (
+				7BA86672CA839D85C3CDFEA8 /* AppCompositionRootTests.swift */,
+			);
+			path = AppTests;
+			sourceTree = "<group>";
+		};
+		9F7A124F6C29F349FC6DC9ED /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A64B275F7723E32708CB2F75 /* LogiDuo.app */,
+				262F5000495EB4BFEE263F0C /* LogiDuoAppTests.xctest */,
+				E21EA326B990FDDC7B940E8B /* LogiDuoUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AB4A6D051288D1214783C1CE /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				5322A96065628078824944F3 /* LogiDuoKit */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		DE3DE989F55A001ECCABE6B2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				F81C97948E52B7352DAA5D22 /* Resources */,
+				40626EBF4C1B113631325F7D /* AppCompositionRoot.swift */,
+				BEBDC38398F11B7253D9C696 /* LogiDuoApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		DF66C5560503A9051F09C306 = {
+			isa = PBXGroup;
+			children = (
+				DE3DE989F55A001ECCABE6B2 /* App */,
+				7ECCC5B39A8D53D77696A36C /* AppTests */,
+				AB4A6D051288D1214783C1CE /* Packages */,
+				0E79FA2B0C226C5A0EC0FAFF /* UITests */,
+				0A5E678C171BE10EAE164B5C /* LICENSE */,
+				9F7A124F6C29F349FC6DC9ED /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F81C97948E52B7352DAA5D22 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4A6B59151A1E5F24CC2CC755 /* Assets.xcassets */,
+				CBEE7CB66FE5AE3CDD3E70DC /* Info.plist */,
+				74B21E9416DAB3C32CF74CEF /* Localizable.xcstrings */,
+				514F08C9A9B4840E4E7CDB54 /* LogiDuo.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		242ED8129AFD545C7698C739 /* LogiDuoUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A042E69F469F88028A8239D9 /* Build configuration list for PBXNativeTarget "LogiDuoUITests" */;
+			buildPhases = (
+				111BD5E8C0CD5DF9000C0A34 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4520E7F5946895320630BBF5 /* PBXTargetDependency */,
+			);
+			name = LogiDuoUITests;
+			packageProductDependencies = (
+			);
+			productName = LogiDuoUITests;
+			productReference = E21EA326B990FDDC7B940E8B /* LogiDuoUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		981121388DBE1247F3F4E2D8 /* LogiDuo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6E5766A33DCCD3B354E97D56 /* Build configuration list for PBXNativeTarget "LogiDuo" */;
+			buildPhases = (
+				8A800A57E6C702CCF2589E64 /* Sources */,
+				510450FC63E9DBB82C7D25E2 /* Resources */,
+				0F4541B099E64475032BEB92 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LogiDuo;
+			packageProductDependencies = (
+				02314A38A473E9EBF74FB629 /* LogiDuoDomain */,
+				BF4EEC8DE3BBC7C0775F94F9 /* LogiDuoFeatures */,
+			);
+			productName = LogiDuo;
+			productReference = A64B275F7723E32708CB2F75 /* LogiDuo.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B42AE63F53C774D22EF5552D /* LogiDuoAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9DA53228299A2A45EA86D5E7 /* Build configuration list for PBXNativeTarget "LogiDuoAppTests" */;
+			buildPhases = (
+				1172FE9CE123150F77724073 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D917D127D28DFCFB5D571F41 /* PBXTargetDependency */,
+			);
+			name = LogiDuoAppTests;
+			packageProductDependencies = (
+			);
+			productName = LogiDuoAppTests;
+			productReference = 262F5000495EB4BFEE263F0C /* LogiDuoAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F9746F028D7042C441F71886 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					242ED8129AFD545C7698C739 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+						TestTargetID = 981121388DBE1247F3F4E2D8;
+					};
+					981121388DBE1247F3F4E2D8 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					B42AE63F53C774D22EF5552D = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 335455D506F811C41578FE06 /* Build configuration list for PBXProject "LogiDuo" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = DF66C5560503A9051F09C306;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D7D70E36DD7EA83734EAF3E5 /* XCLocalSwiftPackageReference "Packages/LogiDuoKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 9F7A124F6C29F349FC6DC9ED /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				981121388DBE1247F3F4E2D8 /* LogiDuo */,
+				B42AE63F53C774D22EF5552D /* LogiDuoAppTests */,
+				242ED8129AFD545C7698C739 /* LogiDuoUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		510450FC63E9DBB82C7D25E2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				67BD70EACE71B6470637E20A /* Assets.xcassets in Resources */,
+				C1D086802BD1C7CB9ED5BB97 /* LICENSE in Resources */,
+				8CD108B51EB50243ADD905AB /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		111BD5E8C0CD5DF9000C0A34 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8580681C8CEDFEC284C4CDE9 /* MainWindowUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1172FE9CE123150F77724073 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1B606F6EA50B265890BAB95B /* AppCompositionRootTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8A800A57E6C702CCF2589E64 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				323DA8E1851CA49FEA46A985 /* AppCompositionRoot.swift in Sources */,
+				CBF3A79033D677089D0510AD /* LogiDuoApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4520E7F5946895320630BBF5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 981121388DBE1247F3F4E2D8 /* LogiDuo */;
+			targetProxy = 52FB2A66E8A263B966468EB7 /* PBXContainerItemProxy */;
+		};
+		D917D127D28DFCFB5D571F41 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 981121388DBE1247F3F4E2D8 /* LogiDuo */;
+			targetProxy = F77233EB4E6806187D9A549D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0D9EB595031EE53009337C57 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.bafsheh.LogiDuo.AppTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LogiDuo.app/Contents/MacOS/LogiDuo";
+			};
+			name = Release;
+		};
+		13B1E69E59021AFC5D43F600 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.bafsheh.LogiDuo.UITests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = LogiDuo;
+			};
+			name = Debug;
+		};
+		4EF3C7B9F49F133E450253DA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/Resources/LogiDuo.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = App/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.bafsheh.LogiDuo;
+				PRODUCT_NAME = LogiDuo;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		7B9B8EDDCB0DA6E25BF25A37 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES;
+				SWIFT_UPCOMING_FEATURE_INTERNAL_IMPORTS_BY_DEFAULT = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		7E8B49E216D89BCAFF0BCB99 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.bafsheh.LogiDuo.AppTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LogiDuo.app/Contents/MacOS/LogiDuo";
+			};
+			name = Debug;
+		};
+		90E1F9668193DE180268AF95 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/Resources/LogiDuo.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = App/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.bafsheh.LogiDuo;
+				PRODUCT_NAME = LogiDuo;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		987D9E4C25951FECC2340767 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES;
+				SWIFT_UPCOMING_FEATURE_INTERNAL_IMPORTS_BY_DEFAULT = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		D98A4CF50FF5240A824F11F5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.bafsheh.LogiDuo.UITests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = LogiDuo;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		335455D506F811C41578FE06 /* Build configuration list for PBXProject "LogiDuo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				987D9E4C25951FECC2340767 /* Debug */,
+				7B9B8EDDCB0DA6E25BF25A37 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6E5766A33DCCD3B354E97D56 /* Build configuration list for PBXNativeTarget "LogiDuo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				90E1F9668193DE180268AF95 /* Debug */,
+				4EF3C7B9F49F133E450253DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9DA53228299A2A45EA86D5E7 /* Build configuration list for PBXNativeTarget "LogiDuoAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E8B49E216D89BCAFF0BCB99 /* Debug */,
+				0D9EB595031EE53009337C57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A042E69F469F88028A8239D9 /* Build configuration list for PBXNativeTarget "LogiDuoUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				13B1E69E59021AFC5D43F600 /* Debug */,
+				D98A4CF50FF5240A824F11F5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		D7D70E36DD7EA83734EAF3E5 /* XCLocalSwiftPackageReference "Packages/LogiDuoKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LogiDuoKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		02314A38A473E9EBF74FB629 /* LogiDuoDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LogiDuoDomain;
+		};
+		BF4EEC8DE3BBC7C0775F94F9 /* LogiDuoFeatures */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LogiDuoFeatures;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = F9746F028D7042C441F71886 /* Project object */;
+}
