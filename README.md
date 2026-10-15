@@ -49,7 +49,7 @@ Pre-built releases are not available yet. Build from source as described below.
 ```sh
 git clone https://github.com/bafsheh/LogiDuo.git
 cd LogiDuo
-make bootstrap        # installs SwiftLint and XcodeGen, generates LogiDuo.xcodeproj
+make bootstrap        # installs SwiftLint and XcodeGen, builds pinned swift-format, generates the project
 open LogiDuo.xcodeproj
 ```
 

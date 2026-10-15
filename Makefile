@@ -5,17 +5,25 @@ PACKAGE_DIR   := Packages/LogiDuoKit
 PROJECT       := LogiDuo.xcodeproj
 SCHEME        := LogiDuo
 DERIVED_DATA  := build/DerivedData
-SWIFT_FORMAT  := xcrun swift-format
-SOURCES       := App UITests $(PACKAGE_DIR)/Sources $(PACKAGE_DIR)/Tests $(PACKAGE_DIR)/Package.swift
+TOOLS_DIR     := BuildTools
+SWIFT_FORMAT  := $(TOOLS_DIR)/.build/release/swift-format
+SOURCES       := App AppTests UITests $(PACKAGE_DIR)/Sources $(PACKAGE_DIR)/Tests $(PACKAGE_DIR)/Package.swift \
+                 $(TOOLS_DIR)/Package.swift
 
-.PHONY: help bootstrap secrets project build build-for-testing test package-test app-test ui-test lint analyze format format-check hygiene architecture check clean
+.PHONY: help bootstrap tools secrets project build build-for-testing test package-test app-test ui-test lint format format-check hygiene architecture check clean
 
 help: ## List available targets.
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-14s %s\n", $$1, $$2}'
 
-bootstrap: ## Install developer tools (Homebrew) and generate the Xcode project.
+bootstrap: ## Install developer tools (Homebrew), build pinned swift-format, generate the project.
 	brew bundle --file=Brewfile
-	$(MAKE) project
+	$(MAKE) tools project
+
+tools: $(SWIFT_FORMAT) ## Build the pinned swift-format from source.
+
+$(SWIFT_FORMAT): $(TOOLS_DIR)/Package.swift $(TOOLS_DIR)/Package.resolved
+	swift build --package-path $(TOOLS_DIR) -c release --product swift-format
+	@touch $@
 
 secrets: ## Scan the full Git history for secrets (pinned gitleaks).
 	./scripts/run-secret-scan.sh
@@ -47,10 +55,10 @@ test: package-test app-test ## Run package and app unit tests.
 lint: ## Run SwiftLint in strict mode.
 	swiftlint lint --strict --quiet
 
-format: ## Format all Swift sources in place.
+format: $(SWIFT_FORMAT) ## Format all Swift sources in place.
 	$(SWIFT_FORMAT) format --in-place --recursive --parallel $(SOURCES)
 
-format-check: ## Fail if any Swift source is not formatted.
+format-check: $(SWIFT_FORMAT) ## Fail if any Swift source is not formatted.
 	$(SWIFT_FORMAT) lint --strict --recursive --parallel $(SOURCES)
 
 hygiene: ## Enforce the public repository file policy.
