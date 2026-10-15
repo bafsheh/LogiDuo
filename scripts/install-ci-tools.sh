@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Installs exact, checksum-verified versions of the lint and project
-# generation tools into build/tools/bin so CI results are reproducible.
+# Installs exact, checksum-verified versions of SwiftLint and XcodeGen into
+# build/tools and prints the directories to add to PATH (one per line).
 set -euo pipefail
 
 SWIFTLINT_VERSION="0.65.1"
@@ -25,6 +25,8 @@ unzip -o -q "$tools/downloads/swiftlint.zip" swiftlint -d "$tools/bin"
 fetch "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip" \
     "$XCODEGEN_SHA256" "$tools/downloads/xcodegen.zip"
 unzip -o -q "$tools/downloads/xcodegen.zip" -d "$tools"
-ln -sf "$tools/xcodegen/bin/xcodegen" "$tools/bin/xcodegen"
 
+# XcodeGen locates its setting presets relative to its own executable, so it
+# must run from its unpacked directory rather than through a symlink.
 echo "$tools/bin"
+echo "$tools/xcodegen/bin"
