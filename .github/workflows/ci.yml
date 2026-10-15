@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Must match the Xcode used locally: swift-format output is toolchain-specific.
+  XCODE_APP: /Applications/Xcode_27.0.app
+
+jobs:
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Tracked-file policy
+        run: ./scripts/check-repo-hygiene.sh
+      - name: Architecture import policy
+        run: ./scripts/check-architecture.sh
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  lint:
+    name: Lint and format
+    runs-on: xcode-27
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "$XCODE_APP"
+          xcodebuild -version
+      - name: Install pinned tools
+        run: ./scripts/install-ci-tools.sh >> "$GITHUB_PATH"
+      - name: SwiftLint
+        run: swiftlint lint --strict --reporter github-actions-logging
+      - name: swift-format
+        run: make format-check
+
+  package:
+    name: Package build and tests
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Select Xcode
+        run: sudo xcode-select -s "$XCODE_APP"
+      - name: Resolve dependencies
+        run: swift package --package-path Packages/LogiDuoKit resolve
+      - name: Build (warnings as errors)
+        run: swift build --package-path Packages/LogiDuoKit -Xswiftc -warnings-as-errors
+      - name: Test
+        run: make package-test
+
+  app:
+    name: App build and tests
+    runs-on: xcode-27
+    timeout-minutes: 40
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Select Xcode
+        run: sudo xcode-select -s "$XCODE_APP"
+      - name: Install pinned tools
+        run: ./scripts/install-ci-tools.sh >> "$GITHUB_PATH"
+      - name: Verify generated project is up to date
+        run: |
+          make project
+          git diff --exit-code -- LogiDuo.xcodeproj
+      - name: App unit tests
+        run: make app-test
+      - name: Release build (universal, unsigned)
+        run: |
+          xcodebuild -project LogiDuo.xcodeproj -scheme LogiDuo -configuration Release \
+            -derivedDataPath build/DerivedData -destination 'generic/platform=macOS' \
+            ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO -quiet build
+      - name: Validate build artifact
+        run: ./scripts/validate-app-bundle.sh build/DerivedData/Build/Products/Release/LogiDuo.app
