@@ -1,0 +1,150 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "devices.empty.message": {
+      "comment": "Explains how to make a device appear.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect a supported Logitech mouse over Bluetooth or a receiver."
+          }
+        }
+      }
+    },
+    "devices.empty.title": {
+      "comment": "Shown when no supported Logitech device is connected.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Devices"
+          }
+        }
+      }
+    },
+    "menu.openLogiDuo": {
+      "comment": "Menu bar item that opens the main window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open LogiDuo"
+          }
+        }
+      }
+    },
+    "menu.permissions": {
+      "comment": "Menu bar item that opens the permission overview.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissions…"
+          }
+        }
+      }
+    },
+    "menu.quit": {
+      "comment": "Menu bar item that quits the app.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit LogiDuo"
+          }
+        }
+      }
+    },
+    "menu.settings": {
+      "comment": "Menu bar item that opens the Settings window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings…"
+          }
+        }
+      }
+    },
+    "permissions.title": {
+      "comment": "Title of the permission overview.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissions"
+          }
+        }
+      }
+    },
+    "profiles.empty.title": {
+      "comment": "Shown when there are no application profiles.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Profiles"
+          }
+        }
+      }
+    },
+    "settings.version": {
+      "comment": "Label for the application version in Settings.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version"
+          }
+        }
+      }
+    },
+    "sidebar.devices": {
+      "comment": "Sidebar entry listing connected devices.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices"
+          }
+        }
+      }
+    },
+    "sidebar.permissions": {
+      "comment": "Sidebar entry for macOS permission status.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissions"
+          }
+        }
+      }
+    },
+    "sidebar.profiles": {
+      "comment": "Sidebar entry for application profiles.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiles"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
