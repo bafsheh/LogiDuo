@@ -38,7 +38,7 @@ only after it has been tested on physical hardware.
 ## Requirements
 
 - macOS 14 Sonoma or later, Apple silicon or Intel
-- To build: Xcode 27 or later, [Homebrew](https://brew.sh) for developer tools
+- To build: Xcode 26.6 or later, [Homebrew](https://brew.sh) for developer tools
 
 ## Installation
 
@@ -114,7 +114,7 @@ import. The code is compiled in Swift 6 language mode with complete strict-concu
 
 ## Troubleshooting
 
-- **Build fails with an Xcode version error.** Select Xcode 27 or later with
+- **Build fails with an Xcode version error.** Select Xcode 26.6 or later with
   `sudo xcode-select -s /Applications/Xcode.app`.
 
 ## Contributing

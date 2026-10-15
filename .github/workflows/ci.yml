@@ -14,8 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Must match the Xcode used locally: swift-format output is toolchain-specific.
-  XCODE_APP: /Applications/Xcode_27.0.app
+  # Stable GitHub-hosted image and the newest stable Xcode it provides.
+  # Formatting does not depend on this: swift-format is pinned in BuildTools.
+  XCODE_APP: /Applications/Xcode_26.6.app
 
 jobs:
   hygiene:
@@ -35,8 +36,8 @@ jobs:
 
   lint:
     name: Lint and format
-    runs-on: xcode-27
-    timeout-minutes: 15
+    runs-on: macos-26
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Select Xcode
@@ -49,7 +50,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: BuildTools/.build
-          key: buildtools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('BuildTools/Package.resolved') }}
+          key: buildtools-${{ runner.os }}-${{ runner.arch }}-xcode26.6-${{ hashFiles('BuildTools/Package.resolved') }}
       - name: SwiftLint
         run: swiftlint lint --strict --reporter github-actions-logging
       - name: swift-format
@@ -57,12 +58,14 @@ jobs:
 
   package:
     name: Package build and tests
-    runs-on: xcode-27
+    runs-on: macos-26
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Select Xcode
-        run: sudo xcode-select -s "$XCODE_APP"
+        run: |
+          sudo xcode-select -s "$XCODE_APP"
+          swift --version
       - name: Resolve dependencies
         run: swift package --package-path Packages/LogiDuoKit resolve
       - name: Build (warnings as errors)
@@ -72,9 +75,8 @@ jobs:
 
   app:
     name: App build and tests
-    runs-on: xcode-27
+    runs-on: macos-26
     timeout-minutes: 40
-    needs: [lint]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Select Xcode
