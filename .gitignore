@@ -1,0 +1,54 @@
+# --- Documentation policy -------------------------------------------------
+# README.md at the repository root is the only Markdown file that may be
+# tracked. scripts/check-repo-hygiene.sh enforces this for tracked files too.
+*.md
+*.markdown
+!/README.md
+
+# --- Local, per-developer tooling --------------------------------------
+# Tool-specific working directories belong in .git/info/exclude.
+
+# --- Xcode / SwiftPM build output ----------------------------------------
+.build/
+build/
+DerivedData/
+*.xcresult
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+*.ipa
+*.app
+*.dmg
+*.pkg
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+.swiftpm/xcode/xcuserdata/
+.swiftpm/configuration/registries.json
+Packages/*/.swiftpm/
+
+# --- Signing material and secrets ----------------------------------------
+*.p12
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile
+*.p8
+*.pem
+*.key
+.env
+.env.*
+*.local.json
+*.local.xcconfig
+
+# --- Diagnostics that may contain device identifiers ---------------------
+*.hidcapture
+*.log
+*.trace
+
+# --- Editors / OS --------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
