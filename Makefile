@@ -8,7 +8,7 @@ DERIVED_DATA  := build/DerivedData
 SWIFT_FORMAT  := xcrun swift-format
 SOURCES       := App UITests $(PACKAGE_DIR)/Sources $(PACKAGE_DIR)/Tests $(PACKAGE_DIR)/Package.swift
 
-.PHONY: help bootstrap project build build-for-testing test package-test app-test ui-test lint analyze format format-check hygiene architecture check clean
+.PHONY: help bootstrap secrets project build build-for-testing test package-test app-test ui-test lint analyze format format-check hygiene architecture check clean
 
 help: ## List available targets.
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-14s %s\n", $$1, $$2}'
@@ -16,6 +16,9 @@ help: ## List available targets.
 bootstrap: ## Install developer tools (Homebrew) and generate the Xcode project.
 	brew bundle --file=Brewfile
 	$(MAKE) project
+
+secrets: ## Scan the full Git history for secrets (pinned gitleaks).
+	./scripts/run-secret-scan.sh
 
 project: ## Regenerate LogiDuo.xcodeproj from project.yml.
 	xcodegen generate --quiet
@@ -56,7 +59,7 @@ hygiene: ## Enforce the public repository file policy.
 architecture: ## Enforce module import boundaries.
 	./scripts/check-architecture.sh
 
-check: hygiene architecture format-check lint package-test ## Fast local gate (no Xcode project build).
+check: hygiene architecture secrets format-check lint package-test ## Fast local gate (no Xcode project build).
 
 clean: ## Remove build output.
 	rm -rf build $(PACKAGE_DIR)/.build

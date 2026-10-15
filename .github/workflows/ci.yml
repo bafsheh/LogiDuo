@@ -30,10 +30,8 @@ jobs:
         run: ./scripts/check-repo-hygiene.sh
       - name: Architecture import policy
         run: ./scripts/check-architecture.sh
-      - name: Secret scan
-        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Secret scan (full history)
+        run: ./scripts/run-secret-scan.sh
 
   lint:
     name: Lint and format

@@ -62,7 +62,7 @@ Or build from the command line with `make build`. Run `make help` to list every 
 
 | Command | What it does |
 | --- | --- |
-| `make check` | Fast local gate: hygiene, architecture, formatting, lint, package tests |
+| `make check` | Fast local gate: hygiene, architecture, secret scan, formatting, lint, package tests |
 | `make package-test` | Swift Testing suites for domain, protocol, infrastructure and features |
 | `make app-test` | App-level unit tests through Xcode |
 | `make ui-test` | UI tests (needs a logged-in desktop session) |
