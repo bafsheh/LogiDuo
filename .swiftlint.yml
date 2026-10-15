@@ -183,3 +183,11 @@ custom_rules:
     regex: '\b(usleep|sleep|Thread\.sleep)\s*\('
     message: "Do not sleep to synchronize; await a signal or inject a clock."
     severity: error
+
+inclusive_language:
+  # "master" is omitted only because it is part of Logitech product names
+  # (MX Master); the other default terms stay enforced.
+  override_terms:
+    - whitelist
+    - blacklist
+    - slave
