@@ -22,6 +22,15 @@ public enum CapabilityStatus<Detail: Hashable & Sendable>: Hashable, Sendable {
         if case .supported(let detail) = self { detail } else { nil }
     }
 
+    /// Whether an operation depending only on this capability can be performed.
+    public var availability: Availability {
+        switch self {
+        case .undiscovered: .pending
+        case .unsupported: .unavailable
+        case .supported: .available
+        }
+    }
+
     /// Combines this status with a newer one.
     ///
     /// A discovered `newer` value always wins — including `.unsupported`
