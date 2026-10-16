@@ -12,11 +12,17 @@ let snapshotDirectory = ProcessInfo.processInfo.environment["LOGIDUO_SNAPSHOT_DI
 
 /// Renders `view` in an offscreen window to a PNG named `name` (no screen recording involved).
 @MainActor
-func renderSnapshot(_ view: some View, name: String, size: CGSize = CGSize(width: 820, height: 560)) async throws {
+func renderSnapshot(
+    _ view: some View,
+    name: String,
+    size: CGSize = CGSize(width: 820, height: 560),
+    appearance: NSAppearance.Name = .darkAqua
+) async throws {
     guard let snapshotDirectory else { return }
     let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height).background(.background))
     host.frame = CGRect(origin: .zero, size: size)
     let window = NSWindow(contentRect: host.frame, styleMask: [.borderless], backing: .buffered, defer: false)
+    window.appearance = NSAppearance(named: appearance)
     window.backgroundColor = .windowBackgroundColor
     window.contentView = host
     host.layoutSubtreeIfNeeded()
@@ -125,6 +131,22 @@ struct ViewSnapshots {
             name: "import",
             size: CGSize(width: 520, height: 520)
         )
+    }
+
+    @Test("device dashboard, light appearance, and the empty state")
+    func lightAndEmpty() async throws {
+        let service = FakeDeviceService()
+        let model = DevicesViewModel(service: service, router: AppRouter())
+        service.send([Self.mouse, Self.keyboard])
+        service.finish()
+        await model.observe()
+        try await renderSnapshot(DevicesView(model: model), name: "devices-light", appearance: .aqua)
+
+        let empty = FakeDeviceService()
+        let emptyModel = DevicesViewModel(service: empty, router: AppRouter())
+        empty.finish()
+        await emptyModel.observe()
+        try await renderSnapshot(DevicesView(model: emptyModel), name: "devices-empty")
     }
 }
 

@@ -31,10 +31,10 @@ struct DevicePointerSections: View {
             Slider(
                 value: Binding(
                     get: { draftResolution ?? Double(preference.resolution ?? resolution.current) },
-                    set: { draftResolution = $0 }
+                    // Snapped while dragging; no `step:` so macOS draws no tick for every value.
+                    set: { draftResolution = Double(resolution.range.nearestSupported(to: Int($0.rounded()))) }
                 ),
-                in: Double(resolution.range.minimum)...Double(resolution.range.maximum),
-                step: Double(resolution.range.step)
+                in: Double(resolution.range.minimum)...Double(resolution.range.maximum)
             ) { editing in
                 guard !editing, let value = draftResolution else { return }
                 draftResolution = nil
