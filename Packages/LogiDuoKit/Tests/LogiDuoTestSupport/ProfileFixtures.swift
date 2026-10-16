@@ -38,6 +38,12 @@ public enum ProfileFixtures {
     }
 
     /// A profile identifier.
+    public static func name(_ value: String) -> ProfileName {
+        guard let name = ProfileName(value) else { preconditionFailure("invalid fixture name") }
+        return name
+    }
+
+    /// A profile identifier.
     public static func id(_ value: String) -> ProfileID {
         unwrap(ProfileID(rawValue: value))
     }

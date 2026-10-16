@@ -72,3 +72,20 @@ public enum ProfileSelection: Hashable, Sendable {
     /// An application profile.
     case application(ProfileID)
 }
+
+extension ProfileName {
+    /// Decodes a plain string, applying the same validation as ``init(_:)``.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        guard let name = ProfileName(try container.decode(String.self)) else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "empty profile name")
+        }
+        self = name
+    }
+
+    /// Encodes the name as a plain string.
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
+    }
+}
