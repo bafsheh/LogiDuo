@@ -1,6 +1,258 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "device.battery.accessibility %lld": {
+      "comment": "VoiceOver: battery level.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery %lld percent"
+          }
+        }
+      }
+    },
+    "device.feature.backlight": {
+      "comment": "Feature: keyboard backlight.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backlight"
+          }
+        }
+      }
+    },
+    "device.feature.battery": {
+      "comment": "Feature: battery reporting.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery status"
+          }
+        }
+      }
+    },
+    "device.feature.controls": {
+      "comment": "Feature: programmable buttons.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Programmable buttons"
+          }
+        }
+      }
+    },
+    "device.feature.fnInversion": {
+      "comment": "Feature: Fn key inversion.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Function key mode"
+          }
+        }
+      }
+    },
+    "device.feature.haptics": {
+      "comment": "Feature: haptic feedback.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haptic feedback"
+          }
+        }
+      }
+    },
+    "device.feature.hiResWheel": {
+      "comment": "Feature: high-resolution wheel.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High-resolution scrolling"
+          }
+        }
+      }
+    },
+    "device.feature.resolution": {
+      "comment": "Feature: adjustable DPI.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjustable pointer speed (DPI)"
+          }
+        }
+      }
+    },
+    "device.feature.smartShift": {
+      "comment": "Feature: SmartShift.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartShift scroll wheel"
+          }
+        }
+      }
+    },
+    "device.feature.thumbwheel": {
+      "comment": "Feature: thumb wheel.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thumb wheel"
+          }
+        }
+      }
+    },
+    "device.features.header": {
+      "comment": "Section header: supported features.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supported Features"
+          }
+        }
+      }
+    },
+    "device.link.asleep": {
+      "comment": "Connection: paused while the Mac sleeps.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused (Mac asleep)"
+          }
+        }
+      }
+    },
+    "device.link.connected": {
+      "comment": "Connection: connected.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected"
+          }
+        }
+      }
+    },
+    "device.link.connecting": {
+      "comment": "Connection: connecting.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting…"
+          }
+        }
+      }
+    },
+    "device.link.reconnecting": {
+      "comment": "Connection: reconnecting.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reconnecting…"
+          }
+        }
+      }
+    },
+    "device.link.unavailable": {
+      "comment": "Connection: not reachable.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not connected"
+          }
+        }
+      }
+    },
+    "device.status.battery": {
+      "comment": "Label: battery.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery"
+          }
+        }
+      }
+    },
+    "device.status.connection": {
+      "comment": "Label: connection state.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connection"
+          }
+        }
+      }
+    },
+    "device.status.firmware": {
+      "comment": "Label: firmware version.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware"
+          }
+        }
+      }
+    },
+    "device.status.transport": {
+      "comment": "Label: how the device is attached.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected via"
+          }
+        }
+      }
+    },
+    "device.status.unknown": {
+      "comment": "Unknown value.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown"
+          }
+        }
+      }
+    },
     "devices.empty.message": {
       "comment": "Explains how to make a device appear.",
       "extractionState": "manual",
@@ -21,6 +273,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "No Devices"
+          }
+        }
+      }
+    },
+    "devices.refresh": {
+      "comment": "Toolbar button that re-reads devices.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh"
           }
         }
       }

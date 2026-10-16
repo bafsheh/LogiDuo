@@ -21,6 +21,10 @@ final class AppCompositionRoot {
     let remappingModel: RemappingViewModel
     /// The device recovery screen.
     let recoveryModel: RecoveryViewModel
+    /// Every attached Logitech device (read-only while writes are disabled).
+    let devices: DeviceDirectory<ContinuousClock>
+    /// The device dashboard.
+    let devicesModel: DevicesViewModel
 
     /// Device configuration writes. Disabled: no physical write has been verified yet,
     /// so recovery inspects devices through the read-only transport guard only.
@@ -35,6 +39,36 @@ final class AppCompositionRoot {
             service: Self.makeRecovery(),
             writesEnabled: Self.deviceWrites == .enabled
         )
+        let directory = DeviceDirectory(
+            source: HIDDeviceMonitor(),
+            clock: ContinuousClock(),
+            authorization: Self.deviceWrites
+        )
+        self.devices = directory
+        self.devicesModel = DevicesViewModel(service: directory, router: router)
+    }
+
+    /// The main window's screens.
+    var screens: RootScreens { RootScreens(devices: devicesModel, recovery: recoveryModel) }
+
+    /// Starts device discovery and forwards Mac sleep and wake to device connections.
+    func startDevices() {
+        let directory = devices
+        Task { await directory.start() }
+        Task {
+            for await _ in NSWorkspace.shared.notificationCenter.notifications(named: NSWorkspace.willSleepNotification)
+                .map({ _ in () })
+            {
+                await directory.hostWillSleep()
+            }
+        }
+        Task {
+            for await _ in NSWorkspace.shared.notificationCenter.notifications(named: NSWorkspace.didWakeNotification)
+                .map({ _ in () })
+            {
+                await directory.hostDidWake()
+            }
+        }
     }
 
     /// Shows the recovery screen at launch when an earlier run left changes to undo.
