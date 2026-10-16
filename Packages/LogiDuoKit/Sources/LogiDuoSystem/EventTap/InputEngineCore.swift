@@ -71,6 +71,17 @@ public final class InputEngineCore: @unchecked Sendable {  // Invariant: all sta
         }
     }
 
+    /// Interprets an input event that came from the device (diverted buttons, raw XY)
+    /// rather than from the tap. Ignored unless interception is active.
+    public func deviceInput(_ event: InputEvent, at time: Duration) -> [InputCommand] {
+        lock.withLock {
+            guard supervisor.state == .active else { return [] }
+            let commands = interpreter.handle(event, at: time).commands
+            count(commands)
+            return commands
+        }
+    }
+
     /// Applies a lifecycle signal (start, stop, permission change, installation result).
     public func signal(_ signal: EventTapSignal, at time: Duration) -> TapDecision {
         lock.withLock { lockedSignal(signal, at: time) }

@@ -86,6 +86,11 @@ public final class LiveInputEngine: Sendable {
         commandQueue.sync {}
     }
 
+    /// Feeds an event the device reported over HID++ (a diverted button or raw motion).
+    public func deviceInput(_ event: InputEvent) {
+        enqueue(core.deviceInput(event, at: now()))
+    }
+
     /// Replaces the scroll preferences (inversion, Shift for horizontal, trackpad exclusion).
     public func updateScrollSettings(_ settings: ScrollSettings) {
         scroll.value = settings

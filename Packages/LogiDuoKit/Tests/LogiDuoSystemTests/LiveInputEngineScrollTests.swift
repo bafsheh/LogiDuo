@@ -91,3 +91,38 @@ struct LiveInputEngineScrollTests {
         #expect(delivered.getIntegerValueField(.scrollWheelEventDeltaAxis1) == 1)
     }
 }
+
+@Suite("LiveInputEngine device input (fake tap)", .serialized, .timeLimit(.minutes(1)))
+struct LiveInputEngineDeviceInputTests {
+    private static func engine() -> (LiveInputEngine, RecordingExecutor) {
+        guard let set = try? MappingSet([ButtonMapping(trigger: .press(.forward), action: .click(.middle))]) else {
+            preconditionFailure("valid")
+        }
+        let executor = RecordingExecutor()
+        let engine = LiveInputEngine(
+            backend: FakeEventTapBackend(),
+            executor: executor,
+            mappings: MappingResolver.resolve(set, capabilities: .undiscovered, mode: .enabled)
+        )
+        return (engine, executor)
+    }
+
+    @Test("device-reported presses are interpreted like tapped ones while active")
+    func active() {
+        let (engine, executor) = Self.engine()
+        engine.start()
+        defer { engine.stop() }
+        engine.deviceInput(.buttonDown(.forward))
+        engine.deviceInput(.buttonUp(.forward))
+        engine.drainCommands()
+        #expect(executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
+    }
+
+    @Test("device-reported input is ignored while interception is off")
+    func inactive() {
+        let (engine, executor) = Self.engine()
+        engine.deviceInput(.buttonDown(.forward))
+        engine.drainCommands()
+        #expect(executor.commands.isEmpty)
+    }
+}
