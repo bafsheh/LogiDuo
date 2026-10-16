@@ -15,6 +15,8 @@ public actor RestorationLedger {
 
     private let store: any RestorationJournalStoring
     private var journal = RestorationJournal()
+    private var quarantined: RestorationJournalStoreError?
+    private var inherited: Set<RestorationDeviceKey> = []
     private var busy: Set<RestorationDeviceKey> = []
     private var waiters: [RestorationDeviceKey: [CheckedContinuation<Void, Never>]] = [:]
 
@@ -52,14 +54,37 @@ public actor RestorationLedger {
     }
 
     /// Loads the journal from disk.
+    ///
+    /// After a corrupted load, nothing new can be recorded (so nothing new can be
+    /// diverted) until ``acknowledgeCorruption()``; the unreadable file stays in
+    /// quarantine. Devices with entries from an earlier run must be restored
+    /// before they can be configured again.
     public func load() -> LoadOutcome {
         do {
             journal = try store.load()
+            quarantined = nil
+            inherited = journal.devicesNeedingRestoration
             return journal.isClean ? .clean : .pending(entries: journal.entries.count)
         } catch {
             journal = RestorationJournal()
+            quarantined = error
+            inherited = []
             return .corrupted
         }
+    }
+
+    /// The load failure that blocks new records, if any.
+    public var corruption: RestorationJournalStoreError? { quarantined }
+
+    /// Records that the person has seen the corrupted-journal notice and resolved the
+    /// device state (for example with an emergency reset). The quarantined file is kept.
+    public func acknowledgeCorruption() {
+        quarantined = nil
+    }
+
+    /// Whether `device` still has entries left by an earlier run.
+    public func hasInheritedEntries(_ device: DeviceID) -> Bool {
+        inherited.contains(store.key(for: device))
     }
 
     /// The journal key of `device`.
@@ -85,6 +110,7 @@ public actor RestorationLedger {
     )
         throws(RestorationJournalStoreError)
     {
+        if let quarantined { throw quarantined }
         var updated = journal
         updated.willApply(setting, on: store.key(for: device), original: original)
         try store.save(updated)
@@ -99,6 +125,7 @@ public actor RestorationLedger {
         updated.restored(setting, on: store.key(for: device))
         try store.save(updated)
         journal = updated
+        if updated.pending(for: store.key(for: device)).isEmpty { inherited.remove(store.key(for: device)) }
     }
 
     /// Records a failed restore attempt; the entry stays pending.

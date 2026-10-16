@@ -31,6 +31,11 @@ public final class FakeReprogDevice: @unchecked Sendable {  // Invariant: state 
         return PhysicalDeviceID(model: model, unit: UnitID(rawValue: defaultUnit))
     }
 
+    /// The control table: (CID, task, capability flags).
+    static let table: [(UInt16, UInt16, UInt16)] = [
+        (0x0050, 0x0038, 0x0001), (0x0052, 0x003A, 0x0031), (0x00C3, 0x00A9, 0x0131), (0x00C4, 0x009D, 0x0031),
+    ]
+
     private let lock = NSLock()
     private var flags: [UInt16: UInt8] = [0x0050: 0, 0x0052: 0, 0x00C3: 0, 0x00C4: 0]
     private var remaps: [UInt16: UInt16] = [:]
@@ -109,11 +114,36 @@ public final class FakeReprogDevice: @unchecked Sendable {  // Invariant: state 
             guard let model else { return ([HIDPPTestTraffic.featureError(for: sent, code: 0x05)], nil, nil) }
             let unitBytes = withUnsafeBytes(of: unit.bigEndian, Array.init)
             return ([HIDPPTestTraffic.reply(to: sent, parameters: [1] + unitBytes + [0x00, 0x05] + model)], nil, nil)
-        case (0x01, 2):
+        case (0x01, _):
+            return reprogReply(to: sent, function: function, control: control)
+        default:
+            return ([HIDPPTestTraffic.featureError(for: sent, code: 0x07)], nil, nil)
+        }
+    }
+
+    private func reprogReply(
+        to sent: [UInt8],
+        function: UInt8,
+        control: UInt16
+    ) -> ([[UInt8]], (@Sendable (UInt16) -> Void)?, UInt16?) {
+        switch function {
+        case 0:
+            return ([HIDPPTestTraffic.reply(to: sent, parameters: [UInt8(Self.table.count)])], nil, nil)
+        case 1:
+            guard Int(sent[4]) < Self.table.count else {
+                return ([HIDPPTestTraffic.featureError(for: sent, code: 0x02)], nil, nil)
+            }
+            let (cid, task, capability) = Self.table[Int(sent[4])]
+            let parameters: [UInt8] = [
+                UInt8(cid >> 8), UInt8(cid & 0xFF), UInt8(task >> 8), UInt8(task & 0xFF),
+                UInt8(capability & 0xFF), sent[4], 0, 0, UInt8(capability >> 8),
+            ]
+            return ([HIDPPTestTraffic.reply(to: sent, parameters: parameters)], nil, nil)
+        case 2:
             let remap = remaps[control] ?? 0
             let parameters = [sent[4], sent[5], flags[control] ?? 0, UInt8(remap >> 8), UInt8(remap & 0xFF), 0]
             return ([HIDPPTestTraffic.reply(to: sent, parameters: parameters)], nil, nil)
-        case (0x01, 3):
+        case 3:
             writes.append((control, sent[6]))
             guard control != 0x0050, !failingWrites.contains(control) else {
                 return ([HIDPPTestTraffic.featureError(for: sent, code: 0x02)], nil, nil)

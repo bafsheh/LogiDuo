@@ -24,6 +24,10 @@ public enum DeviceConfigurationError: Error, Hashable, Sendable {
     case writesNotAuthorized
     /// The operation was cancelled before changing the device.
     case cancelled
+    /// The device has recovery records from an earlier run; restore it before configuring it again.
+    case recoveryPending
+    /// A destructive recovery step was attempted without the person's confirmation of that exact plan.
+    case notConfirmed
     /// A HID++ request failed.
     case request(HIDPPRequestError)
 }
@@ -96,9 +100,9 @@ public struct ConfigurableDevice: Hashable, Sendable {
 /// termination leave entries in place. Restoring is idempotent.
 public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable {
     private let connection: Device
-    private let target: ConfigurableDevice
-    private let ledger: RestorationLedger
-    private let authorization: DeviceWriteAuthorization
+    let target: ConfigurableDevice
+    let ledger: RestorationLedger
+    let authorization: DeviceWriteAuthorization
     private let timeout: Duration?
 
     /// Creates a transaction for one connected device.
@@ -147,7 +151,7 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
 
     // MARK: - Steps
 
-    private func restoreExclusively() async -> RestorationReport {
+    func restoreExclusively() async -> RestorationReport {
         do {
             try await verifyIdentity()
         } catch {
@@ -164,6 +168,7 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
         _ control: UInt16,
         _ command: ReportingCommand
     ) async throws(DeviceConfigurationError) {
+        guard await !ledger.hasInheritedEntries(target.identity) else { throw .recoveryPending }
         try await verifyIdentity()
         let setting = RestorableSetting.controlReporting(DeviceControlID(rawValue: control))
         let current = try await read(control)
@@ -226,21 +231,38 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
         guard current.remappedTo == control.rawValue, !current.isPersistentlyDiverted else {
             throw .foreignState(control.rawValue)
         }
+        try await undivert(control.rawValue, from: current)
+    }
+
+    /// Writes the undivert matching `current` and verifies the read-back.
+    func undivert(_ control: UInt16, from current: ControlReporting) async throws(DeviceConfigurationError) {
         let command = ReportingCommand.undivert(from: current)
         try await ReprogControlsFeature.send(
             command,
-            to: control.rawValue,
+            to: control,
             via: connection,
             index: target.reprogIndex,
             deviceIndex: target.deviceIndex,
             timeout: timeout
         )
-        guard command.isSatisfied(by: try await read(control.rawValue)) else {
-            throw .restorationIncomplete(control.rawValue)
+        guard command.isSatisfied(by: try await read(control)) else { throw .restorationIncomplete(control) }
+    }
+
+    /// Reads every control with its capabilities and reporting state.
+    func controls() async throws(DeviceConfigurationError) -> [ReprogrammableControl] {
+        do {
+            return try await ReprogControlsFeature.controls(
+                via: connection,
+                index: target.reprogIndex,
+                deviceIndex: target.deviceIndex,
+                timeout: timeout
+            )
+        } catch {
+            throw .request(error)
         }
     }
 
-    private func verifyIdentity() async throws(DeviceConfigurationError) {
+    func verifyIdentity() async throws(DeviceConfigurationError) {
         let information: DeviceInformation
         do {
             information = try await DeviceInformationFeature.information(
@@ -255,7 +277,7 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
         guard information.physicalID == target.physical else { throw .identityMismatch }
     }
 
-    private func read(_ control: UInt16) async throws(DeviceConfigurationError) -> ControlReporting {
+    func read(_ control: UInt16) async throws(DeviceConfigurationError) -> ControlReporting {
         do {
             return try await ReprogControlsFeature.reporting(
                 of: control,
