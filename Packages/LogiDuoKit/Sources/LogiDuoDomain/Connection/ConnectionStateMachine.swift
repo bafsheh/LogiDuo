@@ -8,6 +8,13 @@ public struct RetryPolicy: Hashable, Sendable {
         guard maxConsecutiveFailures >= 1 else { return nil }
         self.maxConsecutiveFailures = maxConsecutiveFailures
     }
+
+    private init(validated count: Int) {
+        maxConsecutiveFailures = count
+    }
+
+    /// Eight consecutive failures before giving up (backoff grows in between).
+    public static let standard = RetryPolicy(validated: 8)
 }
 
 /// An event that is not legal in the current state.
