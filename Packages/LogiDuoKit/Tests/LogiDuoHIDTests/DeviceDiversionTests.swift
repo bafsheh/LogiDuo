@@ -149,3 +149,73 @@ struct DeviceDiversionTests {
         await directory.stop()
     }
 }
+
+@Suite("Device diversion review regressions (fake device only)", .timeLimit(.minutes(1)))
+struct DeviceDiversionRegressionTests {
+    @Test("regression: a shared ledger that nobody loaded keeps the earlier run's records")
+    func lazyLedgerLoad() async throws {
+        let store = InMemoryJournalStore()
+        let earlier = RestorationLedger(store: store)
+        try await earlier.record(
+            .controlReporting(DeviceControlID(rawValue: 0x00C4)),
+            on: .fixture(1),
+            original: .controlReporting(diverted: false, rawXYDiverted: false)
+        )
+
+        let shared = RestorationLedger(store: store)  // never loaded explicitly
+        try await shared.record(
+            .controlReporting(DeviceControlID(rawValue: 0x00C3)),
+            on: .fixture(1),
+            original: .controlReporting(diverted: false, rawXYDiverted: false)
+        )
+
+        #expect(store.persisted.entries.count == 2)
+        #expect(await shared.load() == .pending(entries: 2))
+    }
+
+    @Test("regression: loading twice never turns this run's records into inherited ones")
+    func loadIsIdempotent() async throws {
+        let ledger = RestorationLedger(store: InMemoryJournalStore())
+        _ = await ledger.load()
+        try await ledger.record(
+            .controlReporting(DeviceControlID(rawValue: 0x00C3)),
+            on: .fixture(1),
+            original: .controlReporting(diverted: false, rawXYDiverted: false)
+        )
+        _ = await ledger.load()
+        #expect(await !ledger.hasInheritedEntries(.fixture(1)))
+    }
+
+    @Test("regression: connecting never restores records left by an earlier run")
+    func earlierRunUntouched() async throws {
+        let mouse = DivertingMouse()
+        mouse.device.setReportingFlags(0x01, of: 0x00C4)
+        let store = InMemoryJournalStore()
+        try await RestorationLedger(store: store).record(
+            .controlReporting(DeviceControlID(rawValue: 0x00C4)),
+            on: DeviceID(physical: try #require(Self.physical)),
+            original: .controlReporting(diverted: false, rawXYDiverted: false)
+        )
+        let ledger = RestorationLedger(store: store)
+        let directory = DeviceDirectory(
+            source: mouse,
+            clock: ContinuousClock(),
+            authorization: .enabled,
+            ledger: ledger,
+            batteryInterval: .seconds(3600)
+        )
+        await directory.start()
+        for await snapshots in await directory.snapshots() where snapshots.first?.link == .connected { break }
+        await directory.setDiversion([])
+        await directory.stop()
+
+        #expect(mouse.device.writeLog.isEmpty)
+        #expect(mouse.device.reportingFlags(of: 0x00C4) == 0x01)
+        #expect(store.persisted.entries.count == 1)
+    }
+
+    /// The identity FakeHIDPPDevice reports (unit DEADBEEF, model B0344082 0000).
+    private static var physical: PhysicalDeviceID? {
+        ModelID(rawValue: 0xB034_4082_0000).map { PhysicalDeviceID(model: $0, unit: UnitID(rawValue: 0xDEAD_BEEF)) }
+    }
+}

@@ -112,9 +112,13 @@ final class AppCompositionRoot {
             Task { await actions.perform(action) }
         }
         let coordinator = remapping
-        coordinator.diversionChanged = { buttons in
-            Task { await directory.setDiversion(buttons) }
-        }
+        // One ordered consumer: separate Tasks per change could apply an older set last.
+        let (diversions, latest) = AsyncStream.makeStream(
+            of: Set<MouseButton>.self,
+            bufferingPolicy: .bufferingNewest(1)
+        )
+        coordinator.diversionChanged = { buttons in latest.yield(buttons) }
+        Task { for await buttons in diversions { await directory.setDiversion(buttons) } }
         Task { await directory.useDeviceInput { event in await MainActor.run { coordinator.deviceInput(event) } } }
         Task {
             await directory.usePreferences { device in await repository.current().settings(for: device) }

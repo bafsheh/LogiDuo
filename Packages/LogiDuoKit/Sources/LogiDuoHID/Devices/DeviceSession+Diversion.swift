@@ -58,9 +58,13 @@ extension DeviceSession {
             timeout: .seconds(2)
         )
         let wanted = Set(wantedDiversion.compactMap(DivertedControlsDecoder.control(for:)))
-        if !activeDiversion.isSubset(of: wanted) || wanted.isEmpty {
-            _ = await transaction.restoreAll()
-            activeDiversion = []
+        // Only controls this session diverted are restored here; records from an earlier
+        // run are left for the recovery screen (nothing is restored automatically).
+        let unwanted = divertedThisRun.subtracting(wanted)
+        if !unwanted.isEmpty {
+            _ = await transaction.restore(controls: unwanted)
+            activeDiversion.subtract(unwanted)
+            divertedThisRun.subtract(unwanted)
         }
         guard !wanted.isEmpty,
             let controls = try? await ReprogControlsFeature.controls(
@@ -73,6 +77,7 @@ extension DeviceSession {
             let command: ReportingCommand = control.flags.contains(.rawXY) ? .divertWithRawXY : .divertButtonOnly
             if (try? await transaction.divert(control, with: command)) != nil {
                 activeDiversion.insert(control.control)
+                divertedThisRun.insert(control.control)
             }
         }
     }

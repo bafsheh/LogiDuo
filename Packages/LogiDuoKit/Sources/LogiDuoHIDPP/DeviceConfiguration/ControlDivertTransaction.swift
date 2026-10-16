@@ -144,29 +144,43 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
     /// restore would leave the device diverted.
     public func restoreAll() async -> RestorationReport {
         let transaction = self
-        return await Task { await transaction.restoreAllNow() }.value
+        return await Task { await transaction.restoreNow(only: nil) }.value
     }
 
-    private func restoreAllNow() async -> RestorationReport {
-        let pending = await ledger.pending(for: target.identity)
+    /// Restores only the given controls' records (shielded from cancellation like ``restoreAll()``).
+    /// Records of other controls, including ones left by an earlier run, are untouched.
+    public func restore(controls: Set<UInt16>) async -> RestorationReport {
+        let transaction = self
+        return await Task { await transaction.restoreNow(only: controls) }.value
+    }
+
+    private func restoreNow(only controls: Set<UInt16>?) async -> RestorationReport {
+        let pending = await ledger.pending(for: target.identity).filter { Self.matches($0, controls) }
         guard !pending.isEmpty else { return RestorationReport() }
         guard authorization == .enabled else { return Self.failing(pending, .writesNotAuthorized) }
         await ledger.beginExclusive(target.identity)
-        let report = await restoreExclusively()
+        let report = await restoreExclusively(only: controls)
         await ledger.endExclusive(target.identity)
         return report
     }
 
+    private static func matches(_ entry: RestorationEntry, _ controls: Set<UInt16>?) -> Bool {
+        guard let controls else { return true }
+        guard case .controlReporting(let control) = entry.setting else { return false }
+        return controls.contains(control.rawValue)
+    }
+
     // MARK: - Steps
 
-    func restoreExclusively() async -> RestorationReport {
+    func restoreExclusively(only controls: Set<UInt16>? = nil) async -> RestorationReport {
+        let pending = await ledger.pending(for: target.identity).filter { Self.matches($0, controls) }
         do {
             try await verifyIdentity()
         } catch {
-            return Self.failing(await ledger.pending(for: target.identity), error)
+            return Self.failing(pending, error)
         }
         var report = RestorationReport()
-        for entry in await ledger.pending(for: target.identity) {
+        for entry in pending {
             await restore(entry, into: &report)
         }
         return report

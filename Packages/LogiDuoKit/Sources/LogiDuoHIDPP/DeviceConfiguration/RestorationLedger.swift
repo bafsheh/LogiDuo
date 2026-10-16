@@ -16,6 +16,7 @@ public actor RestorationLedger {
     private let store: any RestorationJournalStoring
     private var journal = RestorationJournal()
     private var quarantined: RestorationJournalStoreError?
+    private var isLoaded = false
     private var inherited: Set<RestorationDeviceKey> = []
     private var busy: Set<RestorationDeviceKey> = []
     private var waiters: [RestorationDeviceKey: [CheckedContinuation<Void, Never>]] = [:]
@@ -59,10 +60,16 @@ public actor RestorationLedger {
     /// diverted) until ``acknowledgeCorruption()``; the unreadable file stays in
     /// quarantine. Devices with entries from an earlier run must be restored
     /// before they can be configured again.
+    ///
+    /// Loading happens once: later calls report the current state instead of
+    /// re-reading the file, which would reclassify this run's records as inherited.
+    /// Every other method loads first, so callers sharing a ledger cannot race the load.
     public func load() -> LoadOutcome {
         // The unreadable file is already in quarantine; reading again would find
         // nothing and hide the corruption.
         if quarantined != nil { return .corrupted }
+        if isLoaded { return journal.isClean ? .clean : .pending(entries: journal.entries.count) }
+        isLoaded = true
         do {
             journal = try store.load()
             quarantined = nil
@@ -77,7 +84,14 @@ public actor RestorationLedger {
     }
 
     /// The load failure that blocks new records, if any.
-    public var corruption: RestorationJournalStoreError? { quarantined }
+    public var corruption: RestorationJournalStoreError? {
+        ensureLoaded()
+        return quarantined
+    }
+
+    private func ensureLoaded() {
+        if !isLoaded { _ = load() }
+    }
 
     /// Records that the person has seen the corrupted-journal notice and resolved the
     /// device state (for example with an emergency reset). The quarantined file is kept.
@@ -87,11 +101,15 @@ public actor RestorationLedger {
 
     /// Whether `device` still has entries left by an earlier run.
     public func hasInheritedEntries(_ device: DeviceID) -> Bool {
-        inherited.contains(store.key(for: device))
+        ensureLoaded()
+        return inherited.contains(store.key(for: device))
     }
 
     /// How many entries are pending across all devices.
-    public var pendingEntryCount: Int { journal.entries.count }
+    public var pendingEntryCount: Int {
+        ensureLoaded()
+        return journal.entries.count
+    }
 
     /// The journal key of `device`.
     nonisolated public func key(for device: DeviceID) -> RestorationDeviceKey {
@@ -100,7 +118,8 @@ public actor RestorationLedger {
 
     /// Pending entries for `device`.
     public func pending(for device: DeviceID) -> [RestorationEntry] {
-        journal.pending(for: store.key(for: device))
+        ensureLoaded()
+        return journal.pending(for: store.key(for: device))
     }
 
     /// Whether `setting` is already recorded for `device`.
@@ -116,6 +135,7 @@ public actor RestorationLedger {
     )
         throws(RestorationJournalStoreError)
     {
+        ensureLoaded()
         if let quarantined { throw quarantined }
         var updated = journal
         updated.willApply(setting, on: store.key(for: device), original: original)
@@ -127,6 +147,7 @@ public actor RestorationLedger {
     /// in memory too, so a later (idempotent) restore will run again.
     public func confirmRestored(_ setting: RestorableSetting, on device: DeviceID) throws(RestorationJournalStoreError)
     {
+        ensureLoaded()
         var updated = journal
         updated.restored(setting, on: store.key(for: device))
         try store.save(updated)
@@ -136,6 +157,7 @@ public actor RestorationLedger {
 
     /// Records a failed restore attempt; the entry stays pending.
     public func recordFailure(_ setting: RestorableSetting, on device: DeviceID) throws(RestorationJournalStoreError) {
+        ensureLoaded()
         var updated = journal
         updated.restoreFailed(setting, on: store.key(for: device))
         try store.save(updated)

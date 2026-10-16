@@ -128,6 +128,7 @@ public actor HIDPPRecoveryService: DeviceRecoveryServicing {
     private var endpoints: [DeviceID: RecoveryEndpoint] = [:]
     private var proposals: [UUID: (device: DeviceID, plan: EmergencyResetPlan)] = [:]
     private var loaded = false
+    private var reconnecting: Task<Void, Never>?
 
     /// Creates a service over `ledger`, loading it on first use if needed.
     public init(ledger: RestorationLedger, connect: @escaping Connect) {
@@ -146,11 +147,14 @@ public actor HIDPPRecoveryService: DeviceRecoveryServicing {
     /// Connected devices with a verified physical identity.
     public func devices() async -> [RecoveryDevice] {
         await loadOnce()
-        for endpoint in endpoints.values { await endpoint.close() }
-        endpoints = [:]
-        proposals = [:]
-        for endpoint in await connect() {
-            endpoints[endpoint.session.target.identity] = endpoint
+        if let reconnecting {
+            // A refresh is already running: share it instead of opening a second set of endpoints.
+            await reconnecting.value
+        } else {
+            let task = Task { await reconnect() }
+            reconnecting = task
+            await task.value
+            reconnecting = nil
         }
         var devices: [RecoveryDevice] = []
         for (id, endpoint) in endpoints {
@@ -164,6 +168,15 @@ public actor HIDPPRecoveryService: DeviceRecoveryServicing {
             )
         }
         return devices.sorted { $0.name < $1.name }
+    }
+
+    private func reconnect() async {
+        for endpoint in endpoints.values { await endpoint.close() }
+        endpoints = [:]
+        proposals = [:]
+        for endpoint in await connect() {
+            endpoints[endpoint.session.target.identity] = endpoint
+        }
     }
 
     /// Undoes exactly what valid records describe.

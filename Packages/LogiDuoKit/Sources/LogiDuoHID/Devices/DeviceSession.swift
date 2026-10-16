@@ -53,7 +53,10 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
     let deviceIndex: DeviceIndex
     var resolutionRange: ResolutionRange?
     var wantedDiversion: Set<MouseButton> = []
+    /// Controls diverted on the current connection (lost on reconnect).
     var activeDiversion: Set<UInt16> = []
+    /// Controls this run diverted and recorded; restored when no longer wanted, even after a reconnect.
+    var divertedThisRun: Set<UInt16> = []
     var diversionContext: DiversionContext?
     var decoder = DivertedControlsDecoder()
     var applyingDiversion = false
@@ -62,6 +65,8 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
     private let ledger: RestorationLedger?
     private let deliver: @Sendable (InputEvent) async -> Void
     private var notificationObserver: Task<Void, Never>?
+    private let clock: SessionClock
+    private var isRemoved = false
     private let fallbackName: String
     private let product: ProductID
     private let publish: Publish
@@ -86,6 +91,7 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
         self.product = product
         self.publish = publish
         self.deviceIndex = deviceIndex
+        self.clock = clock
         connection = HIDPPConnection(
             deviceIndex: deviceIndex,
             configuration: HIDPPConnectionConfiguration(retryPolicy: .standard),
@@ -131,6 +137,7 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
     func hostDidWake() async { await connection.hostDidWake() }
 
     func removed() async {
+        isRemoved = true
         await releaseHeld()
         await connection.deviceRemoved()
         await publish(.link(endpoint, .unavailable))
@@ -176,8 +183,20 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
             await publish(.link(endpoint, DeviceSnapshotMapper.link(for: state)))
             return
         }
-        do {
-            let inventory = try await DeviceInventoryReader.read(via: connection, deviceIndex: deviceIndex)
+        await identify()
+    }
+
+    /// Reads the device after connecting, retrying a few times: a single failed read must not
+    /// leave it unidentified while the connection itself stays up.
+    private func identify() async {
+        for attempt in 0..<3 {
+            guard !isRemoved, await connection.state == .connected else { return }
+            if attempt > 0 { try? await clock.sleep(for: .seconds(1)) }
+            guard let inventory = try? await DeviceInventoryReader.read(via: connection, deviceIndex: deviceIndex)
+            else {
+                continue
+            }
+            guard !isRemoved else { return }
             batteryFeature = inventory.battery?.source
             var (observation, draft) = DeviceSnapshotMapper.describe(
                 inventory,
@@ -191,9 +210,9 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
             if draft.category == .keyboard { draft.keyboard = await readKeyboard(inventory) }
             await publish(.identified(observation, draft))
             await prepareDiversion(inventory)
-        } catch {
-            await publish(.link(endpoint, .reconnecting))
+            return
         }
+        if !isRemoved { await publish(.link(endpoint, .reconnecting)) }
     }
 
     /// Learns where to divert (only with a ledger, which the directory passes when writes are authorized).

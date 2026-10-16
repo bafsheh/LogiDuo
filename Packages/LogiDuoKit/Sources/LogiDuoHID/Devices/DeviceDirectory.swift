@@ -31,17 +31,17 @@ public actor DeviceDirectory<SessionClock: Clock>: DeviceServicing, DeviceSettin
 where SessionClock.Duration == Duration {
     /// The saved settings of a device, replayed when it connects (only while writes are enabled).
     public typealias Preferences = @Sendable (DeviceID) async -> DeviceSettings
-    private struct Attachment {
+    struct Attachment {
         let descriptor: HIDInterfaceDescriptor
         var sessions: [DeviceSession<SessionClock>]
     }
 
     private let source: any HIDInterfaceSource
-    private let clock: SessionClock
+    let clock: SessionClock
     let authorization: DeviceWriteAuthorization
     private let batteryInterval: Duration
     private let logger = Logger(subsystem: "io.github.bafsheh.LogiDuo", category: "DeviceDirectory")
-    private var attachments: [UInt64: Attachment] = [:]
+    var attachments: [UInt64: Attachment] = [:]
     private var registry = DeviceIdentityRegistry()
     var snapshotsByID: [DeviceID: DeviceSnapshot] = [:]
     private var order: [DeviceID] = []
@@ -50,10 +50,12 @@ where SessionClock.Duration == Duration {
     private var nextSubscriber = 0
     private var listener: Task<Void, Never>?
     private var poller: Task<Void, Never>?
+    /// False after ``stop()``: attaches and probes still in flight must not start sessions.
+    var isRunning = false
     private var preferences: Preferences = { _ in .unchanged }
     private let ledger: RestorationLedger?
     private var deviceInput: @Sendable (InputEvent) async -> Void = { _ in }
-    private var diversion: Set<MouseButton> = []
+    var diversion: Set<MouseButton> = []
 
     /// Creates a directory. Nothing happens until ``start()``.
     public init(
@@ -81,7 +83,8 @@ where SessionClock.Duration == Duration {
         diversion = buttons
         guard ledger != nil else { return }
         for attachment in attachments.values {
-            for session in attachment.sessions { await session.setDiversion(buttons) }
+            // Always the latest request: an older call that arrives later must not win.
+            for session in attachment.sessions { await session.setDiversion(diversion) }
         }
     }
 
@@ -93,6 +96,7 @@ where SessionClock.Duration == Duration {
     /// Starts listening for interfaces and polling batteries.
     public func start() {
         guard listener == nil else { return }
+        isRunning = true
         let events = source.events
         listener = Task { [weak self] in
             for await event in events {
@@ -115,6 +119,7 @@ where SessionClock.Duration == Duration {
 
     /// Stops listening and closes every connection.
     public func stop() async {
+        isRunning = false
         listener?.cancel()
         poller?.cancel()
         listener = nil
@@ -144,6 +149,7 @@ where SessionClock.Duration == Duration {
 
     /// Re-reads every connected device.
     public func refresh() async {
+        await reprobeReceivers()
         for attachment in attachments.values {
             for session in attachment.sessions { await session.refresh() }
         }
@@ -175,54 +181,7 @@ where SessionClock.Duration == Duration {
         }
     }
 
-    private func attach(_ descriptor: HIDInterfaceDescriptor) async {
-        guard attachments[descriptor.registryID] == nil else { return }
-        switch HIDInterfaceClassifier.role(of: descriptor) {
-        case .directDevice(let link, let framing):
-            let key = EndpointKey(rawValue: descriptor.linkFingerprint ?? "registry-\(descriptor.registryID)")
-            guard let key else { return }
-            let session = makeSession(descriptor, framing: framing, index: .direct, endpoint: .direct(link, key))
-            attachments[descriptor.registryID] = Attachment(descriptor: descriptor, sessions: [session])
-            await session.setDiversion(diversion)
-            await session.start()
-        case .receiver(_, let framing):
-            attachments[descriptor.registryID] = Attachment(descriptor: descriptor, sessions: [])
-            await probeReceiver(descriptor, framing: framing)
-        case .logitechWithoutHIDPP, .unrelated:
-            return
-        }
-    }
-
-    /// Pings slots 1–6 on one temporary channel; each answering slot gets a session.
-    private func probeReceiver(_ descriptor: HIDInterfaceDescriptor, framing: HIDPPFraming) async {
-        guard
-            let receiverID = ReceiverID(rawValue: descriptor.linkFingerprint ?? "receiver-\(descriptor.registryID)"),
-            let probeTransport = try? openGuarded(descriptor.registryID, framing: framing)
-        else { return }
-        let receiver = ReceiverDescriptor(id: receiverID, hardware: descriptor.hardware)
-        let channel = HIDPPChannel(transport: probeTransport, clock: clock)
-        await channel.start()
-        var sessions: [DeviceSession<SessionClock>] = []
-        for raw in UInt8(1)...6 {
-            guard let slot = ReceiverSlot(rawValue: raw) else { continue }
-            let index = DeviceIndex(receiverSlot: slot)
-            guard
-                (try? await RootFeature.protocolVersion(via: channel, device: index, timeout: .milliseconds(600)))
-                    != nil
-            else { continue }
-            sessions.append(
-                makeSession(descriptor, framing: framing, index: index, endpoint: .receiver(receiver, slot))
-            )
-        }
-        await channel.close()
-        attachments[descriptor.registryID]?.sessions = sessions
-        for session in sessions {
-            await session.setDiversion(diversion)
-            await session.start()
-        }
-    }
-
-    private func makeSession(
+    func makeSession(
         _ descriptor: HIDInterfaceDescriptor,
         framing: HIDPPFraming,
         index: DeviceIndex,
@@ -248,7 +207,7 @@ where SessionClock.Duration == Duration {
         )
     }
 
-    private func openGuarded(
+    func openGuarded(
         _ registryID: UInt64,
         framing: HIDPPFraming
     ) throws(HIDPPTransportError) -> any HIDPPTransport {
