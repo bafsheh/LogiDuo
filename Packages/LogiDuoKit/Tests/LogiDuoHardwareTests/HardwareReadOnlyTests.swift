@@ -9,7 +9,7 @@ import Testing
 /// Every request goes through ``ReadOnlyTransportGuard``; the suite asserts the
 /// guard refused nothing, so no non-allow-listed byte sequence was produced.
 /// Unit identifiers are never printed.
-@Suite("Hardware: read-only HID++ queries", .enabled(if: logitechEndpointPresent), .timeLimit(.minutes(2)))
+@Suite("Hardware: read-only HID++ queries", .enabled(if: logitechEndpointPresent), .serialized, .timeLimit(.minutes(2)))
 struct HardwareReadOnlyTests {
     /// Applications that may compete for the device or change its configuration.
     private static let competingProcesses = ["Mouser", "logioptionsplus_agent", "LogiOptionsPlus", "lghub_agent"]
