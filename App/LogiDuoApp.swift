@@ -1,5 +1,7 @@
 import AppKit
+import LogiDuoDomain
 import LogiDuoFeatures
+import LogiDuoPersistence
 import SwiftUI
 
 /// Application entry point: the main window, the menu bar extra and Settings.
@@ -21,7 +23,7 @@ struct LogiDuoApp: App {
         }
 
         Settings {
-            GeneralSettingsView()
+            GeneralSettingsView(model: delegate.root.settingsModel)
         }
     }
 }
@@ -31,11 +33,53 @@ struct LogiDuoApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let root = AppCompositionRoot()
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // Single instance: a second copy hands over to the running one and quits.
+        if let bundle = Bundle.main.bundleIdentifier,
+            let other = NSRunningApplication.runningApplications(withBundleIdentifier: bundle)
+                .first(where: { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier })
+        {
+            other.activate()
+            NSApplication.shared.terminate(nil)
+        }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        followMainWindow()
         root.remapping.activate()
         root.profiles.start()
         root.startDevices()
-        Task { await root.checkRecoveryAtLaunch() }
+        let root = root
+        Task {
+            await root.checkRecoveryAtLaunch()
+            // Recovery always shows the window; otherwise honor the preference.
+            if await !root.configuration.current().general.showsWindowAtLaunch, root.recoveryModel.journal == .clean {
+                for window in NSApplication.shared.windows where window.identifier?.rawValue == SceneID.main {
+                    window.close()
+                }
+            }
+        }
+    }
+
+    /// Shows a Dock icon only while the main window is open; LogiDuo stays in the menu bar.
+    private func followMainWindow() {
+        let center = NotificationCenter.default
+        Task { @MainActor in
+            for await note in center.notifications(named: NSWindow.didBecomeKeyNotification) {
+                guard Self.isMainWindow(note.object) else { continue }
+                NSApplication.shared.setActivationPolicy(.regular)
+            }
+        }
+        Task { @MainActor in
+            for await note in center.notifications(named: NSWindow.willCloseNotification) {
+                guard Self.isMainWindow(note.object) else { continue }
+                NSApplication.shared.setActivationPolicy(.accessory)
+            }
+        }
+    }
+
+    private static func isMainWindow(_ object: Any?) -> Bool {
+        (object as? NSWindow)?.identifier?.rawValue == SceneID.main
     }
 
     /// Saves pending configuration changes before quitting.
@@ -69,6 +113,7 @@ private struct MenuBarMenu: View {
         Divider()
         MenuBarContentView(
             router: root.router,
+            devices: root.devicesModel,
             openMainWindow: {
                 openWindow(id: SceneID.main)
                 NSApplication.shared.activate()

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E25D0C76E7F6856BB73C03E /* SystemAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9827271199577A59765B31F /* SystemAdapters.swift */; };
 		1AE5B37617A196F5DC4C8D47 /* LogiDuoPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = 7252BFD3F3C862CAE751D93F /* LogiDuoPersistence */; };
 		1B606F6EA50B265890BAB95B /* AppCompositionRootTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA86672CA839D85C3CDFEA8 /* AppCompositionRootTests.swift */; };
 		323DA8E1851CA49FEA46A985 /* AppCompositionRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40626EBF4C1B113631325F7D /* AppCompositionRoot.swift */; };
@@ -63,6 +64,7 @@
 		BEBDC38398F11B7253D9C696 /* LogiDuoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogiDuoApp.swift; sourceTree = "<group>"; };
 		CBEE7CB66FE5AE3CDD3E70DC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E21EA326B990FDDC7B940E8B /* LogiDuoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LogiDuoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9827271199577A59765B31F /* SystemAdapters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAdapters.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +143,7 @@
 				ED224D3FF5190440660A716C /* Devices */,
 				C8CF16C4D6BA5BF2B156FD62 /* Remapping */,
 				F81C97948E52B7352DAA5D22 /* Resources */,
+				F029A82DF2FE50844AA86365 /* Shell */,
 				40626EBF4C1B113631325F7D /* AppCompositionRoot.swift */,
 				BEBDC38398F11B7253D9C696 /* LogiDuoApp.swift */,
 			);
@@ -165,6 +168,14 @@
 				6D711297D4B73D2D9E1EC28B /* DeviceActionController.swift */,
 			);
 			path = Devices;
+			sourceTree = "<group>";
+		};
+		F029A82DF2FE50844AA86365 /* Shell */ = {
+			isa = PBXGroup;
+			children = (
+				E9827271199577A59765B31F /* SystemAdapters.swift */,
+			);
+			path = Shell;
 			sourceTree = "<group>";
 		};
 		F81C97948E52B7352DAA5D22 /* Resources */ = {
@@ -333,6 +344,7 @@
 				CBF3A79033D677089D0510AD /* LogiDuoApp.swift in Sources */,
 				5C606EB20B9EFDFE1EC27EFF /* ProfileController.swift in Sources */,
 				429F3FB9046E8B7038B1F558 /* RemappingCoordinator.swift in Sources */,
+				0E25D0C76E7F6856BB73C03E /* SystemAdapters.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

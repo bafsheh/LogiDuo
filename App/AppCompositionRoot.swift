@@ -35,6 +35,10 @@ final class AppCompositionRoot {
     let profilesModel: ProfilesViewModel
     /// Scroll preferences.
     let scrollModel: ScrollSettingsViewModel
+    /// The permission overview.
+    let permissionsModel = PermissionsViewModel(service: PermissionsAdapter())
+    /// The Settings window.
+    let settingsModel: AppSettingsViewModel
     /// Performs device actions (cycle pointer speed, toggle SmartShift).
     let deviceActions: DeviceActionController
     private let executor: SyntheticInputExecutor
@@ -55,6 +59,7 @@ final class AppCompositionRoot {
         self.mappingsModel = MappingEditorViewModel(repository: repository)
         self.profilesModel = ProfilesViewModel(repository: repository)
         self.scrollModel = ScrollSettingsViewModel(repository: repository)
+        self.settingsModel = AppSettingsViewModel(loginItem: LoginItemAdapter(), repository: repository)
         self.remappingModel = RemappingViewModel(service: coordinator)
         self.recoveryModel = RecoveryViewModel(
             service: Self.makeRecovery(),
@@ -83,6 +88,7 @@ final class AppCompositionRoot {
             mappings: mappingsModel,
             scrolling: scrollModel,
             profiles: profilesModel,
+            permissions: permissionsModel,
             recovery: recoveryModel
         )
     }
