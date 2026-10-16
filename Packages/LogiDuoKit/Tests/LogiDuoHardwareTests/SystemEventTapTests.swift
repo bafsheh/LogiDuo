@@ -56,140 +56,137 @@ final class StallingBackend: EventTapBackend, @unchecked Sendable {  // Invarian
     func remove() { inner.remove() }
 }
 
-@Suite(
-    "System: live event tap (test-marked events only)",
-    .enabled(if: systemTestsEnabled),
-    .serialized,
-    .timeLimit(.minutes(2))
-)
-struct SystemEventTapTests {
-    private static func mapping(_ mappings: ButtonMapping...) -> ResolvedMappings {
-        guard let set = try? MappingSet(mappings) else { preconditionFailure("valid") }
-        return MappingResolver.resolve(set, capabilities: .undiscovered, mode: .enabled)
-    }
-
-    /// F19 without modifiers: normally unbound, harmless if it ever leaked.
-    private static let f19: KeyboardShortcut = {
-        guard let key = KeyCode(rawValue: 0x50), let shortcut = KeyboardShortcut(key: key, modifiers: []) else {
-            preconditionFailure("F19 is a valid shortcut")
+extension LiveSystemSuites {
+    @Suite("System: live event tap (test-marked events only)", .timeLimit(.minutes(2)))
+    struct SystemEventTapTests {
+        private static func mapping(_ mappings: ButtonMapping...) -> ResolvedMappings {
+            guard let set = try? MappingSet(mappings) else { preconditionFailure("valid") }
+            return MappingResolver.resolve(set, capabilities: .undiscovered, mode: .enabled)
         }
-        return shortcut
-    }()
 
-    /// Starts the sink and proves it swallows test events before anything else is injected.
-    private static func armedSink() throws -> EventSink {
-        let sink = EventSink()
-        try #require(sink.start(), "sink tap could not be created (Accessibility?)")
-        Injector.click(number: 9)
-        let armed = sink.wait { records in records.filter { $0.button == 9 }.count >= 2 }
-        if !armed { sink.stop() }
-        try #require(armed, "sink did not receive the probe; aborting before any further injection")
-        sink.clear()
-        return sink
-    }
+        /// F19 without modifiers: normally unbound, harmless if it ever leaked.
+        private static let f19: KeyboardShortcut = {
+            guard let key = KeyCode(rawValue: 0x50), let shortcut = KeyboardShortcut(key: key, modifiers: []) else {
+                preconditionFailure("F19 is a valid shortcut")
+            }
+            return shortcut
+        }()
 
-    private static func count(_ records: [SinkRecord], button: Int64) -> Int {
-        records.filter { $0.button == button && $0.userData == testInjectionMarker }.count
-    }
-
-    @Test("observing: with remapping disabled, events pass through unmodified")
-    func observeOnly() throws {
-        let sink = try Self.armedSink()
-        defer { sink.stop() }
-        let executor = SystemRecordingExecutor()
-        let engine = LiveInputEngine(executor: executor)
-        engine.start()
-        defer { engine.stop() }
-        try #require(engine.state == EventTapState.active, "event tap could not be installed")
-
-        Injector.click(number: 3)
-        #expect(sink.wait { Self.count($0, button: 3) == 2 })
-        engine.drainCommands()
-        #expect(executor.commands.isEmpty)
-        #expect(engine.statistics.examined >= 2)
-    }
-
-    @Test("left and right clicks are untouched while a mapping is active")
-    func primaryAndSecondaryUntouched() throws {
-        let sink = try Self.armedSink()
-        defer { sink.stop() }
-        let executor = SystemRecordingExecutor()
-        let engine = LiveInputEngine(
-            executor: executor,
-            mappings: Self.mapping(
-                ButtonMapping(trigger: .press(.back), action: .customShortcut(Self.f19))
-            )
-        )
-        engine.start()
-        defer { engine.stop() }
-
-        Injector.click(number: 0)
-        Injector.click(number: 1)
-        #expect(sink.wait { Self.count($0, button: 0) == 2 && Self.count($0, button: 1) == 2 })
-        engine.drainCommands()
-        #expect(executor.commands.isEmpty)
-    }
-
-    @Test("a mapped button is suppressed in the real pipeline and its action requested once")
-    func suppression() throws {
-        let sink = try Self.armedSink()
-        defer { sink.stop() }
-        let executor = SystemRecordingExecutor()
-        let engine = LiveInputEngine(
-            executor: executor,
-            mappings: Self.mapping(
-                ButtonMapping(trigger: .press(.back), action: .customShortcut(Self.f19))
-            )
-        )
-        engine.start()
-        defer { engine.stop() }
-
-        Injector.click(number: 3)
-        Injector.click(number: 9)
-        #expect(sink.wait { Self.count($0, button: 9) == 2 })
-        engine.drainCommands()
-        #expect(Self.count(sink.all, button: 3) == 0)
-        #expect(executor.commands == [.perform(.customShortcut(Self.f19))])
-    }
-
-    @Test("macOS disabling the tap for a slow callback is recovered by re-enabling it")
-    func realTimeoutRecovery() throws {
-        let sink = try Self.armedSink()
-        defer { sink.stop() }
-        let backend = StallingBackend()
-        let executor = SystemRecordingExecutor()
-        let engine = LiveInputEngine(
-            backend: backend,
-            executor: executor,
-            mappings: Self.mapping(
-                ButtonMapping(trigger: .press(.back), action: .customShortcut(Self.f19))
-            )
-        )
-        engine.start()
-        defer { engine.stop() }
-
-        Injector.button(.otherMouseDown, number: 8)
-        Injector.button(.otherMouseUp, number: 8)
-        #expect(sink.wait(timeout: 6) { Self.count($0, button: 8) == 2 })
-        // Events posted while the tap is disabled bypass it; nudge until macOS reports the timeout.
-        var nudges = 0
-        while backend.reenables == 0, nudges < 20 {
+        /// Starts the sink and proves it swallows test events before anything else is injected.
+        private static func armedSink() throws -> EventSink {
+            let sink = EventSink()
+            try #require(sink.start(), "sink tap could not be created (Accessibility?)")
             Injector.click(number: 9)
-            nudges += 1
-            _ = backend.waitForReenable(timeout: 0.25)
+            let armed = sink.wait { records in records.filter { $0.button == 9 }.count >= 2 }
+            if !armed { sink.stop() }
+            try #require(armed, "sink did not receive the probe; aborting before any further injection")
+            sink.clear()
+            return sink
         }
-        try #require(backend.waitForReenable(timeout: 2), "macOS never reported the timeout")
-        sink.clear()
 
-        // After recovery the tap intercepts again.
-        Injector.click(number: 3)
-        Injector.click(number: 9)
-        #expect(sink.wait(timeout: 4) { Self.count($0, button: 9) == 2 })
-        engine.drainCommands()
-        print("[system] reenables=\(backend.reenables) nudges=\(nudges) state=\(engine.state)")
-        print("[system] commands=\(executor.commands)")
-        #expect(Self.count(sink.all, button: 3) == 0)
-        #expect(executor.commands == [.perform(.customShortcut(Self.f19))])
-        #expect(engine.state == EventTapState.active)
+        private static func count(_ records: [SinkRecord], button: Int64) -> Int {
+            records.filter { $0.button == button && $0.userData == testInjectionMarker }.count
+        }
+
+        @Test("observing: with remapping disabled, events pass through unmodified")
+        func observeOnly() throws {
+            let sink = try Self.armedSink()
+            defer { sink.stop() }
+            let executor = SystemRecordingExecutor()
+            let engine = LiveInputEngine(executor: executor)
+            engine.start()
+            defer { engine.stop() }
+            try #require(engine.state == EventTapState.active, "event tap could not be installed")
+
+            Injector.click(number: 3)
+            #expect(sink.wait { Self.count($0, button: 3) == 2 })
+            engine.drainCommands()
+            #expect(executor.commands.isEmpty)
+            #expect(engine.statistics.examined >= 2)
+        }
+
+        @Test("left and right clicks are untouched while a mapping is active")
+        func primaryAndSecondaryUntouched() throws {
+            let sink = try Self.armedSink()
+            defer { sink.stop() }
+            let executor = SystemRecordingExecutor()
+            let engine = LiveInputEngine(
+                executor: executor,
+                mappings: Self.mapping(
+                    ButtonMapping(trigger: .press(.back), action: .customShortcut(Self.f19))
+                )
+            )
+            engine.start()
+            defer { engine.stop() }
+
+            Injector.click(number: 0)
+            Injector.click(number: 1)
+            #expect(sink.wait { Self.count($0, button: 0) == 2 && Self.count($0, button: 1) == 2 })
+            engine.drainCommands()
+            #expect(executor.commands.isEmpty)
+        }
+
+        @Test("a mapped button is suppressed in the real pipeline and its action requested once")
+        func suppression() throws {
+            let sink = try Self.armedSink()
+            defer { sink.stop() }
+            let executor = SystemRecordingExecutor()
+            let engine = LiveInputEngine(
+                executor: executor,
+                mappings: Self.mapping(
+                    ButtonMapping(trigger: .press(.back), action: .customShortcut(Self.f19))
+                )
+            )
+            engine.start()
+            defer { engine.stop() }
+
+            Injector.click(number: 3)
+            Injector.click(number: 9)
+            #expect(sink.wait { Self.count($0, button: 9) == 2 })
+            engine.drainCommands()
+            #expect(Self.count(sink.all, button: 3) == 0)
+            #expect(executor.commands == [.perform(.customShortcut(Self.f19))])
+        }
+
+        @Test("macOS disabling the tap for a slow callback is recovered by re-enabling it")
+        func realTimeoutRecovery() throws {
+            let sink = try Self.armedSink()
+            defer { sink.stop() }
+            let backend = StallingBackend()
+            let executor = SystemRecordingExecutor()
+            let engine = LiveInputEngine(
+                backend: backend,
+                executor: executor,
+                mappings: Self.mapping(
+                    ButtonMapping(trigger: .press(.back), action: .customShortcut(Self.f19))
+                )
+            )
+            engine.start()
+            defer { engine.stop() }
+
+            Injector.button(.otherMouseDown, number: 8)
+            Injector.button(.otherMouseUp, number: 8)
+            #expect(sink.wait(timeout: 6) { Self.count($0, button: 8) == 2 })
+            // Events posted while the tap is disabled bypass it; nudge until macOS reports the timeout.
+            var nudges = 0
+            while backend.reenables == 0, nudges < 20 {
+                Injector.click(number: 9)
+                nudges += 1
+                _ = backend.waitForReenable(timeout: 0.25)
+            }
+            try #require(backend.waitForReenable(timeout: 2), "macOS never reported the timeout")
+            sink.clear()
+
+            // After recovery the tap intercepts again.
+            Injector.click(number: 3)
+            Injector.click(number: 9)
+            #expect(sink.wait(timeout: 4) { Self.count($0, button: 9) == 2 })
+            engine.drainCommands()
+            print("[system] reenables=\(backend.reenables) nudges=\(nudges) state=\(engine.state)")
+            print("[system] commands=\(executor.commands)")
+            #expect(Self.count(sink.all, button: 3) == 0)
+            #expect(executor.commands == [.perform(.customShortcut(Self.f19))])
+            #expect(engine.state == EventTapState.active)
+        }
     }
 }

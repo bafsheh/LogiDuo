@@ -2,9 +2,16 @@ import CoreGraphics
 import Foundation
 import LogiDuoDomain
 import LogiDuoSystem
+import Testing
 
 /// Whether live-system tests (real event taps in this login session) were requested.
 let systemTestsEnabled = ProcessInfo.processInfo.environment["LOGIDUO_SYSTEM"] == "1"
+
+/// Parent of every live-system suite. `.serialized` applies to all nested suites, so
+/// only one sink and one engine are ever active at a time: concurrent sinks would
+/// swallow each other's test events.
+@Suite("System (live event pipeline)", .enabled(if: systemTestsEnabled), .serialized)
+enum LiveSystemSuites {}
 
 /// Marks events injected by system tests (`'TEST'`), distinct from LogiDuo's own marker.
 let testInjectionMarker: Int64 = 0x5445_5354
