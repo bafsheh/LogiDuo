@@ -10,7 +10,7 @@ SWIFT_FORMAT  := $(TOOLS_DIR)/.build/release/swift-format
 SOURCES       := App AppTests UITests $(PACKAGE_DIR)/Sources $(PACKAGE_DIR)/Tests $(PACKAGE_DIR)/Package.swift \
                  $(TOOLS_DIR)/Package.swift
 
-.PHONY: help bootstrap tools secrets project build build-for-testing test package-test app-test ui-test lint format format-check hygiene architecture check clean
+.PHONY: help gate bootstrap tools secrets project build build-for-testing test package-test app-test ui-test lint format format-check hygiene architecture check clean
 
 help: ## List available targets.
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-14s %s\n", $$1, $$2}'
@@ -68,6 +68,8 @@ architecture: ## Enforce module import boundaries.
 	./scripts/check-architecture.sh
 
 check: hygiene architecture secrets format-check lint package-test ## Fast local gate (no Xcode project build).
+
+gate: check build-for-testing app-test ## Everything CI runs except the release build; stops at the first failure.
 
 clean: ## Remove build output.
 	rm -rf build $(PACKAGE_DIR)/.build
