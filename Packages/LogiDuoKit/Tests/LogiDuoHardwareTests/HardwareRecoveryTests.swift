@@ -32,6 +32,10 @@ struct HardwareRecoveryTests {
         for endpoint in endpoints {
             let plan = try await endpoint.session.planEmergencyReset()
             print("[recovery] \(endpoint.name) model=\(plan.device.physical.model) managed=\(plan.items.count)")
+            if ProcessInfo.processInfo.environment["LOGIDUO_SHOW_UNIT"] == "1" {
+                // Printed only on request: the unit identifier arms the first-write experiment.
+                print("[recovery] \(endpoint.name) unit=\(String(plan.device.physical.unit.rawValue, radix: 16))")
+            }
             for item in plan.items {
                 let flags = String(item.observed.flags, radix: 16)
                 print(
