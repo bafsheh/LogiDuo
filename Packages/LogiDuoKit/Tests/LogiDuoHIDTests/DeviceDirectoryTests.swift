@@ -211,6 +211,38 @@ struct DeviceDirectoryTests {
         await directory.stop()
     }
 
+    @Test("pointer resolution and SmartShift are read after connecting")
+    func pointerSettings() async throws {
+        let source = FakeInterfaceSource()
+        let directory = await Self.directory(source)
+        var device = FakeHIDPPDevice()
+        device.features += [0x2201, 0x2110]
+        let base = device.responder
+        let dpiIndex = UInt8(device.features.count - 2)
+        let smartShiftIndex = UInt8(device.features.count - 1)
+        source.add(Self.descriptor(registryID: 1)) { sent in
+            switch (sent[2], sent[3] >> 4) {
+            case (dpiIndex, 1):
+                [HIDPPTestTraffic.reply(to: sent, parameters: [0x00, 0x00, 0xC8, 0xE0, 0x32, 0x1F, 0x40, 0, 0])]
+            case (dpiIndex, 2): [HIDPPTestTraffic.reply(to: sent, parameters: [0x00, 0x03, 0xE8, 0x03, 0xE8])]
+            case (smartShiftIndex, 0): [HIDPPTestTraffic.reply(to: sent, parameters: [0x02, 0x0A, 0x0A])]
+            default: base(sent)
+            }
+        }
+
+        let mouse = try #require(await Self.await(directory) { $0.first?.link == .connected }?.first)
+
+        #expect(
+            mouse.resolution
+                == ResolutionState(
+                    current: 1000,
+                    range: try #require(ResolutionRange(minimum: 200, maximum: 8000, step: 50))
+                )
+        )
+        #expect(mouse.smartShift == .automatic(sensitivity: 10))
+        await directory.stop()
+    }
+
     @Test("discovery never sends anything but reads (read-only guard in place)")
     func readOnly() async {
         let source = FakeInterfaceSource()

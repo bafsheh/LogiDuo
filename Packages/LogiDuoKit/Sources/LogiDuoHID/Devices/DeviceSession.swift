@@ -11,6 +11,8 @@ struct DeviceDraft: Hashable, Sendable {
     var firmwareVersion: String?
     var model: ModelID?
     var features: DeviceFeatures
+    var resolution: ResolutionState?
+    var smartShift: SmartShiftMode?
 
     func snapshot(id: DeviceID) -> DeviceSnapshot {
         DeviceSnapshot(
@@ -22,7 +24,9 @@ struct DeviceDraft: Hashable, Sendable {
             battery: battery,
             firmwareVersion: firmwareVersion,
             model: model,
-            features: features
+            features: features,
+            resolution: resolution,
+            smartShift: smartShift
         )
     }
 }
@@ -118,6 +122,48 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
         observer?.cancel()
     }
 
+    /// The index of `feature`, looked up through Root so the read-only guard can verify it.
+    private func locate(_ feature: FeatureID, in inventory: HIDPPDeviceInventory) async -> FeatureIndex? {
+        guard inventory.supports(feature) else { return nil }
+        return try? await RootFeature.location(
+            of: feature,
+            via: connection,
+            device: connection.deviceIndex,
+            timeout: nil
+        )?
+        .index
+    }
+
+    /// Reads the pointer resolution (read-only); `nil` if absent or unreadable.
+    private func readResolution(_ inventory: HIDPPDeviceInventory) async -> ResolutionState? {
+        guard
+            let index = await locate(.adjustableDPI, in: inventory),
+            let current = try? await AdjustableDPIFeature.current(
+                via: connection,
+                index: index,
+                deviceIndex: connection.deviceIndex
+            ),
+            let range = try? await AdjustableDPIFeature.supportedRange(
+                via: connection,
+                index: index,
+                deviceIndex: connection.deviceIndex
+            )
+        else { return nil }
+        return ResolutionState(current: current, range: range)
+    }
+
+    /// Reads the SmartShift mode (read-only); `nil` if absent or unreadable.
+    private func readSmartShift(_ inventory: HIDPPDeviceInventory) async -> SmartShiftMode? {
+        let feature: FeatureID = inventory.supports(.smartShiftEnhanced) ? .smartShiftEnhanced : .smartShift
+        guard let index = await locate(feature, in: inventory) else { return nil }
+        return try? await SmartShiftFeature.mode(
+            feature: feature,
+            via: connection,
+            index: index,
+            deviceIndex: connection.deviceIndex
+        )
+    }
+
     private func handle(_ state: ConnectionState) async {
         guard state == .connected else {
             await publish(.link(endpoint, DeviceSnapshotMapper.link(for: state)))
@@ -126,12 +172,14 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
         do {
             let inventory = try await DeviceInventoryReader.read(via: connection, deviceIndex: connection.deviceIndex)
             batteryFeature = inventory.battery?.source
-            let (observation, draft) = DeviceSnapshotMapper.describe(
+            var (observation, draft) = DeviceSnapshotMapper.describe(
                 inventory,
                 endpoint: endpoint,
                 fallbackName: fallbackName,
                 product: product
             )
+            draft.resolution = await readResolution(inventory)
+            draft.smartShift = await readSmartShift(inventory)
             await publish(.identified(observation, draft))
         } catch {
             await publish(.link(endpoint, .reconnecting))

@@ -17,11 +17,13 @@ struct HardwareDeviceDirectoryTests {
         await directory.start()
         let expected = Set(presentHIDPPEndpoints().map(\.registryID)).count
         let watcher = Task {
-            for await snapshots in await directory.snapshots()
-            where snapshots.filter({ $0.link == .connected }).count >= expected {
-                return snapshots
+            var last: [DeviceSnapshot] = []
+            for await snapshots in await directory.snapshots() {
+                last = snapshots
+                print("[directory] update: " + snapshots.map { "\($0.name)=\($0.link)" }.joined(separator: ", "))
+                if snapshots.filter({ $0.link == .connected }).count >= expected { return snapshots }
             }
-            return []
+            return last
         }
         let timeout = Task {
             try? await ContinuousClock().sleep(for: .seconds(20))
@@ -33,10 +35,16 @@ struct HardwareDeviceDirectoryTests {
             let battery = device.battery.map { "\($0.percentage ?? -1)%\($0.isCharging ? " charging" : "")" } ?? "?"
             print(
                 "[directory] \(device.name) \(device.category) \(device.transport) \(device.link) battery=\(battery) "
-                    + "fw=\(device.firmwareVersion ?? "?") features=0x\(String(device.features.rawValue, radix: 16))"
+                    + "fw=\(device.firmwareVersion ?? "?") features=0x\(String(device.features.rawValue, radix: 16)) "
+                    + "dpi=\(device.resolution.map(Self.describe) ?? "-") "
+                    + "smartShift=\(device.smartShift.map { "\($0)" } ?? "-")"
             )
         }
         #expect(!snapshots.isEmpty)
         await directory.stop()
+    }
+
+    private static func describe(_ resolution: ResolutionState) -> String {
+        "\(resolution.current) [\(resolution.range.minimum)…\(resolution.range.maximum)/\(resolution.range.step)]"
     }
 }

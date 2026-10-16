@@ -16,7 +16,7 @@ extension HIDPPChannel: HIDPPRequestPerforming {
 
 extension HIDPPConnection: HIDPPRequestPerforming {}
 
-/// Builds read requests for feature clients.
+/// Builds requests for feature clients.
 enum FeatureRequest {
     static func read(
         _ device: DeviceIndex,
@@ -31,6 +31,26 @@ enum FeatureRequest {
                 function: FunctionID(nibble: function),
                 parameters: parameters,
                 kind: .read
+            )
+        } catch {
+            throw .framing(error)
+        }
+    }
+
+    /// A configuration write. Only device-setting clients use this, behind write authorization.
+    static func write(
+        _ device: DeviceIndex,
+        _ feature: FeatureIndex,
+        _ function: UInt8,
+        _ parameters: [UInt8]
+    ) throws(HIDPPRequestError) -> HIDPPRequest {
+        do {
+            return try HIDPPRequest(
+                deviceIndex: device,
+                featureIndex: feature,
+                function: FunctionID(nibble: function),
+                parameters: parameters,
+                kind: .write
             )
         } catch {
             throw .framing(error)

@@ -21,6 +21,11 @@ public final class ReadOnlyTransportGuard: HIDPPTransport, @unchecked Sendable {
         .batteryStatus: [0],  // getBatteryLevelStatus
         .unifiedBattery: [0, 1],  // getCapabilities, getStatus
         .reprogControlsV4: [0, 1, 2],  // getCount, getCidInfo, getCidReporting (setCidReporting excluded)
+        .adjustableDPI: [0, 1, 2],  // getSensorCount, getSensorDpiList, getSensorDpi (setSensorDpi excluded)
+        .smartShift: [0],  // getRatchetControlMode (setRatchetControlMode excluded)
+        .smartShiftEnhanced: [0, 1],  // getCapabilities, getRatchetControlMode (set excluded)
+        .hiResWheel: [0, 1, 3],  // getWheelCapability, getWheelMode, getRatchetSwitchState (setWheelMode excluded)
+        .thumbwheel: [0, 1],  // getThumbwheelInfo, getThumbwheelStatus (setThumbwheelReporting excluded)
     ]
 
     private struct Lookup: Hashable {
