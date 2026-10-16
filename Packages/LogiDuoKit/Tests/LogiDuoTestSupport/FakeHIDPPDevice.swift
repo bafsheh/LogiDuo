@@ -23,6 +23,13 @@ public struct FakeHIDPPDevice: Sendable {
     public var batteryStatus: [UInt8] = [0x55, 0x08, 0x00, 0x00]
     /// The device index this device answers on.
     public var deviceIndex: UInt8 = 0xFF
+    /// ReprogControlsV4 controls: getCidInfo parameters per index (cid, task, flags lo, pos, group, gmask, flags hi).
+    public var controls: [[UInt8]] = [
+        [0x00, 0x52, 0x00, 0x38, 0x31, 0x00, 0x01, 0x01, 0x00],
+        [0x00, 0xC3, 0x00, 0xAD, 0x70, 0x00, 0x05, 0x00, 0x03],
+    ]
+    /// getCidReporting parameters per control id.
+    public var reporting: [UInt16: [UInt8]] = [0x0052: [0x00, 0x52, 0x00, 0x00, 0x00, 0x00]]
 
     /// Creates the default emulated device.
     public init() {}
@@ -60,6 +67,11 @@ public struct FakeHIDPPDevice: Sendable {
         case (0x0005, 1): return Array(Array(name.utf8).dropFirst(Int(request[4])).prefix(16))
         case (0x0005, 2): return [typeCode]
         case (0x1004, 1): return batteryStatus
+        case (0x1B04, 0): return [UInt8(controls.count)]
+        case (0x1B04, 1): return Int(request[4]) < controls.count ? controls[Int(request[4])] : nil
+        case (0x1B04, 2):
+            let cid = UInt16(request[4]) << 8 | UInt16(request[5])
+            return reporting[cid] ?? [request[4], request[5], 0x00, 0x00, 0x00, 0x00]
         default: return nil
         }
     }

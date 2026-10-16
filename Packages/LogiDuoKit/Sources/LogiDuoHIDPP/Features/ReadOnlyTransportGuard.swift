@@ -20,6 +20,7 @@ public final class ReadOnlyTransportGuard: HIDPPTransport, @unchecked Sendable {
         .deviceName: [0, 1, 2],  // getDeviceNameCount, getDeviceName, getDeviceType
         .batteryStatus: [0],  // getBatteryLevelStatus
         .unifiedBattery: [0, 1],  // getCapabilities, getStatus
+        .reprogControlsV4: [0, 1, 2],  // getCount, getCidInfo, getCidReporting (setCidReporting excluded)
     ]
 
     private struct Lookup: Hashable {
