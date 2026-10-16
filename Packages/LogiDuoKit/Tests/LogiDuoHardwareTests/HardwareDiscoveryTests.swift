@@ -43,6 +43,12 @@ struct HardwareDiscoveryPlumbingTests {
         #expect(monitored == snapshot)
     }
 
+    /// Without this, a hardware run with every device asleep would pass with all device suites skipped.
+    @Test("a Logitech HID++ endpoint is attached, so the device suites actually run")
+    func devicePresent() {
+        #expect(!presentHIDPPEndpoints().isEmpty, "no Logitech HID++ endpoint: wake or connect the devices")
+    }
+
     @Test("monitor start and stop cycles finish their event streams")
     func repeatedMonitors() async {
         for _ in 0..<20 {
