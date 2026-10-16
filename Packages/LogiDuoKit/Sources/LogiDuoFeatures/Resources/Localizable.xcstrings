@@ -1681,6 +1681,54 @@
         }
       }
     },
+    "mappings.hotspot.thumbwheel": {
+      "comment": "Hotspot name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thumb wheel"
+          }
+        }
+      }
+    },
+    "mappings.illustration": {
+      "comment": "VoiceOver label of the mouse drawing.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse buttons"
+          }
+        }
+      }
+    },
+    "mappings.illustration.footer": {
+      "comment": "Footer.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click a button on the mouse to change what it does, or use the lists below."
+          }
+        }
+      }
+    },
+    "mappings.illustration.hint": {
+      "comment": "VoiceOver hint of a button on the drawing.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the action for this button."
+          }
+        }
+      }
+    },
     "mappings.inherited": {
       "comment": "Caption: inherited from default profile.",
       "extractionState": "manual",

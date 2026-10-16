@@ -11,6 +11,7 @@ public struct MappingEditorView: View {
     /// which SwiftUI may reset before the completion handler runs.
     @State private var applicationTarget: InputTrigger?
     @State private var showsApplicationPicker = false
+    @State private var selectedSpot: MouseIllustrationLayout.Hotspot?
 
     /// Creates the view.
     public init(model: MappingEditorViewModel) {
@@ -20,6 +21,7 @@ public struct MappingEditorView: View {
     public var body: some View {
         Form {
             profileSection
+            illustrationSection
             section(.buttons, header: "mappings.section.buttons")
             gestureSection
             section(.scrolling, header: "mappings.section.scrolling")
@@ -70,6 +72,48 @@ public struct MappingEditorView: View {
         }
     }
 
+    private var illustrationSection: some View {
+        Section {
+            MouseIllustrationView(
+                layout: .mxMaster,
+                rows: model.rows(in: .buttons) + model.rows(in: .scrolling),
+                selection: $selectedSpot
+            ) { spot in
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(spot.titleKey, bundle: .module).font(.headline)
+                    ForEach(
+                        (model.rows(in: .buttons) + model.rows(in: .scrolling)).filter { candidate in
+                            spot.triggers.contains(candidate.trigger)
+                        }
+                    ) { row in
+                        LabeledContent {
+                            actionMenu(for: row)
+                        } label: {
+                            Text(row.trigger.titleKey, bundle: .module)
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+        } footer: {
+            Text("mappings.illustration.footer", bundle: .module).foregroundStyle(.secondary)
+        }
+    }
+
+    private func actionMenu(for row: MappingRow) -> some View {
+        ActionMenu(
+            row: row,
+            isApplicationProfile: model.profile != .defaultProfile,
+            choose: { action in Task { await model.setAction(action, for: row.trigger) } },
+            reset: { Task { await model.resetToInherited(row.trigger) } },
+            captureShortcut: { capturing = TriggerItem(trigger: row.trigger) },
+            chooseApplication: {
+                applicationTarget = row.trigger
+                showsApplicationPicker = true
+            }
+        )
+    }
+
     private var gestureSection: some View {
         Section {
             Picker(selection: $model.gestureButton) {
@@ -108,17 +152,7 @@ public struct MappingEditorView: View {
     private func rows(_ section: MappingSection) -> some View {
         ForEach(model.rows(in: section)) { row in
             LabeledContent {
-                ActionMenu(
-                    row: row,
-                    isApplicationProfile: model.profile != .defaultProfile,
-                    choose: { action in Task { await model.setAction(action, for: row.trigger) } },
-                    reset: { Task { await model.resetToInherited(row.trigger) } },
-                    captureShortcut: { capturing = TriggerItem(trigger: row.trigger) },
-                    chooseApplication: {
-                        applicationTarget = row.trigger
-                        showsApplicationPicker = true
-                    }
-                )
+                actionMenu(for: row)
             } label: {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(row.trigger.titleKey, bundle: .module)
@@ -135,7 +169,7 @@ public struct MappingEditorView: View {
 }
 
 /// The action picker for one trigger.
-private struct ActionMenu: View {
+struct ActionMenu: View {
     let row: MappingRow
     let isApplicationProfile: Bool
     let choose: (Action) -> Void
