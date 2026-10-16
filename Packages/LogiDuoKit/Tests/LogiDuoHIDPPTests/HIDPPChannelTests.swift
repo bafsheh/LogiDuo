@@ -249,7 +249,7 @@ struct HIDPPChannelTests {
         #expect(report.subID == 0x81)
     }
 
-    @Test("malformed input is counted and ignored")
+    @Test("malformed HID++ input and other reports are counted apart and ignored")
     func malformedInput() async throws {
         let (channel, transport, _) = await makeChannel { sent in [Traffic.reply(to: sent)] }
 
@@ -258,7 +258,19 @@ struct HIDPPChannelTests {
         transport.deliver([])
         _ = try await channel.send(Self.request(), timeout: .seconds(1))
 
-        #expect(await channel.statistics.malformedReports == 3)
+        #expect(await channel.statistics.malformedReports == 1)
+        #expect(await channel.statistics.otherReports == 2)
+    }
+
+    @Test("regression: ordinary mouse reports on the shared interface are not counted as malformed")
+    func ordinaryInputReports() async throws {
+        let (channel, transport, _) = await makeChannel { sent in [Traffic.reply(to: sent)] }
+
+        transport.deliver([0x02, 0x01, 0, 0, 0, 0, 0, 0])  // left button down, as seen on an MX Master 3S
+        _ = try await channel.send(Self.request(), timeout: .seconds(1))
+
+        #expect(await channel.statistics.malformedReports == 0)
+        #expect(await channel.statistics.otherReports == 1)
     }
 
     @Test("a request the transport cannot frame fails without being sent")

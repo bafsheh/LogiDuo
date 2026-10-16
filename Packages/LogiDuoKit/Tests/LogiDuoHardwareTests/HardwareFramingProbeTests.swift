@@ -65,7 +65,8 @@ struct HardwareFramingProbeTests {
             }
             let echoed = replies.map { $0[3] & 0x0F }
             print("[framing]   ping replies=\(replies.count) echoedSW=\(echoed) sent=\(sentIDs)")
-            #expect(buffers.allSatisfy { $0.first == 0x11 || $0.first == 0x10 || $0.first == 0x12 })
+            // Ordinary input reports (0x01/0x02 mouse, keyboard) share the interface over Bluetooth.
+            #expect(replies.allSatisfy { $0.first == 0x11 || $0.first == 0x10 || $0.first == 0x12 })
             // Investigation record: back-to-back pings are expected to lose requests if the
             // device keeps only one outstanding request; see `sequentialEcho`.
             print("[framing]   pipelined: \(Set(echoed) == Set(sentIDs) ? "all answered" : "requests lost")")

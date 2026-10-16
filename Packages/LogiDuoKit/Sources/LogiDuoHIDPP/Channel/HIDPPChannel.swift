@@ -42,8 +42,11 @@ public struct HIDPPChannelStatistics: Hashable, Sendable {
     /// Replies or errors with a request software ID that matched no outstanding request
     /// (late replies after a timeout or cancellation, duplicates, other software).
     public var unmatchedReplies = 0
-    /// Input buffers that could not be decoded.
+    /// HID++ buffers (report ID 0x10, 0x11 or 0x12) that could not be decoded.
     public var malformedReports = 0
+    /// Other input reports on the same interface (for example ordinary mouse or keyboard
+    /// reports, which share the HID++ interface over Bluetooth); ignored.
+    public var otherReports = 0
 }
 
 /// Correlates HID++ requests with replies on one transport.
@@ -288,14 +291,22 @@ public actor HIDPPChannel<ChannelClock: Clock> where ChannelClock.Duration == Du
         }
     }
 
-    private func route(_ bytes: [UInt8]) {
-        let report: HIDPPReport
+    /// The HID++ report in `bytes`, counting anything else.
+    private func decode(_ bytes: [UInt8]) -> HIDPPReport? {
+        guard let reportID = bytes.first, (0x10...0x12).contains(reportID) else {
+            statistics.otherReports += 1
+            return nil
+        }
         do {
-            report = try transport.framing.decode(bytes)
+            return try transport.framing.decode(bytes)
         } catch {
             statistics.malformedReports += 1
-            return
+            return nil
         }
+    }
+
+    private func route(_ bytes: [UInt8]) {
+        guard let report = decode(bytes) else { return }
         switch HIDPPInbound(report) {
         case .message(let message):
             if message.softwareID.isNotification {
