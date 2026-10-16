@@ -16,7 +16,7 @@ allowed_imports() {
         LogiDuoSystem) echo "Foundation AppKit ApplicationServices Carbon CoreGraphics IOKit os ServiceManagement Synchronization LogiDuoDomain" ;;
         LogiDuoPersistence) echo "Foundation os Synchronization LogiDuoDomain" ;;
         LogiDuoFeatures) echo "Foundation Observation SwiftUI os LogiDuoDomain" ;;
-        LogiDuoTestSupport) echo "Foundation Synchronization LogiDuoDomain" ;;
+        LogiDuoTestSupport) echo "Foundation Synchronization LogiDuoDomain LogiDuoHIDPP" ;;
         *) echo "__unknown__" ;;
     esac
 }

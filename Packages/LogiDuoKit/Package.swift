@@ -61,7 +61,7 @@ let package = Package(
         // Test doubles shared by test targets. Never linked into the app.
         .target(
             name: "LogiDuoTestSupport",
-            dependencies: ["LogiDuoDomain"],
+            dependencies: ["LogiDuoDomain", "LogiDuoHIDPP"],
             path: "Tests/LogiDuoTestSupport",
             swiftSettings: strictSwiftSettings
         )

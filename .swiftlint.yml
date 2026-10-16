@@ -180,8 +180,9 @@ custom_rules:
     severity: warning
   no_dispatch_sleep:
     name: "No sleeping for synchronization"
-    regex: '\b(usleep|sleep|Thread\.sleep)\s*\('
-    message: "Do not sleep to synchronize; await a signal or inject a clock."
+    # Bare sleep()/usleep() and Thread/Task.sleep; sleeping on an injected Clock is allowed.
+    regex: '(?<![\w.])(?<!func )(usleep|sleep)\s*\(|\b(Thread|Task)\.sleep\b'
+    message: "Do not sleep to synchronize; await a signal or sleep on an injected clock."
     severity: error
 
 inclusive_language:
