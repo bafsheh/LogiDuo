@@ -139,7 +139,15 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
     }
 
     /// Restores every pending setting of this device, verifying each.
+    ///
+    /// Runs to completion even if the calling task is cancelled: an interrupted
+    /// restore would leave the device diverted.
     public func restoreAll() async -> RestorationReport {
+        let transaction = self
+        return await Task { await transaction.restoreAllNow() }.value
+    }
+
+    private func restoreAllNow() async -> RestorationReport {
         let pending = await ledger.pending(for: target.identity)
         guard !pending.isEmpty else { return RestorationReport() }
         guard authorization == .enabled else { return Self.failing(pending, .writesNotAuthorized) }
@@ -195,8 +203,13 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
         )
         guard command.isSatisfied(by: try await read(control)) else {
             if let entry = await ledger.pending(for: target.identity).first(where: { $0.setting == setting }) {
-                var ignored = RestorationReport()
-                await restore(entry, into: &ignored)
+                // Shielded from cancellation, like every restore.
+                let transaction = self
+                await Task {
+                    var ignored = RestorationReport()
+                    await transaction.restore(entry, into: &ignored)
+                }
+                .value
             }
             throw .verificationFailed(control)
         }

@@ -183,11 +183,16 @@ public struct DeviceRecovery<Device: HIDPPRequestPerforming>: Sendable {
             return EmergencyResetReport(blocked: .notConfirmed)
         }
         guard transaction.authorization == .enabled else { return EmergencyResetReport(blocked: .writesNotAuthorized) }
-        let ledger = transaction.ledger
-        await ledger.beginExclusive(plan.device.identity)
-        let report = await reset(plan)
-        await ledger.endExclusive(plan.device.identity)
-        return report
+        // Once confirmed, the reset runs to completion even if the caller is cancelled.
+        let recovery = self
+        return await Task {
+            let ledger = recovery.transaction.ledger
+            await ledger.beginExclusive(plan.device.identity)
+            let report = await recovery.reset(plan)
+            await ledger.endExclusive(plan.device.identity)
+            return report
+        }
+        .value
     }
 
     // MARK: - Steps
