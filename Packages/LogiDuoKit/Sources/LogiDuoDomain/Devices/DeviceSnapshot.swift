@@ -68,6 +68,63 @@ public struct ResolutionState: Hashable, Sendable {
     }
 }
 
+/// Keys a keyboard can disable.
+public struct KeyboardKeys: OptionSet, Hashable, Sendable, Codable {
+    public let rawValue: UInt8
+
+    public init(rawValue: UInt8) {
+        self.rawValue = rawValue
+    }
+
+    public static let capsLock = KeyboardKeys(rawValue: 1 << 0)
+    public static let numLock = KeyboardKeys(rawValue: 1 << 1)
+    public static let scrollLock = KeyboardKeys(rawValue: 1 << 2)
+    public static let insert = KeyboardKeys(rawValue: 1 << 3)
+    public static let windows = KeyboardKeys(rawValue: 1 << 4)
+
+    /// Every key in display order.
+    public static let all: [KeyboardKeys] = [.capsLock, .numLock, .scrollLock, .insert, .windows]
+}
+
+/// What the F1, F2, … keys do without Fn.
+public enum FunctionKeyMode: Hashable, Sendable {
+    /// Standard function keys; special functions need Fn.
+    case standard
+    /// Special functions (brightness, media, …); standard function keys need Fn.
+    case special
+}
+
+/// Whether a keyboard backlight is on.
+public enum BacklightState: Hashable, Sendable {
+    case on
+    case off
+}
+
+/// Keyboard state read from the device.
+public struct KeyboardState: Hashable, Sendable {
+    /// What the function keys do, if known.
+    public var functionKeys: FunctionKeyMode?
+    /// The backlight, if known.
+    public var backlight: BacklightState?
+    /// Keys the keyboard can disable.
+    public var disableableKeys: KeyboardKeys
+    /// Keys currently disabled.
+    public var disabledKeys: KeyboardKeys
+
+    /// Creates a state.
+    public init(
+        functionKeys: FunctionKeyMode?,
+        backlight: BacklightState?,
+        disableableKeys: KeyboardKeys,
+        disabledKeys: KeyboardKeys
+    ) {
+        self.functionKeys = functionKeys
+        self.backlight = backlight
+        self.disableableKeys = disableableKeys
+        self.disabledKeys = disabledKeys
+    }
+}
+
 /// Everything the app shows about one device.
 public struct DeviceSnapshot: Hashable, Sendable, Identifiable {
     /// The stable identity.
@@ -92,6 +149,8 @@ public struct DeviceSnapshot: Hashable, Sendable, Identifiable {
     public var resolution: ResolutionState?
     /// The wheel mode, if readable.
     public var smartShift: SmartShiftMode?
+    /// Keyboard state, for keyboards.
+    public var keyboard: KeyboardState?
 
     /// Creates a snapshot.
     public init(
@@ -105,7 +164,8 @@ public struct DeviceSnapshot: Hashable, Sendable, Identifiable {
         model: ModelID? = nil,
         features: DeviceFeatures = [],
         resolution: ResolutionState? = nil,
-        smartShift: SmartShiftMode? = nil
+        smartShift: SmartShiftMode? = nil,
+        keyboard: KeyboardState? = nil
     ) {
         self.id = id
         self.name = name
@@ -118,6 +178,7 @@ public struct DeviceSnapshot: Hashable, Sendable, Identifiable {
         self.features = features
         self.resolution = resolution
         self.smartShift = smartShift
+        self.keyboard = keyboard
     }
 }
 

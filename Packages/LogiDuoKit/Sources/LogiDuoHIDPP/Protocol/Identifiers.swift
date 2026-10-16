@@ -122,6 +122,14 @@ public struct FeatureID: RawRepresentable, Hashable, Sendable, CustomStringConve
     public static let thumbwheel = FeatureID(rawValue: 0x2150)
     /// AdjustableDPI (0x2201).
     public static let adjustableDPI = FeatureID(rawValue: 0x2201)
+    /// ChangeHost (Easy-Switch).
+    public static let changeHost = FeatureID(rawValue: 0x1814)
+    /// Backlight2.
+    public static let backlight2 = FeatureID(rawValue: 0x1982)
+    /// Function-key inversion for multi-host keyboards (MX Keys).
+    public static let fnInversionMultiHost = FeatureID(rawValue: 0x40A3)
+    /// DisableKeys (Caps Lock, Insert, …).
+    public static let disableKeys = FeatureID(rawValue: 0x4521)
 
     /// The 16-bit feature identifier.
     public let rawValue: UInt16

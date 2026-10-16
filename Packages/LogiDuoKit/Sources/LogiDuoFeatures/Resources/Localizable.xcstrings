@@ -1129,6 +1129,174 @@
         }
       }
     },
+    "keyboard.backlight": {
+      "comment": "Label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backlight"
+          }
+        }
+      }
+    },
+    "keyboard.backlight.footer": {
+      "comment": "Footer.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The keyboard adjusts its backlight to the room automatically."
+          }
+        }
+      }
+    },
+    "keyboard.backlight.off": {
+      "comment": "Value.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
+    "keyboard.backlight.on": {
+      "comment": "Value.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        }
+      }
+    },
+    "keyboard.functionKeys": {
+      "comment": "Toggle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use F1, F2, etc. as standard function keys"
+          }
+        }
+      }
+    },
+    "keyboard.functionKeys.special": {
+      "comment": "Explains current mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "F1–F12 perform their special functions. Hold Fn for standard function keys."
+          }
+        }
+      }
+    },
+    "keyboard.functionKeys.standard": {
+      "comment": "Explains current mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "F1–F12 act as function keys. Hold Fn for brightness, media and other special functions."
+          }
+        }
+      }
+    },
+    "keyboard.key.capsLock": {
+      "comment": "Key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caps Lock"
+          }
+        }
+      }
+    },
+    "keyboard.key.insert": {
+      "comment": "Key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insert"
+          }
+        }
+      }
+    },
+    "keyboard.key.numLock": {
+      "comment": "Key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Num Lock"
+          }
+        }
+      }
+    },
+    "keyboard.key.scrollLock": {
+      "comment": "Key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scroll Lock"
+          }
+        }
+      }
+    },
+    "keyboard.key.windows": {
+      "comment": "Key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Windows / Start key"
+          }
+        }
+      }
+    },
+    "keyboard.section.disable": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disable Keys"
+          }
+        }
+      }
+    },
+    "keyboard.section.keys": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Function Keys"
+          }
+        }
+      }
+    },
     "mappings.customShortcut": {
       "comment": "Menu item.",
       "extractionState": "manual",

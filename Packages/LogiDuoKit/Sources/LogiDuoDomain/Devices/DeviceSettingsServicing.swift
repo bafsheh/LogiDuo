@@ -18,6 +18,10 @@ public protocol DeviceSettingsServicing: Sendable {
     func setResolution(_ dpi: Int, on device: DeviceID) async -> DeviceSettingResult
     /// Sets the SmartShift wheel mode.
     func setSmartShift(_ mode: SmartShiftMode, on device: DeviceID) async -> DeviceSettingResult
+    /// Sets what F1, F2, … do without Fn.
+    func setFunctionKeys(_ mode: FunctionKeyMode, on device: DeviceID) async -> DeviceSettingResult
+    /// Sets which keys are disabled.
+    func setDisabledKeys(_ keys: KeyboardKeys, on device: DeviceID) async -> DeviceSettingResult
 }
 
 extension DeviceSettings {

@@ -117,6 +117,9 @@ struct DeviceStatusView: View {
             if device.category == .mouse {
                 DevicePointerSections(device: device, model: model)
             }
+            if let keyboard = device.keyboard {
+                DeviceKeyboardSections(device: device, keyboard: keyboard, model: model)
+            }
             featuresSection
         }
         .formStyle(.grouped)

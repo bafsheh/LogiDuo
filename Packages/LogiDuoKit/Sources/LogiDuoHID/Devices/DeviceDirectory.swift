@@ -38,12 +38,12 @@ where SessionClock.Duration == Duration {
 
     private let source: any HIDInterfaceSource
     private let clock: SessionClock
-    private let authorization: DeviceWriteAuthorization
+    let authorization: DeviceWriteAuthorization
     private let batteryInterval: Duration
     private let logger = Logger(subsystem: "io.github.bafsheh.LogiDuo", category: "DeviceDirectory")
     private var attachments: [UInt64: Attachment] = [:]
     private var registry = DeviceIdentityRegistry()
-    private var snapshotsByID: [DeviceID: DeviceSnapshot] = [:]
+    var snapshotsByID: [DeviceID: DeviceSnapshot] = [:]
     private var order: [DeviceID] = []
     private var sessionIDs: [TransportEndpoint: DeviceID] = [:]
     private var subscribers: [Int: AsyncStream<[DeviceSnapshot]>.Continuation] = [:]
@@ -68,30 +68,6 @@ where SessionClock.Duration == Duration {
     /// Sets where saved device settings come from.
     public func usePreferences(_ preferences: @escaping Preferences) {
         self.preferences = preferences
-    }
-
-    /// Sets the pointer resolution of `device`.
-    public func setResolution(_ dpi: Int, on device: DeviceID) async -> DeviceSettingResult {
-        guard authorization == .enabled else { return .writesDisabled }
-        guard let session = session(for: device) else { return .unavailable }
-        let (result, confirmed) = await session.setResolution(dpi)
-        if let confirmed, let range = snapshotsByID[device]?.resolution?.range {
-            snapshotsByID[device]?.resolution = ResolutionState(current: confirmed, range: range)
-            broadcast()
-        }
-        return result
-    }
-
-    /// Sets the SmartShift mode of `device`.
-    public func setSmartShift(_ mode: SmartShiftMode, on device: DeviceID) async -> DeviceSettingResult {
-        guard authorization == .enabled else { return .writesDisabled }
-        guard let session = session(for: device) else { return .unavailable }
-        let (result, confirmed) = await session.setSmartShift(mode)
-        if let confirmed {
-            snapshotsByID[device]?.smartShift = confirmed
-            broadcast()
-        }
-        return result
     }
 
     /// Starts listening for interfaces and polling batteries.
@@ -287,7 +263,7 @@ where SessionClock.Duration == Duration {
 
     private var currentSnapshots: [DeviceSnapshot] { order.compactMap { snapshotsByID[$0] } }
 
-    private func session(for device: DeviceID) -> DeviceSession<SessionClock>? {
+    func session(for device: DeviceID) -> DeviceSession<SessionClock>? {
         guard let endpoint = sessionIDs.first(where: { $0.value == device })?.key else { return nil }
         return attachments.values.lazy.flatMap(\.sessions).first { $0.endpoint == endpoint }
     }
@@ -302,7 +278,7 @@ where SessionClock.Duration == Duration {
         }
     }
 
-    private func broadcast() {
+    func broadcast() {
         let current = currentSnapshots
         for subscriber in subscribers.values { subscriber.yield(current) }
     }

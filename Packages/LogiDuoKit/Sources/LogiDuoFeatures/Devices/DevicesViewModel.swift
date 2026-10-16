@@ -51,6 +51,18 @@ public final class DevicesViewModel {
         lastResult[device] = await settings?.setSmartShift(mode, on: device) ?? .unavailable
     }
 
+    /// Sets what F1, F2, … do without Fn.
+    public func setFunctionKeys(_ mode: FunctionKeyMode, for device: DeviceID) async {
+        lastResult[device] = await settings?.setFunctionKeys(mode, on: device) ?? .unavailable
+    }
+
+    /// Disables or re-enables one key.
+    public func setKey(_ key: KeyboardKeys, disabled: Bool, for device: DeviceID) async {
+        guard var keys = devices.first(where: { $0.id == device })?.keyboard?.disabledKeys else { return }
+        if disabled { keys.insert(key) } else { keys.remove(key) }
+        lastResult[device] = await settings?.setDisabledKeys(keys, on: device) ?? .unavailable
+    }
+
     /// Adds a resolution to the cycle presets (sorted, without duplicates).
     public func addPreset(_ dpi: Int, for device: DeviceID) async {
         await savePreference(device) { settings in

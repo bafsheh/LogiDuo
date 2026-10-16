@@ -26,6 +26,10 @@ public final class ReadOnlyTransportGuard: HIDPPTransport, @unchecked Sendable {
         .smartShiftEnhanced: [0, 1],  // getCapabilities, getRatchetControlMode (set excluded)
         .hiResWheel: [0, 1, 3],  // getWheelCapability, getWheelMode, getRatchetSwitchState (setWheelMode excluded)
         .thumbwheel: [0, 1],  // getThumbwheelInfo, getThumbwheelStatus (setThumbwheelReporting excluded)
+        .changeHost: [0],  // getHostInfo (setCurrentHost excluded: it would switch the device away)
+        .backlight2: [0],  // getBacklightConfig (setBacklightConfig excluded)
+        .fnInversionMultiHost: [0],  // getFnInversion(host) (setFnInversion excluded)
+        .disableKeys: [0, 1],  // getCapabilities, getDisabledKeys (setDisabledKeys excluded)
     ]
 
     private struct Lookup: Hashable {

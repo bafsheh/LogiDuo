@@ -37,7 +37,8 @@ struct HardwareDeviceDirectoryTests {
                 "[directory] \(device.name) \(device.category) \(device.transport) \(device.link) battery=\(battery) "
                     + "fw=\(device.firmwareVersion ?? "?") features=0x\(String(device.features.rawValue, radix: 16)) "
                     + "dpi=\(device.resolution.map(Self.describe) ?? "-") "
-                    + "smartShift=\(device.smartShift.map { "\($0)" } ?? "-")"
+                    + "smartShift=\(device.smartShift.map { "\($0)" } ?? "-") "
+                    + "keyboard=\(device.keyboard.map { "\($0)" } ?? "-")"
             )
         }
         #expect(!snapshots.isEmpty)

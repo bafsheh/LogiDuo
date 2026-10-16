@@ -13,6 +13,7 @@ struct DeviceDraft: Hashable, Sendable {
     var features: DeviceFeatures
     var resolution: ResolutionState?
     var smartShift: SmartShiftMode?
+    var keyboard: KeyboardState?
 
     func snapshot(id: DeviceID) -> DeviceSnapshot {
         DeviceSnapshot(
@@ -26,7 +27,8 @@ struct DeviceDraft: Hashable, Sendable {
             model: model,
             features: features,
             resolution: resolution,
-            smartShift: smartShift
+            smartShift: smartShift,
+            keyboard: keyboard
         )
     }
 }
@@ -42,17 +44,19 @@ enum DeviceSessionUpdate: Sendable {
 }
 
 /// One device endpoint: its connection, and reading the device whenever it connects.
+/// Setting changes live in `DeviceSession+Settings.swift`.
 actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration {
     typealias Publish = @Sendable (DeviceSessionUpdate) async -> Void
 
     nonisolated let endpoint: TransportEndpoint
+    let connection: HIDPPConnection<SessionClock>
+    let deviceIndex: DeviceIndex
+    var resolutionRange: ResolutionRange?
     private let fallbackName: String
     private let product: ProductID
-    private let connection: HIDPPConnection<SessionClock>
     private let publish: Publish
     private var observer: Task<Void, Never>?
     private var batteryFeature: FeatureID?
-    private var resolutionRange: ResolutionRange?
 
     init(
         endpoint: TransportEndpoint,
@@ -67,6 +71,7 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
         self.fallbackName = fallbackName
         self.product = product
         self.publish = publish
+        self.deviceIndex = deviceIndex
         connection = HIDPPConnection(
             deviceIndex: deviceIndex,
             configuration: HIDPPConnectionConfiguration(retryPolicy: .standard),
@@ -91,87 +96,15 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
 
     /// Re-reads the battery while connected.
     func refresh() async {
-        guard await connection.state == .connected, let batteryFeature else { return }
-        guard
-            let location = try? await RootFeature.location(
-                of: batteryFeature,
-                via: connection,
-                device: connection.deviceIndex,
-                timeout: nil
-            ),
+        guard await connection.state == .connected, let batteryFeature, let index = await index(of: batteryFeature),
             let reading = try? await BatteryFeature.reading(
                 feature: batteryFeature,
                 via: connection,
-                index: location.index,
-                deviceIndex: connection.deviceIndex
+                index: index,
+                deviceIndex: deviceIndex
             )
         else { return }
         await publish(.battery(endpoint, DeviceSnapshotMapper.battery(reading)))
-    }
-
-    /// Writes the resolution (snapped to the supported range) and reads it back.
-    func setResolution(_ dpi: Int) async -> (DeviceSettingResult, Int?) {
-        guard await connection.state == .connected else { return (.unavailable, nil) }
-        guard let range = resolutionRange,
-            let index = try? await RootFeature.location(
-                of: .adjustableDPI,
-                via: connection,
-                device: connection.deviceIndex,
-                timeout: nil
-            )?.index
-        else { return (.unsupported, nil) }
-        let target = range.nearestSupported(to: dpi)
-        do {
-            _ = try await AdjustableDPIFeature.set(
-                target,
-                via: connection,
-                index: index,
-                deviceIndex: connection.deviceIndex
-            )
-            let confirmed = try await AdjustableDPIFeature.current(
-                via: connection,
-                index: index,
-                deviceIndex: connection.deviceIndex
-            )
-            return (confirmed == target ? .applied : .failed, confirmed)
-        } catch {
-            return (.failed, nil)
-        }
-    }
-
-    /// Writes the SmartShift mode and reads it back.
-    func setSmartShift(_ mode: SmartShiftMode) async -> (DeviceSettingResult, SmartShiftMode?) {
-        guard await connection.state == .connected else { return (.unavailable, nil) }
-        for feature in [FeatureID.smartShiftEnhanced, .smartShift] {
-            guard
-                let index = try? await RootFeature.location(
-                    of: feature,
-                    via: connection,
-                    device: connection.deviceIndex,
-                    timeout: nil
-                )?
-                .index
-            else { continue }
-            do {
-                try await SmartShiftFeature.set(
-                    mode,
-                    feature: feature,
-                    via: connection,
-                    index: index,
-                    deviceIndex: connection.deviceIndex
-                )
-                let confirmed = try await SmartShiftFeature.mode(
-                    feature: feature,
-                    via: connection,
-                    index: index,
-                    deviceIndex: connection.deviceIndex
-                )
-                return (confirmed == mode ? .applied : .failed, confirmed)
-            } catch {
-                return (.failed, nil)
-            }
-        }
-        return (.unsupported, nil)
     }
 
     func hostWillSleep() async { await connection.hostWillSleep() }
@@ -189,15 +122,46 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
     }
 
     /// The index of `feature`, looked up through Root so the read-only guard can verify it.
+    func index(of feature: FeatureID) async -> FeatureIndex? {
+        try? await RootFeature.location(of: feature, via: connection, device: deviceIndex, timeout: nil)?.index
+    }
+
+    /// The host (Easy-Switch channel) a multi-host keyboard is on; 0 if it cannot tell.
+    func currentHost() async -> UInt8 {
+        guard let change = await index(of: .changeHost),
+            let host = try? await KeyboardFeatures.currentHost(via: connection, index: change, deviceIndex: deviceIndex)
+        else { return 0 }
+        return host
+    }
+
+    // MARK: - Reading after connect
+
+    private func handle(_ state: ConnectionState) async {
+        guard state == .connected else {
+            await publish(.link(endpoint, DeviceSnapshotMapper.link(for: state)))
+            return
+        }
+        do {
+            let inventory = try await DeviceInventoryReader.read(via: connection, deviceIndex: deviceIndex)
+            batteryFeature = inventory.battery?.source
+            var (observation, draft) = DeviceSnapshotMapper.describe(
+                inventory,
+                endpoint: endpoint,
+                fallbackName: fallbackName,
+                product: product
+            )
+            draft.resolution = await readResolution(inventory)
+            resolutionRange = draft.resolution?.range
+            draft.smartShift = await readSmartShift(inventory)
+            if draft.category == .keyboard { draft.keyboard = await readKeyboard(inventory) }
+            await publish(.identified(observation, draft))
+        } catch {
+            await publish(.link(endpoint, .reconnecting))
+        }
+    }
+
     private func locate(_ feature: FeatureID, in inventory: HIDPPDeviceInventory) async -> FeatureIndex? {
-        guard inventory.supports(feature) else { return nil }
-        return try? await RootFeature.location(
-            of: feature,
-            via: connection,
-            device: connection.deviceIndex,
-            timeout: nil
-        )?
-        .index
+        inventory.supports(feature) ? await index(of: feature) : nil
     }
 
     /// Reads the pointer resolution (read-only); `nil` if absent or unreadable.
@@ -207,12 +171,12 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
             let current = try? await AdjustableDPIFeature.current(
                 via: connection,
                 index: index,
-                deviceIndex: connection.deviceIndex
+                deviceIndex: deviceIndex
             ),
             let range = try? await AdjustableDPIFeature.supportedRange(
                 via: connection,
                 index: index,
-                deviceIndex: connection.deviceIndex
+                deviceIndex: deviceIndex
             )
         else { return nil }
         return ResolutionState(current: current, range: range)
@@ -226,30 +190,35 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
             feature: feature,
             via: connection,
             index: index,
-            deviceIndex: connection.deviceIndex
+            deviceIndex: deviceIndex
         )
     }
 
-    private func handle(_ state: ConnectionState) async {
-        guard state == .connected else {
-            await publish(.link(endpoint, DeviceSnapshotMapper.link(for: state)))
-            return
-        }
-        do {
-            let inventory = try await DeviceInventoryReader.read(via: connection, deviceIndex: connection.deviceIndex)
-            batteryFeature = inventory.battery?.source
-            var (observation, draft) = DeviceSnapshotMapper.describe(
-                inventory,
-                endpoint: endpoint,
-                fallbackName: fallbackName,
-                product: product
+    /// Reads the keyboard state (read-only).
+    private func readKeyboard(_ inventory: HIDPPDeviceInventory) async -> KeyboardState {
+        var state = KeyboardState(functionKeys: nil, backlight: nil, disableableKeys: [], disabledKeys: [])
+        if let fn = await locate(.fnInversionMultiHost, in: inventory) {
+            let host = await currentHost()
+            state.functionKeys = try? await KeyboardFeatures.functionKeys(
+                host: host,
+                via: connection,
+                index: fn,
+                deviceIndex: deviceIndex
             )
-            draft.resolution = await readResolution(inventory)
-            resolutionRange = draft.resolution?.range
-            draft.smartShift = await readSmartShift(inventory)
-            await publish(.identified(observation, draft))
-        } catch {
-            await publish(.link(endpoint, .reconnecting))
         }
+        if let backlight = await locate(.backlight2, in: inventory) {
+            state.backlight = try? await KeyboardFeatures.backlight(
+                via: connection,
+                index: backlight,
+                deviceIndex: deviceIndex
+            )
+        }
+        if let keys = await locate(.disableKeys, in: inventory),
+            let read = try? await KeyboardFeatures.disableKeys(via: connection, index: keys, deviceIndex: deviceIndex)
+        {
+            state.disableableKeys = read.available
+            state.disabledKeys = read.disabled
+        }
+        return state
     }
 }
