@@ -1333,6 +1333,114 @@
         }
       }
     },
+    "profiles.add": {
+      "comment": "Button: add an application profile.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Application…"
+          }
+        }
+      }
+    },
+    "profiles.applications": {
+      "comment": "Section: applications of a profile.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies To"
+          }
+        }
+      }
+    },
+    "profiles.delete": {
+      "comment": "Button: delete profile.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Profile…"
+          }
+        }
+      }
+    },
+    "profiles.delete.cancel": {
+      "comment": "Cancel button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "profiles.delete.confirm": {
+      "comment": "Destructive button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "profiles.delete.message %@": {
+      "comment": "Confirmation message; argument is the profile name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The mappings of “%@” will be removed. The application will use the All Applications mappings."
+          }
+        }
+      }
+    },
+    "profiles.delete.title": {
+      "comment": "Confirmation title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this profile?"
+          }
+        }
+      }
+    },
+    "profiles.editMappings": {
+      "comment": "Button: open the mapping editor for the profile.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Mappings…"
+          }
+        }
+      }
+    },
+    "profiles.empty.message": {
+      "comment": "Shown when there are no application profiles.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add an application to give it its own button mappings. Every other application uses the All Applications mappings."
+          }
+        }
+      }
+    },
     "profiles.empty.title": {
       "comment": "Shown when there are no application profiles.",
       "extractionState": "manual",
@@ -1341,6 +1449,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "No Profiles"
+          }
+        }
+      }
+    },
+    "profiles.enabled": {
+      "comment": "Toggle: profile active.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active"
+          }
+        }
+      }
+    },
+    "profiles.moveDown": {
+      "comment": "Button: lower priority.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Down"
+          }
+        }
+      }
+    },
+    "profiles.moveUp": {
+      "comment": "Button: higher priority.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Up"
+          }
+        }
+      }
+    },
+    "profiles.name": {
+      "comment": "Field: profile name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "profiles.priority.footer": {
+      "comment": "Explains ordering.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When several profiles match an application, the one higher in the list wins."
           }
         }
       }

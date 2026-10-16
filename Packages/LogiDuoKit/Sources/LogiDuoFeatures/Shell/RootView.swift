@@ -1,3 +1,4 @@
+import LogiDuoDomain
 public import SwiftUI
 
 /// The view models of the main window's screens, created by the composition root.
@@ -7,13 +8,21 @@ public struct RootScreens {
     public let devices: DevicesViewModel
     /// The mapping editor.
     public let mappings: MappingEditorViewModel
+    /// Application profiles.
+    public let profiles: ProfilesViewModel
     /// Device recovery.
     public let recovery: RecoveryViewModel
 
     /// Creates the set of screens.
-    public init(devices: DevicesViewModel, mappings: MappingEditorViewModel, recovery: RecoveryViewModel) {
+    public init(
+        devices: DevicesViewModel,
+        mappings: MappingEditorViewModel,
+        profiles: ProfilesViewModel,
+        recovery: RecoveryViewModel
+    ) {
         self.devices = devices
         self.mappings = mappings
+        self.profiles = profiles
         self.recovery = recovery
     }
 }
@@ -39,7 +48,7 @@ public struct RootView: View {
         NavigationSplitView {
             SidebarView(selection: sidebarSelection)
         } detail: {
-            DestinationView(destination: router.destination, screens: screens)
+            DestinationView(destination: router.destination, screens: screens, router: router)
         }
         .frame(minWidth: 720, minHeight: 480)
     }
@@ -60,6 +69,7 @@ public struct RootView: View {
 struct DestinationView: View {
     let destination: SidebarDestination
     let screens: RootScreens
+    let router: AppRouter
 
     var body: some View {
         switch destination {
@@ -68,7 +78,10 @@ struct DestinationView: View {
         case .mappings:
             MappingEditorView(model: screens.mappings)
         case .profiles:
-            EmptyStateView(title: "profiles.empty.title", systemImage: "person.crop.rectangle.stack")
+            ProfilesView(model: screens.profiles) { id in
+                screens.mappings.profile = .application(id)
+                router.select(.mappings)
+            }
         case .permissions:
             EmptyStateView(title: "permissions.title", systemImage: "lock.shield")
         case .recovery:

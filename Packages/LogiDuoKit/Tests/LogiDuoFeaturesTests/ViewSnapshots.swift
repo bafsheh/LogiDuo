@@ -86,4 +86,28 @@ struct ViewSnapshots {
             size: CGSize(width: 720, height: 820)
         )
     }
+
+    @Test("profiles")
+    func profiles() async throws {
+        var configuration = LogiDuoConfiguration.standard
+        configuration.profiles = [
+            StoredProfile(
+                id: ProfileFixtures.id("app.com.apple.Safari"),
+                name: ProfileFixtures.name("Safari"),
+                matchers: [ProfileFixtures.app("com.apple.Safari")]
+            ),
+            StoredProfile(
+                id: ProfileFixtures.id("app.com.apple.mail"),
+                name: ProfileFixtures.name("Mail"),
+                matchers: [ProfileFixtures.app("com.apple.mail")],
+                isEnabled: false
+            ),
+        ]
+        let repository = FakeConfigurationRepository(configuration)
+        let model = ProfilesViewModel(repository: repository)
+        let observing = Task { await model.observe() }
+        await repository.finish()
+        await observing.value
+        try await renderSnapshot(ProfilesView(model: model) { _ in }, name: "profiles")
+    }
 }
