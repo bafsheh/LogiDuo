@@ -1,59 +1,94 @@
-/// A temporary reporting change for one control.
+/// The only setCidReporting (ReprogControlsV4 fn3) commands LogiDuo can send.
 ///
-/// There is deliberately no way to express a *persistent* divert: LogiDuo never
-/// stores configuration in device memory, so every change is undone by a device
-/// reset at the latest.
-public struct ReportingChange: Hashable, Sendable {
-    /// Divert the control's presses to the host.
-    public let divert: Bool
-    /// Also divert raw XY movement while the control is held.
-    public let rawXY: Bool
+/// Byte values match the commands Mouser has used in the field (audit vectors
+/// V16–V18). The flags byte layout is:
+/// ```
+/// bit 0 divert        bit 1 divert valid
+/// bit 2 persist       bit 3 persist valid      ← never set: no case can express it
+/// bit 4 raw XY        bit 5 raw XY valid
+/// bits 6–7 force raw XY (and valid)            ← never set
+/// ```
+/// A value bit only takes effect with its valid bit, so each command changes
+/// exactly the state it names. Request: `[cid hi, cid lo, flags, 0x00, 0x00]`
+/// (remap 0 = leave remapping unchanged).
+public enum ReportingCommand: Hashable, Sendable, CaseIterable {
+    /// Divert presses only (`0x03`).
+    case divertButtonOnly
+    /// Divert presses and raw XY movement (`0x33`).
+    case divertWithRawXY
+    /// Undo a button-only divert (`0x02`).
+    case undivertButtonOnly
+    /// Undo a raw-XY divert (`0x22`).
+    case undivertWithRawXY
 
-    /// Creates a change.
-    public init(divert: Bool, rawXY: Bool) {
-        self.divert = divert
-        self.rawXY = rawXY && divert
+    /// The setCidReporting flags byte.
+    public var flagsByte: UInt8 {
+        switch self {
+        case .divertButtonOnly: 0x03
+        case .divertWithRawXY: 0x33
+        case .undivertButtonOnly: 0x02
+        case .undivertWithRawXY: 0x22
+        }
     }
 
-    /// Native reporting: not diverted.
-    public static let native = ReportingChange(divert: false, rawXY: false)
+    /// Whether the command diverts.
+    public var diverts: Bool { self == .divertButtonOnly || self == .divertWithRawXY }
 
-    /// The setCidReporting flags byte: divert/valid (bits 0–1) and raw XY/valid (bits 4–5).
-    /// The persistent bits (2–3) are never set.
-    var flagsByte: UInt8 {
-        0x02 | 0x20 | (divert ? 0x01 : 0) | (rawXY ? 0x10 : 0)
+    /// The command that returns a control in state `current` to native reporting.
+    public static func undivert(from current: ControlReporting) -> ReportingCommand {
+        current.isRawXYDiverted ? .undivertWithRawXY : .undivertButtonOnly
     }
 
-    /// Whether `reporting` is exactly this change's state.
-    func matches(_ reporting: ControlReporting) -> Bool {
-        reporting.isDiverted == divert && reporting.isRawXYDiverted == rawXY && !reporting.isPersistentlyDiverted
+    /// Checks the command is supported by `control`.
+    /// - Throws: ``DeviceConfigurationError`` for protected, non-divertable or raw-XY-incapable controls.
+    public func validate(for control: ReprogrammableControl) throws(DeviceConfigurationError) {
+        guard control.flags.contains(.divertable) else { throw .notDivertable(control.control) }
+        if self == .divertWithRawXY, !control.flags.contains(.rawXY) {
+            throw .unsupportedCombination(control.control)
+        }
+    }
+
+    /// Whether `reporting` is exactly the state this command produces.
+    public func isSatisfied(by reporting: ControlReporting) -> Bool {
+        switch self {
+        case .divertButtonOnly: reporting.flags == 0x0001
+        case .divertWithRawXY: reporting.flags == 0x0011
+        case .undivertButtonOnly, .undivertWithRawXY: reporting.flags == 0
+        }
     }
 }
 
 extension ReprogControlsFeature {
-    /// Changes a control's temporary reporting (setCidReporting, fn3). A **write**.
-    ///
-    /// Layout: `[cid hi, cid lo, flags, remap hi, remap lo]`; remap 0 leaves any remapping unchanged.
-    public static func setReporting(
-        of control: UInt16,
-        to change: ReportingChange,
+    /// Sends one setCidReporting command. A **write**.
+    /// - Throws: ``DeviceConfigurationError/unexpectedResponse(_:)`` if the reply does not echo `control`.
+    public static func send(
+        _ command: ReportingCommand,
+        to control: UInt16,
         via device: some HIDPPRequestPerforming,
         index: FeatureIndex,
         deviceIndex: DeviceIndex,
         timeout: Duration? = nil
-    ) async throws(HIDPPRequestError) {
+    ) async throws(DeviceConfigurationError) {
         let request: HIDPPRequest
         do {
             request = try HIDPPRequest(
                 deviceIndex: deviceIndex,
                 featureIndex: index,
                 function: FunctionID(nibble: 3),
-                parameters: [UInt8(control >> 8), UInt8(control & 0xFF), change.flagsByte, 0x00, 0x00],
+                parameters: [UInt8(control >> 8), UInt8(control & 0xFF), command.flagsByte, 0x00, 0x00],
                 kind: .write
             )
         } catch {
-            throw .framing(error)
+            throw .request(.framing(error))
         }
-        _ = try await device.perform(request, timeout: timeout)
+        let reply: HIDPPMessage
+        do {
+            reply = try await device.perform(request, timeout: timeout)
+        } catch {
+            throw .request(error)
+        }
+        guard FeatureRequest.bigEndian(reply.parameters[0...1], as: UInt16.self) == control else {
+            throw .unexpectedResponse(control)
+        }
     }
 }

@@ -1,10 +1,14 @@
 import Foundation
+public import LogiDuoDomain
 
-/// A stateful fake mouse with ReprogControlsV4 at feature index 1, for configuration tests.
+/// A stateful fake mouse for configuration tests: ReprogControlsV4 at feature
+/// index 1 and DeviceInformation at index 2.
 ///
-/// Controls: 0x0050 (left, not divertable), 0x00C3 (gesture) and 0x00C4 (mode shift),
-/// both divertable but not persistently. Failure injection covers dropped writes,
-/// writes that are acknowledged but not applied, and an unresponsive device.
+/// Controls: 0x0050 (left, not divertable), 0x0052 (middle), 0x00C3 (gesture,
+/// raw XY capable) and 0x00C4 (mode shift); none persistently divertable.
+/// Failure injection covers dropped writes, writes that are acknowledged but not
+/// applied, writes that fail, a changed or unreadable identity, and an
+/// unresponsive device.
 public final class FakeReprogDevice: @unchecked Sendable {  // Invariant: state guarded by `lock`.
     /// How the device misbehaves.
     public enum Fault: Sendable {
@@ -16,10 +20,26 @@ public final class FakeReprogDevice: @unchecked Sendable {  // Invariant: state 
         case ignoresWrites
     }
 
+    /// The default unit identifier reported by DeviceInformation.
+    public static let defaultUnit: UInt32 = 0x1234_5678
+    /// The default model identifier bytes reported by DeviceInformation.
+    public static let defaultModel: [UInt8] = [0xB0, 0x34, 0x00, 0x00, 0x00, 0x00]
+
+    /// The physical identity the default unit and model correspond to.
+    public static var defaultPhysicalID: PhysicalDeviceID {
+        guard let model = ModelID(rawValue: 0xB034_0000_0000) else { preconditionFailure("valid model") }
+        return PhysicalDeviceID(model: model, unit: UnitID(rawValue: defaultUnit))
+    }
+
     private let lock = NSLock()
-    private var flags: [UInt16: UInt8] = [0x0050: 0, 0x00C3: 0, 0x00C4: 0]
+    private var flags: [UInt16: UInt8] = [0x0050: 0, 0x0052: 0, 0x00C3: 0, 0x00C4: 0]
+    private var remaps: [UInt16: UInt16] = [:]
     private var fault = Fault.none
+    private var failingWrites: Set<UInt16> = []
+    private var unit = FakeReprogDevice.defaultUnit
+    private var model: [UInt8]? = FakeReprogDevice.defaultModel
     private var writes: [(UInt16, UInt8)] = []
+    private var afterWrite: (@Sendable (UInt16) -> Void)?
 
     /// Creates a device with every control native.
     public init() {}
@@ -27,8 +47,28 @@ public final class FakeReprogDevice: @unchecked Sendable {  // Invariant: state 
     /// Sets the fault mode.
     public func setFault(_ fault: Fault) { lock.withLock { self.fault = fault } }
 
+    /// Makes setCidReporting for `controls` answer with a HID++ error (state unchanged).
+    public func failWrites(to controls: Set<UInt16>) { lock.withLock { failingWrites = controls } }
+
+    /// Changes the reported identity; a `nil` model makes the identity unavailable.
+    public func setIdentity(unit: UInt32, model: [UInt8]?) {
+        lock.withLock {
+            self.unit = unit
+            self.model = model
+        }
+    }
+
+    /// Makes DeviceInformation fail entirely.
+    public func hideIdentity() { setIdentity(unit: unit, model: nil) }
+
+    /// Runs `hook` (outside the lock is not guaranteed; keep it trivial) after each applied write.
+    public func onWrite(_ hook: (@Sendable (UInt16) -> Void)?) { lock.withLock { afterWrite = hook } }
+
     /// Sets a control's reporting flags directly (for example to simulate a foreign divert or a power cycle).
     public func setReportingFlags(_ value: UInt8, of control: UInt16) { lock.withLock { flags[control] = value } }
+
+    /// Remaps a control directly (simulates a foreign remap).
+    public func setRemap(_ target: UInt16, of control: UInt16) { lock.withLock { remaps[control] = target } }
 
     /// The reporting flags of `control`.
     public func reportingFlags(of control: UInt16) -> UInt8 { lock.withLock { flags[control] ?? 0 } }
@@ -36,34 +76,52 @@ public final class FakeReprogDevice: @unchecked Sendable {  // Invariant: state 
     /// Every setCidReporting received: (control, flags byte).
     public var writeLog: [(UInt16, UInt8)] { lock.withLock { writes } }
 
-    /// Simulates a power cycle: temporary diverts are cleared.
-    public func powerCycle() { lock.withLock { for key in flags.keys { flags[key] = 0 } } }
+    /// Simulates a power cycle: temporary diverts are cleared, persistent bits kept.
+    public func powerCycle() { lock.withLock { for key in flags.keys { flags[key] = (flags[key] ?? 0) & 0x04 } } }
 
     /// A transport responder.
     public var responder: FakeHIDPPTransport.Responder { { [self] sent in respond(to: sent) } }
 
     private func respond(to sent: [UInt8]) -> [[UInt8]] {
         lock.lock()
-        defer { lock.unlock() }
-        guard fault != .unresponsive, sent.count == 20 else { return [] }
+        let (replies, hook, written) = reply(to: sent)
+        lock.unlock()
+        if let hook, let written { hook(written) }
+        return replies
+    }
+
+    private func reply(to sent: [UInt8]) -> ([[UInt8]], (@Sendable (UInt16) -> Void)?, UInt16?) {
+        guard fault != .unresponsive, sent.count == 20 else { return ([], nil, nil) }
         let function = sent[3] >> 4
+        let control = UInt16(sent[4]) << 8 | UInt16(sent[5])
         switch (sent[2], function) {
         case (0x00, 0):
-            let index: UInt8 = sent[4] == 0x1B && sent[5] == 0x04 ? 0x01 : 0x00
-            return [HIDPPTestTraffic.reply(to: sent, parameters: [index, 0, 5])]
+            let index: UInt8 =
+                switch (sent[4], sent[5]) {
+                case (0x1B, 0x04): 0x01
+                case (0x00, 0x03): 0x02
+                default: 0x00
+                }
+            return ([HIDPPTestTraffic.reply(to: sent, parameters: [index, 0, 5])], nil, nil)
         case (0x00, 1):
-            return [HIDPPTestTraffic.reply(to: sent, parameters: [4, 5, sent[6]])]
+            return ([HIDPPTestTraffic.reply(to: sent, parameters: [4, 5, sent[6]])], nil, nil)
+        case (0x02, 0):
+            guard let model else { return ([HIDPPTestTraffic.featureError(for: sent, code: 0x05)], nil, nil) }
+            let unitBytes = withUnsafeBytes(of: unit.bigEndian, Array.init)
+            return ([HIDPPTestTraffic.reply(to: sent, parameters: [1] + unitBytes + [0x00, 0x05] + model)], nil, nil)
         case (0x01, 2):
-            let control = UInt16(sent[4]) << 8 | UInt16(sent[5])
-            return [HIDPPTestTraffic.reply(to: sent, parameters: [sent[4], sent[5], flags[control] ?? 0, 0, 0, 0])]
+            let remap = remaps[control] ?? 0
+            let parameters = [sent[4], sent[5], flags[control] ?? 0, UInt8(remap >> 8), UInt8(remap & 0xFF), 0]
+            return ([HIDPPTestTraffic.reply(to: sent, parameters: parameters)], nil, nil)
         case (0x01, 3):
-            let control = UInt16(sent[4]) << 8 | UInt16(sent[5])
             writes.append((control, sent[6]))
-            guard control != 0x0050 else { return [HIDPPTestTraffic.featureError(for: sent, code: 0x02)] }
+            guard control != 0x0050, !failingWrites.contains(control) else {
+                return ([HIDPPTestTraffic.featureError(for: sent, code: 0x02)], nil, nil)
+            }
             if fault == .none { flags[control] = Self.apply(sent[6], to: flags[control] ?? 0) }
-            return [HIDPPTestTraffic.reply(to: sent, parameters: [sent[4], sent[5], sent[6]])]
+            return ([HIDPPTestTraffic.reply(to: sent, parameters: [sent[4], sent[5], sent[6]])], afterWrite, control)
         default:
-            return [HIDPPTestTraffic.featureError(for: sent, code: 0x07)]
+            return ([HIDPPTestTraffic.featureError(for: sent, code: 0x07)], nil, nil)
         }
     }
 

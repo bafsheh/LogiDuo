@@ -39,8 +39,11 @@ public struct ControlReporting: Hashable, Sendable {
     public var isPersistentlyDiverted: Bool { flags & 0x0004 != 0 }
     /// Raw XY diverted.
     public var isRawXYDiverted: Bool { flags & 0x0010 != 0 }
-    /// Whether the control behaves natively (no divert of any kind, not remapped).
-    public var isNative: Bool { !isDiverted && !isPersistentlyDiverted && !isRawXYDiverted && remappedTo == control }
+    /// Whether the control behaves natively: no reporting bit of any kind set, not remapped.
+    ///
+    /// Strict on purpose: unknown or reserved bits mean "not native", so LogiDuo
+    /// never takes over a control in a state it does not fully understand.
+    public var isNative: Bool { flags == 0 && remappedTo == control }
 }
 
 /// A reprogrammable control and its current state.
@@ -109,8 +112,11 @@ public enum ReprogControlsFeature {
         let request = try FeatureRequest.read(deviceIndex, index, 2, [UInt8(control >> 8), UInt8(control & 0xFF)])
         let reply = try await device.perform(request, timeout: timeout).parameters
         let remap = FeatureRequest.bigEndian(reply[3...4], as: UInt16.self)
+        let echoed = FeatureRequest.bigEndian(reply[0...1], as: UInt16.self)
+        // A reply for another control must never be mistaken for this one's state.
+        guard echoed == control else { throw .deviceError(.invalidArgument) }
         return ControlReporting(
-            control: FeatureRequest.bigEndian(reply[0...1], as: UInt16.self),
+            control: echoed,
             flags: UInt16(reply[2]) | UInt16(reply[5]) << 8,
             remappedTo: remap == 0 ? control : remap
         )

@@ -14,8 +14,26 @@ public enum DeviceConfigurationError: Error, Hashable, Sendable {
     case restorationIncomplete(UInt16)
     /// This kind of setting cannot be restored yet (entry kept).
     case unsupportedSetting(RestorableSetting)
+    /// The requested command is not supported by the control (for example raw XY on a control without it).
+    case unsupportedCombination(UInt16)
+    /// The device's reply did not match the request (for example another control's identifier).
+    case unexpectedResponse(UInt16)
+    /// The connected device is not the expected physical device, or its identity cannot be read.
+    case identityMismatch
+    /// Device configuration writes are not enabled in this build or session.
+    case writesNotAuthorized
+    /// The operation was cancelled before changing the device.
+    case cancelled
     /// A HID++ request failed.
     case request(HIDPPRequestError)
+}
+
+/// Whether this build or session may send configuration writes to devices.
+public enum DeviceWriteAuthorization: Hashable, Sendable {
+    /// Writes are refused before anything is sent.
+    case disabled
+    /// Writes are allowed.
+    case enabled
 }
 
 /// The outcome of restoring one device.
@@ -32,114 +50,218 @@ public struct RestorationReport: Hashable, Sendable {
     public var isComplete: Bool { failed.isEmpty && journalError == nil }
 }
 
+/// Where a device's configuration features live and who it must be.
+public struct ConfigurableDevice: Hashable, Sendable {
+    /// The logical identity (journal key source).
+    public let identity: DeviceID
+    /// The firmware identity every operation re-verifies.
+    public let physical: PhysicalDeviceID
+    /// The HID++ device index.
+    public let deviceIndex: DeviceIndex
+    /// ReprogControlsV4 feature index.
+    public let reprogIndex: FeatureIndex
+    /// DeviceInformation feature index (for identity verification).
+    public let informationIndex: FeatureIndex
+
+    /// Creates a description.
+    public init(
+        identity: DeviceID,
+        physical: PhysicalDeviceID,
+        deviceIndex: DeviceIndex,
+        reprogIndex: FeatureIndex,
+        informationIndex: FeatureIndex
+    ) {
+        self.identity = identity
+        self.physical = physical
+        self.deviceIndex = deviceIndex
+        self.reprogIndex = reprogIndex
+        self.informationIndex = informationIndex
+    }
+}
+
 /// Applies and undoes temporary control diversion with a durable recovery record.
 ///
-/// Sequence for ``divert(_:change:)`` (steps 1–3 are the caller's: a connected
-/// device, its identity, and a fresh control table):
-/// 4. read the control's current reporting;
-/// 5–6. record the original in the ledger, saved and verified durably — if that
-///    fails nothing is written to the device;
-/// 7. write one narrowly scoped change;
-/// 8–9. read back and compare — on a mismatch the original is restored and the
-///    error reported.
-/// ``restoreAll()`` performs steps 10–12 for every pending entry of the device:
-/// write the original, read back, and only then remove the entry.
+/// ``divert(_:with:)``, for one control:
+/// 1. writes must be authorized; the command must be a divert the control supports;
+/// 2. wait for exclusive access to the device (no concurrent divert or restore);
+/// 3. re-verify the device's firmware identity (unit and model);
+/// 4. read the control's current state; a state LogiDuo did not record must be native;
+/// 5–6. record the exact original in the ledger, saved and verified durably;
+/// 7. write one command (unless cancelled first);
+/// 8–9. read back and compare — on a mismatch only this control is restored.
 ///
-/// Any failure leaves the journal entry in place, so restoration can be retried
-/// on the next connection or launch. Restoring is idempotent.
+/// ``restoreAll()`` (steps 10–13), for every pending entry of the device: re-verify
+/// identity, write the undivert command matching the current state, read back,
+/// and only then remove the entry. Disconnects, timeouts, cancellation and
+/// termination leave entries in place. Restoring is idempotent.
 public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable {
-    private let device: Device
-    private let identity: DeviceID
-    private let featureIndex: FeatureIndex
-    private let deviceIndex: DeviceIndex
+    private let connection: Device
+    private let target: ConfigurableDevice
     private let ledger: RestorationLedger
+    private let authorization: DeviceWriteAuthorization
     private let timeout: Duration?
 
     /// Creates a transaction for one connected device.
     public init(
-        device: Device,
-        identity: DeviceID,
-        featureIndex: FeatureIndex,
-        deviceIndex: DeviceIndex,
+        connection: Device,
+        target: ConfigurableDevice,
         ledger: RestorationLedger,
+        authorization: DeviceWriteAuthorization,
         timeout: Duration? = nil
     ) {
-        self.device = device
-        self.identity = identity
-        self.featureIndex = featureIndex
-        self.deviceIndex = deviceIndex
+        self.connection = connection
+        self.target = target
         self.ledger = ledger
+        self.authorization = authorization
         self.timeout = timeout
     }
 
-    /// Diverts `control` with `change`, recording how to undo it first.
-    public func divert(_ control: ReprogrammableControl, change: ReportingChange) async throws(DeviceConfigurationError)
-    {
-        guard control.flags.contains(.divertable) else { throw .notDivertable(control.control) }
-        let setting = RestorableSetting.controlReporting(DeviceControlID(rawValue: control.control))
-        let current = try await read(control.control)
-        if await ledger.original(of: setting, on: identity) == nil {
-            guard current.isNative else { throw .foreignState(control.control) }
-            do {
-                try await ledger.record(
-                    setting,
-                    on: identity,
-                    original: .controlReporting(diverted: current.isDiverted, rawXYDiverted: current.isRawXYDiverted)
-                )
-            } catch {
-                throw .journalUnavailable(error)
-            }
-        }
-        try await write(control.control, change)
-        guard change.matches(try await read(control.control)) else {
-            _ = await restoreAll()
-            throw .verificationFailed(control.control)
+    /// Diverts `control` with `command`, recording how to undo it first.
+    public func divert(
+        _ control: ReprogrammableControl,
+        with command: ReportingCommand
+    ) async throws(DeviceConfigurationError) {
+        guard authorization == .enabled else { throw .writesNotAuthorized }
+        guard command.diverts else { throw .unsupportedCombination(control.control) }
+        try command.validate(for: control)
+        await ledger.beginExclusive(target.identity)
+        do {
+            try await divertExclusively(control.control, command)
+            await ledger.endExclusive(target.identity)
+        } catch {
+            await ledger.endExclusive(target.identity)
+            throw error
         }
     }
 
     /// Restores every pending setting of this device, verifying each.
     public func restoreAll() async -> RestorationReport {
+        let pending = await ledger.pending(for: target.identity)
+        guard !pending.isEmpty else { return RestorationReport() }
+        guard authorization == .enabled else { return Self.failing(pending, .writesNotAuthorized) }
+        await ledger.beginExclusive(target.identity)
+        let report = await restoreExclusively()
+        await ledger.endExclusive(target.identity)
+        return report
+    }
+
+    // MARK: - Steps
+
+    private func restoreExclusively() async -> RestorationReport {
+        do {
+            try await verifyIdentity()
+        } catch {
+            return Self.failing(await ledger.pending(for: target.identity), error)
+        }
         var report = RestorationReport()
-        for entry in await ledger.pending(for: identity) {
-            do {
-                try await restore(entry)
-                report.restored.append(entry.setting)
-                do {
-                    try await ledger.confirmRestored(entry.setting, on: identity)
-                } catch {
-                    report.journalError = error
-                }
-            } catch {
-                report.failed[entry.setting] = error
-                do {
-                    try await ledger.recordFailure(entry.setting, on: identity)
-                } catch {
-                    report.journalError = error
-                }
-            }
+        for entry in await ledger.pending(for: target.identity) {
+            await restore(entry, into: &report)
         }
         return report
     }
 
-    private func restore(_ entry: RestorationEntry) async throws(DeviceConfigurationError) {
+    private func divertExclusively(
+        _ control: UInt16,
+        _ command: ReportingCommand
+    ) async throws(DeviceConfigurationError) {
+        try await verifyIdentity()
+        let setting = RestorableSetting.controlReporting(DeviceControlID(rawValue: control))
+        let current = try await read(control)
+        if await ledger.original(of: setting, on: target.identity) == nil {
+            guard current.isNative else { throw .foreignState(control) }
+            do {
+                try await ledger.record(
+                    setting,
+                    on: target.identity,
+                    original: .controlReporting(diverted: false, rawXYDiverted: false)
+                )
+            } catch {
+                throw .journalUnavailable(error)
+            }
+        }
+        guard !Task.isCancelled else { throw .cancelled }
+        try await ReprogControlsFeature.send(
+            command,
+            to: control,
+            via: connection,
+            index: target.reprogIndex,
+            deviceIndex: target.deviceIndex,
+            timeout: timeout
+        )
+        guard command.isSatisfied(by: try await read(control)) else {
+            if let entry = await ledger.pending(for: target.identity).first(where: { $0.setting == setting }) {
+                var ignored = RestorationReport()
+                await restore(entry, into: &ignored)
+            }
+            throw .verificationFailed(control)
+        }
+    }
+
+    private func restore(_ entry: RestorationEntry, into report: inout RestorationReport) async {
+        do {
+            try await restoreToNative(entry)
+            report.restored.append(entry.setting)
+            do {
+                try await ledger.confirmRestored(entry.setting, on: target.identity)
+            } catch {
+                report.journalError = error
+            }
+        } catch {
+            report.failed[entry.setting] = error
+            do {
+                try await ledger.recordFailure(entry.setting, on: target.identity)
+            } catch {
+                report.journalError = error
+            }
+        }
+    }
+
+    private func restoreToNative(_ entry: RestorationEntry) async throws(DeviceConfigurationError) {
         guard
             case .controlReporting(let control) = entry.setting,
-            case .controlReporting(let diverted, let rawXY) = entry.original
+            entry.original == .controlReporting(diverted: false, rawXYDiverted: false)
         else { throw .unsupportedSetting(entry.setting) }
-        let original = ReportingChange(divert: diverted, rawXY: rawXY)
-        try await write(control.rawValue, original)
-        guard original.matches(try await read(control.rawValue)) else {
+        let current = try await read(control.rawValue)
+        if current.isNative { return }
+        guard current.remappedTo == control.rawValue, !current.isPersistentlyDiverted else {
+            throw .foreignState(control.rawValue)
+        }
+        let command = ReportingCommand.undivert(from: current)
+        try await ReprogControlsFeature.send(
+            command,
+            to: control.rawValue,
+            via: connection,
+            index: target.reprogIndex,
+            deviceIndex: target.deviceIndex,
+            timeout: timeout
+        )
+        guard command.isSatisfied(by: try await read(control.rawValue)) else {
             throw .restorationIncomplete(control.rawValue)
         }
+    }
+
+    private func verifyIdentity() async throws(DeviceConfigurationError) {
+        let information: DeviceInformation
+        do {
+            information = try await DeviceInformationFeature.information(
+                via: connection,
+                index: target.informationIndex,
+                deviceIndex: target.deviceIndex,
+                timeout: timeout
+            )
+        } catch {
+            throw .identityMismatch
+        }
+        guard information.physicalID == target.physical else { throw .identityMismatch }
     }
 
     private func read(_ control: UInt16) async throws(DeviceConfigurationError) -> ControlReporting {
         do {
             return try await ReprogControlsFeature.reporting(
                 of: control,
-                via: device,
-                index: featureIndex,
-                deviceIndex: deviceIndex,
+                via: connection,
+                index: target.reprogIndex,
+                deviceIndex: target.deviceIndex,
                 timeout: timeout
             )
         } catch {
@@ -147,18 +269,9 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
         }
     }
 
-    private func write(_ control: UInt16, _ change: ReportingChange) async throws(DeviceConfigurationError) {
-        do {
-            try await ReprogControlsFeature.setReporting(
-                of: control,
-                to: change,
-                via: device,
-                index: featureIndex,
-                deviceIndex: deviceIndex,
-                timeout: timeout
-            )
-        } catch {
-            throw .request(error)
-        }
+    private static func failing(_ entries: [RestorationEntry], _ error: DeviceConfigurationError) -> RestorationReport {
+        var report = RestorationReport()
+        for entry in entries { report.failed[entry.setting] = error }
+        return report
     }
 }

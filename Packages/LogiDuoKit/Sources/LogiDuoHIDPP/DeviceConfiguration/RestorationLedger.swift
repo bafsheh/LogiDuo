@@ -15,10 +15,40 @@ public actor RestorationLedger {
 
     private let store: any RestorationJournalStoring
     private var journal = RestorationJournal()
+    private var busy: Set<RestorationDeviceKey> = []
+    private var waiters: [RestorationDeviceKey: [CheckedContinuation<Void, Never>]] = [:]
 
     /// Creates a ledger over `store`. Call ``load()`` before use.
     public init(store: any RestorationJournalStoring) {
         self.store = store
+    }
+
+    /// Waits until no other configuration operation runs on `device`, then claims it.
+    ///
+    /// Divert and restore of one device are serialized (first come, first served)
+    /// so a restore can never interleave with a divert and orphan its effect.
+    /// Every call must be balanced by ``endExclusive(_:)``.
+    public func beginExclusive(_ device: DeviceID) async {
+        let key = store.key(for: device)
+        guard busy.contains(key) else {
+            busy.insert(key)
+            return
+        }
+        await withCheckedContinuation { continuation in
+            waiters[key, default: []].append(continuation)
+        }
+    }
+
+    /// Releases the claim on `device`, handing it to the next waiter.
+    public func endExclusive(_ device: DeviceID) {
+        let key = store.key(for: device)
+        if var queue = waiters[key], !queue.isEmpty {
+            let next = queue.removeFirst()
+            waiters[key] = queue.isEmpty ? nil : queue
+            next.resume()
+        } else {
+            busy.remove(key)
+        }
     }
 
     /// Loads the journal from disk.
