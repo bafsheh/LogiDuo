@@ -84,3 +84,16 @@ struct DevicesViewModelTests {
         #expect(service.refreshes == 1)
     }
 }
+
+@MainActor
+@Suite("DevicesViewModel permissions")
+struct DevicesViewModelPermissionTests {
+    @Test("the Input Monitoring notice leads to the permission screen")
+    func showPermissions() {
+        let router = AppRouter()
+        let model = DevicesViewModel(service: FakeDeviceService(), router: router)
+        model.inputMonitoringMissing = true
+        model.showPermissions()
+        #expect(router.destination == .permissions)
+    }
+}

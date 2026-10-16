@@ -214,7 +214,14 @@ where SessionClock.Duration == Duration {
         _ registryID: UInt64,
         framing: HIDPPFraming
     ) throws(HIDPPTransportError) -> any HIDPPTransport {
-        let raw = try source.transport(registryID: registryID, framing: framing)
+        let raw: any HIDPPTransport
+        do {
+            raw = try source.transport(registryID: registryID, framing: framing)
+        } catch {
+            // Usually missing Input Monitoring: the HID++ interface also carries ordinary input.
+            logger.notice("could not open a device interface: \(String(describing: error), privacy: .public)")
+            throw error
+        }
         return authorization == .enabled ? raw : ReadOnlyTransportGuard(wrapping: raw)
     }
 

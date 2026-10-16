@@ -12,7 +12,9 @@ public struct DevicesView: View {
 
     public var body: some View {
         Group {
-            if model.devices.isEmpty {
+            if model.devices.isEmpty, model.inputMonitoringMissing {
+                InputMonitoringNeededView(open: model.showPermissions)
+            } else if model.devices.isEmpty {
                 EmptyStateView(
                     title: "devices.empty.title",
                     systemImage: "computermouse",
@@ -313,6 +315,26 @@ extension ConflictingSoftware {
         case .logitechOptions: "Logitech Options"
         case .gHub: "G HUB"
         case .mouser: "Mouser"
+        }
+    }
+}
+
+/// Shown instead of "No Devices" when macOS does not let LogiDuo open the devices.
+struct InputMonitoringNeededView: View {
+    let open: () -> Void
+
+    var body: some View {
+        ContentUnavailableView {
+            Label {
+                Text("devices.needsInputMonitoring.title", bundle: .module)
+            } icon: {
+                Image(systemName: "lock.shield").accessibilityHidden(true)
+            }
+        } description: {
+            Text("devices.needsInputMonitoring.message", bundle: .module)
+        } actions: {
+            Button(action: open) { Text("devices.needsInputMonitoring.open", bundle: .module) }
+                .accessibilityIdentifier("devices.openPermissions")
         }
     }
 }

@@ -3,6 +3,8 @@ import LogiDuoDomain
 import LogiDuoFeatures
 import LogiDuoHID
 import LogiDuoPersistence
+import LogiDuoSystem
+import OSLog
 import SwiftUI
 
 /// Application entry point: the main window, the menu bar extra and Settings.
@@ -45,6 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Self.logPermissions()
         followMainWindow()
         root.remapping.activate()
         root.profiles.start()
@@ -68,6 +71,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 NSApplication.shared.activate()
             }
         }
+    }
+
+    /// Records this app's own permission statuses (granted/denied only) for diagnosis.
+    private static func logPermissions() {
+        let checker = SystemPermissionChecker()
+        let statuses = PermissionKind.allCases.map { "\($0.rawValue)=\(checker.status(of: $0))" }.joined(separator: " ")
+        Logger(subsystem: "io.github.bafsheh.LogiDuo", category: "Lifecycle").notice(
+            "launch permissions: \(statuses, privacy: .public)"
+        )
     }
 
     /// Shows a Dock icon only while the main window is open; LogiDuo stays in the menu bar.

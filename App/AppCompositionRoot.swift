@@ -108,12 +108,23 @@ final class AppCompositionRoot {
     /// Warns about other device software.
     private let conflicts = ConflictingSoftwareMonitor()
 
-    /// Starts device discovery and forwards Mac sleep and wake to device connections.
-    func startDevices() {
+    /// Follows what the device dashboard warns about: conflicting software and missing Input Monitoring.
+    private func startNotices() {
         conflicts.start()
         let model = devicesModel
         let running = conflicts.running
         Task { for await software in running { model.conflicts = software } }
+        let permissions = PermissionsAdapter()
+        Task {
+            for await statuses in permissions.statuses() {
+                model.inputMonitoringMissing = statuses[.inputMonitoring] != .granted
+            }
+        }
+    }
+
+    /// Starts device discovery and forwards Mac sleep and wake to device connections.
+    func startDevices() {
+        startNotices()
         let directory = devices
         let repository = configuration
         let actions = deviceActions

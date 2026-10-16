@@ -15,6 +15,13 @@ public final class DevicesViewModel {
     public let writesEnabled: Bool
     /// Other software that may override LogiDuo, if running.
     public var conflicts: Set<ConflictingSoftware> = []
+    /// Whether Input Monitoring is missing; without it macOS does not let LogiDuo open the devices.
+    public var inputMonitoringMissing = false
+
+    /// Shows the permission overview.
+    public func showPermissions() {
+        router.select(.permissions)
+    }
 
     private let service: any DeviceServicing
     private let settings: (any DeviceSettingsServicing)?
