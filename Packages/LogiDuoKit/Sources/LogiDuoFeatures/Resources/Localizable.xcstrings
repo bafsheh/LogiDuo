@@ -1,6 +1,786 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "action.category.device": {
+      "comment": "Action menu group.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device"
+          }
+        }
+      }
+    },
+    "action.category.editing": {
+      "comment": "Action menu group.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editing"
+          }
+        }
+      }
+    },
+    "action.category.media": {
+      "comment": "Action menu group.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media"
+          }
+        }
+      }
+    },
+    "action.category.mouse": {
+      "comment": "Action menu group.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse buttons"
+          }
+        }
+      }
+    },
+    "action.category.native": {
+      "comment": "Action menu group.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default"
+          }
+        }
+      }
+    },
+    "action.category.navigation": {
+      "comment": "Action menu group.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navigation"
+          }
+        }
+      }
+    },
+    "action.category.screenshots": {
+      "comment": "Action menu group.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshots"
+          }
+        }
+      }
+    },
+    "action.category.system": {
+      "comment": "Action menu group.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desktop & Spaces"
+          }
+        }
+      }
+    },
+    "action.category.tabs": {
+      "comment": "Action menu group.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabs"
+          }
+        }
+      }
+    },
+    "action.click.back": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        }
+      }
+    },
+    "action.click.forward": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forward"
+          }
+        }
+      }
+    },
+    "action.click.middle": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Middle click"
+          }
+        }
+      }
+    },
+    "action.click.primary": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left click"
+          }
+        }
+      }
+    },
+    "action.click.secondary": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right click"
+          }
+        }
+      }
+    },
+    "action.custom %@": {
+      "comment": "Action: a custom keyboard shortcut; argument is the shortcut.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcut %@"
+          }
+        }
+      }
+    },
+    "action.device.cycleResolutionPresets": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cycle pointer speed"
+          }
+        }
+      }
+    },
+    "action.device.toggleScrollMode": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle scroll mode"
+          }
+        }
+      }
+    },
+    "action.device.toggleSmartShift": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle SmartShift"
+          }
+        }
+      }
+    },
+    "action.media.mute": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mute"
+          }
+        }
+      }
+    },
+    "action.media.nextTrack": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next track"
+          }
+        }
+      }
+    },
+    "action.media.playPause": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play / pause"
+          }
+        }
+      }
+    },
+    "action.media.previousTrack": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous track"
+          }
+        }
+      }
+    },
+    "action.media.volumeDown": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume down"
+          }
+        }
+      }
+    },
+    "action.media.volumeUp": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume up"
+          }
+        }
+      }
+    },
+    "action.native": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default (no change)"
+          }
+        }
+      }
+    },
+    "action.open %@": {
+      "comment": "Action: open an application; argument is its bundle identifier.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open %@"
+          }
+        }
+      }
+    },
+    "action.screenshot.fullScreen.clipboard": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshot to clipboard"
+          }
+        }
+      }
+    },
+    "action.screenshot.fullScreen.file": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshot to file"
+          }
+        }
+      }
+    },
+    "action.screenshot.region.clipboard": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshot of area to clipboard"
+          }
+        }
+      }
+    },
+    "action.screenshot.region.file": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshot of area to file"
+          }
+        }
+      }
+    },
+    "action.shortcut.browserBack": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browser back"
+          }
+        }
+      }
+    },
+    "action.shortcut.browserForward": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browser forward"
+          }
+        }
+      }
+    },
+    "action.shortcut.closeTab": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close tab"
+          }
+        }
+      }
+    },
+    "action.shortcut.copy": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        }
+      }
+    },
+    "action.shortcut.cut": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cut"
+          }
+        }
+      }
+    },
+    "action.shortcut.end": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End"
+          }
+        }
+      }
+    },
+    "action.shortcut.find": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find"
+          }
+        }
+      }
+    },
+    "action.shortcut.home": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home"
+          }
+        }
+      }
+    },
+    "action.shortcut.newTab": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New tab"
+          }
+        }
+      }
+    },
+    "action.shortcut.nextTab": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next tab"
+          }
+        }
+      }
+    },
+    "action.shortcut.pageDown": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page down"
+          }
+        }
+      }
+    },
+    "action.shortcut.pageUp": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page up"
+          }
+        }
+      }
+    },
+    "action.shortcut.paste": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste"
+          }
+        }
+      }
+    },
+    "action.shortcut.previousTab": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous tab"
+          }
+        }
+      }
+    },
+    "action.shortcut.save": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "action.shortcut.selectAll": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select all"
+          }
+        }
+      }
+    },
+    "action.shortcut.switchApplications": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch applications"
+          }
+        }
+      }
+    },
+    "action.shortcut.switchApplicationsReverse": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch applications (reverse)"
+          }
+        }
+      }
+    },
+    "action.shortcut.undo": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        }
+      }
+    },
+    "action.shortcut.zoomIn": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom in"
+          }
+        }
+      }
+    },
+    "action.shortcut.zoomOut": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom out"
+          }
+        }
+      }
+    },
+    "action.system.appExpose": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Exposé"
+          }
+        }
+      }
+    },
+    "action.system.launchpad": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launchpad"
+          }
+        }
+      }
+    },
+    "action.system.missionControl": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mission Control"
+          }
+        }
+      }
+    },
+    "action.system.nextSpace": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next desktop"
+          }
+        }
+      }
+    },
+    "action.system.previousSpace": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous desktop"
+          }
+        }
+      }
+    },
+    "action.system.showDesktop": {
+      "comment": "Action name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show desktop"
+          }
+        }
+      }
+    },
+    "action.unsupported": {
+      "comment": "Action not available in this version.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not available"
+          }
+        }
+      }
+    },
+    "capture.cancel": {
+      "comment": "Button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "capture.field": {
+      "comment": "VoiceOver label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcut field. Press keys to record."
+          }
+        }
+      }
+    },
+    "capture.functionKey": {
+      "comment": "Picker.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Function key"
+          }
+        }
+      }
+    },
+    "capture.functionKey.none": {
+      "comment": "No function key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
+    "capture.hint": {
+      "comment": "Hint.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press the key combination, or choose a function key below."
+          }
+        }
+      }
+    },
+    "capture.save": {
+      "comment": "Button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "capture.title": {
+      "comment": "Sheet title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record Shortcut"
+          }
+        }
+      }
+    },
     "device.battery.accessibility %lld": {
       "comment": "VoiceOver: battery level.",
       "extractionState": "manual",
@@ -285,6 +1065,198 @@
           "stringUnit": {
             "state": "translated",
             "value": "Refresh"
+          }
+        }
+      }
+    },
+    "mappings.customShortcut": {
+      "comment": "Menu item.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Shortcut…"
+          }
+        }
+      }
+    },
+    "mappings.gestureButton": {
+      "comment": "Picker: which button's gestures are edited.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold button"
+          }
+        }
+      }
+    },
+    "mappings.gestures.footer": {
+      "comment": "Explains gestures.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold the button and move the mouse in a direction. A plain click still does the button's own action."
+          }
+        }
+      }
+    },
+    "mappings.inherited": {
+      "comment": "Caption: inherited from default profile.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From All applications"
+          }
+        }
+      }
+    },
+    "mappings.needsDeviceAccess": {
+      "comment": "Caption: needs device button access.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs device button access (not enabled in this version)"
+          }
+        }
+      }
+    },
+    "mappings.openApplication": {
+      "comment": "Menu item.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Application…"
+          }
+        }
+      }
+    },
+    "mappings.profile": {
+      "comment": "Picker: profile being edited.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        }
+      }
+    },
+    "mappings.profile.default": {
+      "comment": "The default profile.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All applications"
+          }
+        }
+      }
+    },
+    "mappings.rejected.cycle": {
+      "comment": "Error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That would make buttons click each other in a loop."
+          }
+        }
+      }
+    },
+    "mappings.rejected.duplicate": {
+      "comment": "Error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That button already has a mapping."
+          }
+        }
+      }
+    },
+    "mappings.rejected.protected": {
+      "comment": "Error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The left and right buttons cannot be remapped."
+          }
+        }
+      }
+    },
+    "mappings.rejected.selfReferential": {
+      "comment": "Error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A button cannot be mapped to click itself."
+          }
+        }
+      }
+    },
+    "mappings.section.buttons": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buttons"
+          }
+        }
+      }
+    },
+    "mappings.section.gestures": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestures"
+          }
+        }
+      }
+    },
+    "mappings.section.scrolling": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scrolling"
+          }
+        }
+      }
+    },
+    "mappings.useDefault": {
+      "comment": "Menu item: remove the app-specific mapping.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use All Applications Setting"
           }
         }
       }
@@ -1105,6 +2077,18 @@
         }
       }
     },
+    "sidebar.mappings": {
+      "comment": "Sidebar entry.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buttons & Gestures"
+          }
+        }
+      }
+    },
     "sidebar.permissions": {
       "comment": "Sidebar entry for macOS permission status.",
       "extractionState": "manual",
@@ -1137,6 +2121,198 @@
           "stringUnit": {
             "state": "translated",
             "value": "Recovery"
+          }
+        }
+      }
+    },
+    "trigger.hscroll.left": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thumb wheel left"
+          }
+        }
+      }
+    },
+    "trigger.hscroll.right": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thumb wheel right"
+          }
+        }
+      }
+    },
+    "trigger.press.back": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back button"
+          }
+        }
+      }
+    },
+    "trigger.press.dpiSwitch": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pointer speed button"
+          }
+        }
+      }
+    },
+    "trigger.press.forward": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forward button"
+          }
+        }
+      }
+    },
+    "trigger.press.gesture": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesture button"
+          }
+        }
+      }
+    },
+    "trigger.press.middle": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Middle button"
+          }
+        }
+      }
+    },
+    "trigger.press.modeShift": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode shift button"
+          }
+        }
+      }
+    },
+    "trigger.press.primary": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left button"
+          }
+        }
+      }
+    },
+    "trigger.press.secondary": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right button"
+          }
+        }
+      }
+    },
+    "trigger.press.sensePanel": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sense panel"
+          }
+        }
+      }
+    },
+    "trigger.press.thumb": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thumb button"
+          }
+        }
+      }
+    },
+    "trigger.swipe.down": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swipe down"
+          }
+        }
+      }
+    },
+    "trigger.swipe.left": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swipe left"
+          }
+        }
+      }
+    },
+    "trigger.swipe.right": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swipe right"
+          }
+        }
+      }
+    },
+    "trigger.swipe.up": {
+      "comment": "Trigger name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swipe up"
           }
         }
       }

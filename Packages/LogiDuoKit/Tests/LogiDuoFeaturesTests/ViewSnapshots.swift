@@ -65,4 +65,25 @@ struct ViewSnapshots {
         await model.observe()
         try await renderSnapshot(DevicesView(model: model), name: "devices")
     }
+
+    @Test("mapping editor")
+    func mappingEditor() async throws {
+        var configuration = LogiDuoConfiguration.standard
+        configuration.defaultMappings = [
+            ButtonMapping(trigger: .press(.back), action: .system(.missionControl)),
+            ButtonMapping(trigger: .press(.middle), action: .media(.playPause)),
+            ButtonMapping(trigger: .swipe(.middle, .left), action: .system(.previousSpace)),
+            ButtonMapping(trigger: .horizontalScroll(.right), action: .shortcut(.nextTab)),
+        ]
+        let repository = FakeConfigurationRepository(configuration)
+        let model = MappingEditorViewModel(repository: repository)
+        let observing = Task { await model.observe() }
+        await repository.finish()
+        await observing.value
+        try await renderSnapshot(
+            MappingEditorView(model: model),
+            name: "mappings",
+            size: CGSize(width: 720, height: 820)
+        )
+    }
 }

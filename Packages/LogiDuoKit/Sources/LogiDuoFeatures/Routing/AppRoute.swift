@@ -3,6 +3,7 @@ public import LogiDuoDomain
 /// Top-level destinations shown in the main window's sidebar.
 public enum SidebarDestination: String, CaseIterable, Hashable, Sendable, Identifiable {
     case devices
+    case mappings
     case profiles
     case permissions
     case recovery
@@ -18,6 +19,8 @@ public enum SidebarDestination: String, CaseIterable, Hashable, Sendable, Identi
 public enum AppRoute: Hashable, Sendable {
     /// The device list, optionally focused on one device.
     case devices(selected: DeviceID?)
+    /// Button, gesture and scroll mappings.
+    case mappings
     /// Application profile management.
     case profiles
     /// The permission status overview.
@@ -29,6 +32,7 @@ public enum AppRoute: Hashable, Sendable {
     public var destination: SidebarDestination {
         switch self {
         case .devices: .devices
+        case .mappings: .mappings
         case .profiles: .profiles
         case .permissions: .permissions
         case .recovery: .recovery

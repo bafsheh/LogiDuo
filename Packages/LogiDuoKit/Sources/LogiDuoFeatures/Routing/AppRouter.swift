@@ -25,6 +25,7 @@ public final class AppRouter {
     public var currentRoute: AppRoute {
         switch destination {
         case .devices: .devices(selected: selectedDevice)
+        case .mappings: .mappings
         case .profiles: .profiles
         case .permissions: .permissions
         case .recovery: .recovery

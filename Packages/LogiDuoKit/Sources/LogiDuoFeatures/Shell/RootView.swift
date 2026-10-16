@@ -5,12 +5,15 @@ public import SwiftUI
 public struct RootScreens {
     /// The device dashboard.
     public let devices: DevicesViewModel
+    /// The mapping editor.
+    public let mappings: MappingEditorViewModel
     /// Device recovery.
     public let recovery: RecoveryViewModel
 
     /// Creates the set of screens.
-    public init(devices: DevicesViewModel, recovery: RecoveryViewModel) {
+    public init(devices: DevicesViewModel, mappings: MappingEditorViewModel, recovery: RecoveryViewModel) {
         self.devices = devices
+        self.mappings = mappings
         self.recovery = recovery
     }
 }
@@ -62,6 +65,8 @@ struct DestinationView: View {
         switch destination {
         case .devices:
             DevicesView(model: screens.devices)
+        case .mappings:
+            MappingEditorView(model: screens.mappings)
         case .profiles:
             EmptyStateView(title: "profiles.empty.title", systemImage: "person.crop.rectangle.stack")
         case .permissions:

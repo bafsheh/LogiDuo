@@ -23,6 +23,7 @@ extension SidebarDestination {
     var titleKey: LocalizedStringKey {
         switch self {
         case .devices: "sidebar.devices"
+        case .mappings: "sidebar.mappings"
         case .profiles: "sidebar.profiles"
         case .permissions: "sidebar.permissions"
         case .recovery: "sidebar.recovery"
@@ -32,6 +33,7 @@ extension SidebarDestination {
     var systemImage: String {
         switch self {
         case .devices: "computermouse"
+        case .mappings: "computermouse.fill"
         case .profiles: "person.crop.rectangle.stack"
         case .permissions: "lock.shield"
         case .recovery: "arrow.uturn.backward.circle"

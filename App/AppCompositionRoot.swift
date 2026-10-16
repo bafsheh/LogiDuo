@@ -29,6 +29,8 @@ final class AppCompositionRoot {
     let configuration: ConfigurationRepository<ContinuousClock>
     /// Follows the frontmost application's profile.
     let profiles: ProfileController
+    /// The mapping editor.
+    let mappingsModel: MappingEditorViewModel
 
     /// Device configuration writes. Disabled: no physical write has been verified yet,
     /// so recovery inspects devices through the read-only transport guard only.
@@ -41,6 +43,7 @@ final class AppCompositionRoot {
         let repository = ConfigurationRepository(store: FileConfigurationStore(), clock: ContinuousClock())
         self.configuration = repository
         self.profiles = ProfileController(repository: repository, coordinator: coordinator)
+        self.mappingsModel = MappingEditorViewModel(repository: repository)
         self.remappingModel = RemappingViewModel(service: coordinator)
         self.recoveryModel = RecoveryViewModel(
             service: Self.makeRecovery(),
@@ -56,7 +59,7 @@ final class AppCompositionRoot {
     }
 
     /// The main window's screens.
-    var screens: RootScreens { RootScreens(devices: devicesModel, recovery: recoveryModel) }
+    var screens: RootScreens { RootScreens(devices: devicesModel, mappings: mappingsModel, recovery: recoveryModel) }
 
     /// Starts device discovery and forwards Mac sleep and wake to device connections.
     func startDevices() {

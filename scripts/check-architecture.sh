@@ -15,7 +15,7 @@ allowed_imports() {
         LogiDuoHID) echo "Foundation IOKit os Synchronization LogiDuoDomain LogiDuoHIDPP" ;;
         LogiDuoSystem) echo "Foundation AppKit ApplicationServices Carbon CoreGraphics IOKit os ServiceManagement Synchronization LogiDuoDomain" ;;
         LogiDuoPersistence) echo "Foundation CryptoKit Darwin os Synchronization LogiDuoDomain" ;;
-        LogiDuoFeatures) echo "Foundation Observation SwiftUI os LogiDuoDomain" ;;
+        LogiDuoFeatures) echo "Foundation Observation SwiftUI UniformTypeIdentifiers os LogiDuoDomain" ;;
         LogiDuoTestSupport) echo "Foundation Synchronization LogiDuoDomain LogiDuoHIDPP" ;;
         *) echo "__unknown__" ;;
     esac
