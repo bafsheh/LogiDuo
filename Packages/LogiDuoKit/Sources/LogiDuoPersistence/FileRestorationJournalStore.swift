@@ -29,12 +29,7 @@ public final class FileRestorationJournalStore: RestorationJournalStoring, @unch
 
     /// The default location: `~/Library/Application Support/LogiDuo/restoration-journal.json`.
     public static func defaultFileURL() -> URL {
-        let support =
-            FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/Application Support")
-        return support.appendingPathComponent("LogiDuo", isDirectory: true).appendingPathComponent(
-            "restoration-journal.json"
-        )
+        AtomicFile.supportDirectory().appendingPathComponent("restoration-journal.json")
     }
 
     /// Creates a store for `fileURL`.
@@ -46,7 +41,7 @@ public final class FileRestorationJournalStore: RestorationJournalStoring, @unch
     public func load() throws(RestorationJournalStoreError) -> RestorationJournal {
         lock.lock()
         defer { lock.unlock() }
-        removeStaleTemporaryFiles()
+        AtomicFile.removeStaleTemporaryFiles(of: fileURL)
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return RestorationJournal() }
         let envelope = try readEnvelope()
         salt = envelope.salt
@@ -64,8 +59,12 @@ public final class FileRestorationJournalStore: RestorationJournalStoring, @unch
         } catch {
             throw .fileSystem("encoding failed")
         }
-        try prepareDirectory()
-        try writeAtomically(data)
+        do {
+            try AtomicFile.prepareDirectory(of: fileURL)
+            try AtomicFile.write(data, to: fileURL)
+        } catch {
+            throw .fileSystem(Self.describe(error))
+        }
         guard (try? readEnvelope())?.journal == journal else { throw .notDurable }
     }
 
@@ -98,63 +97,22 @@ public final class FileRestorationJournalStore: RestorationJournalStoring, @unch
             guard envelope.version <= Envelope.currentVersion else { throw CocoaError(.fileReadCorruptFile) }
             return envelope
         } catch {
-            throw .corrupted(quarantinedAt: try quarantine())
+            let destination: URL
+            do {
+                destination = try AtomicFile.quarantine(fileURL)
+            } catch {
+                throw .fileSystem(Self.describe(error))
+            }
+            throw .corrupted(quarantinedAt: destination)
         }
     }
 
-    private func quarantine() throws(RestorationJournalStoreError) -> URL {
-        let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
-        let destination = fileURL.deletingPathExtension().appendingPathExtension("corrupt-\(stamp).json")
-        do {
-            try FileManager.default.moveItem(at: fileURL, to: destination)
-        } catch {
-            throw .fileSystem("could not move the corrupted journal aside")
-        }
-        return destination
-    }
-
-    private func prepareDirectory() throws(RestorationJournalStoreError) {
-        let directory = fileURL.deletingLastPathComponent()
-        do {
-            try FileManager.default.createDirectory(
-                at: directory,
-                withIntermediateDirectories: true,
-                attributes: [.posixPermissions: 0o700]
-            )
-        } catch {
-            throw .fileSystem("could not create the journal directory")
-        }
-    }
-
-    private func writeAtomically(_ data: Data) throws(RestorationJournalStoreError) {
-        let directory = fileURL.deletingLastPathComponent()
-        let temporary = directory.appendingPathComponent(".\(fileURL.lastPathComponent).tmp-\(UUID().uuidString)")
-        let descriptor = open(temporary.path, O_CREAT | O_EXCL | O_WRONLY, 0o600)
-        guard descriptor >= 0 else { throw .fileSystem("could not create a temporary journal file") }
-        let written = data.withUnsafeBytes { write(descriptor, $0.baseAddress, $0.count) }
-        let synced = fsync(descriptor) == 0
-        close(descriptor)
-        guard written == data.count, synced else {
-            unlink(temporary.path)
-            throw .fileSystem("could not write the journal durably")
-        }
-        guard rename(temporary.path, fileURL.path) == 0 else {
-            unlink(temporary.path)
-            throw .fileSystem("could not replace the journal")
-        }
-        let directoryDescriptor = open(directory.path, O_RDONLY)
-        if directoryDescriptor >= 0 {
-            fsync(directoryDescriptor)
-            close(directoryDescriptor)
-        }
-    }
-
-    private func removeStaleTemporaryFiles() {
-        let directory = fileURL.deletingLastPathComponent()
-        let prefix = ".\(fileURL.lastPathComponent).tmp-"
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
-        for name in names where name.hasPrefix(prefix) {
-            unlink(directory.appendingPathComponent(name).path)
+    private static func describe(_ error: AtomicFileError) -> String {
+        switch error {
+        case .directory: "could not create the journal directory"
+        case .write: "could not write the journal durably"
+        case .replace: "could not replace the journal"
+        case .quarantine: "could not move the corrupted journal aside"
         }
     }
 }
