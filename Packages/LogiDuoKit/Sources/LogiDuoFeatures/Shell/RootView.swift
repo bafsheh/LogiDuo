@@ -12,6 +12,8 @@ public struct RootScreens {
     public let scrolling: ScrollSettingsViewModel
     /// Application profiles.
     public let profiles: ProfilesViewModel
+    /// Permission overview.
+    public let permissions: PermissionsViewModel
     /// Device recovery.
     public let recovery: RecoveryViewModel
 
@@ -21,12 +23,14 @@ public struct RootScreens {
         mappings: MappingEditorViewModel,
         scrolling: ScrollSettingsViewModel,
         profiles: ProfilesViewModel,
+        permissions: PermissionsViewModel,
         recovery: RecoveryViewModel
     ) {
         self.devices = devices
         self.mappings = mappings
         self.scrolling = scrolling
         self.profiles = profiles
+        self.permissions = permissions
         self.recovery = recovery
     }
 }
@@ -89,7 +93,7 @@ struct DestinationView: View {
                 router.select(.mappings)
             }
         case .permissions:
-            EmptyStateView(title: "permissions.title", systemImage: "lock.shield")
+            PermissionsView(model: screens.permissions)
         case .recovery:
             RecoveryView(model: screens.recovery)
         }

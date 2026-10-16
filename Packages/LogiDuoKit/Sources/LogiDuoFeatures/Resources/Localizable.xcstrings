@@ -1381,6 +1381,138 @@
         }
       }
     },
+    "permissions.accessibility": {
+      "comment": "Permission name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accessibility"
+          }
+        }
+      }
+    },
+    "permissions.accessibility.purpose": {
+      "comment": "Why Accessibility is needed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needed to remap buttons, gestures and scrolling. Without it, every button works as usual."
+          }
+        }
+      }
+    },
+    "permissions.footer": {
+      "comment": "Footer.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes take effect without restarting LogiDuo. LogiDuo never changes these settings itself."
+          }
+        }
+      }
+    },
+    "permissions.inputMonitoring": {
+      "comment": "Permission name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Input Monitoring"
+          }
+        }
+      }
+    },
+    "permissions.inputMonitoring.purpose": {
+      "comment": "Why Input Monitoring is needed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needed to talk to Logitech devices for battery, settings and device information."
+          }
+        }
+      }
+    },
+    "permissions.openSettings": {
+      "comment": "Button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open System Settings…"
+          }
+        }
+      }
+    },
+    "permissions.request": {
+      "comment": "Button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Request Access"
+          }
+        }
+      }
+    },
+    "permissions.status.checking": {
+      "comment": "Status.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking…"
+          }
+        }
+      }
+    },
+    "permissions.status.denied": {
+      "comment": "Status.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not allowed"
+          }
+        }
+      }
+    },
+    "permissions.status.granted": {
+      "comment": "Status.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed"
+          }
+        }
+      }
+    },
+    "permissions.status.notDetermined": {
+      "comment": "Status.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not requested yet"
+          }
+        }
+      }
+    },
     "permissions.title": {
       "comment": "Title of the permission overview.",
       "extractionState": "manual",
@@ -2469,6 +2601,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hold Shift to scroll horizontally"
+          }
+        }
+      }
+    },
+    "settings.about": {
+      "comment": "About text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LogiDuo is an independent app for Logitech mice and keyboards. It is not affiliated with Logitech."
+          }
+        }
+      }
+    },
+    "settings.launchAtLogin": {
+      "comment": "Toggle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open LogiDuo at login"
+          }
+        }
+      }
+    },
+    "settings.menuBar.footer": {
+      "comment": "Footer.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LogiDuo keeps running in the menu bar when its window is closed."
+          }
+        }
+      }
+    },
+    "settings.showWindowAtLaunch": {
+      "comment": "Toggle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the window when LogiDuo opens"
           }
         }
       }
