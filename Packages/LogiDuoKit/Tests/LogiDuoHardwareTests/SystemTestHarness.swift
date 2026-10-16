@@ -85,13 +85,21 @@ final class SinkBackend: @unchecked Sendable {  // Invariant: guarded by `lock`.
     func remove() { inner.remove() }
 }
 
-/// Minimal tail tap on its own run-loop thread (test-only; mirrors the production backend's ownership).
-/// `listenOnly` creates a tap that can only observe.
+/// Minimal tap on its own run-loop thread (test-only; mirrors the production backend's ownership).
+/// By default a tail tap after LogiDuo's session tap; `listenOnly` creates a tap that can only observe.
 final class TailTap: @unchecked Sendable {  // Invariant: guarded by `lock`.
-    private let options: CGEventTapOptions
+    let options: CGEventTapOptions
+    let location: CGEventTapLocation
+    let place: CGEventTapPlacement
 
-    init(listenOnly: Bool = false) {
+    init(
+        listenOnly: Bool = false,
+        location: CGEventTapLocation = .cgAnnotatedSessionEventTap,
+        place: CGEventTapPlacement = .tailAppendEventTap
+    ) {
         options = listenOnly ? .listenOnly : .defaultTap
+        self.location = location
+        self.place = place
     }
 
     private final class Box: @unchecked Sendable {  // Invariant: immutable after init.
@@ -123,9 +131,9 @@ final class TailTap: @unchecked Sendable {  // Invariant: guarded by `lock`.
         let box = Unmanaged.passRetained(Box(handler))
         guard
             let port = CGEvent.tapCreate(
-                tap: .cgAnnotatedSessionEventTap,
-                place: .tailAppendEventTap,
-                options: .defaultTap,
+                tap: location,
+                place: place,
+                options: options,
                 eventsOfInterest: Self.mask,
                 callback: { _, type, event, info in
                     guard let info else { return Unmanaged.passUnretained(event) }
