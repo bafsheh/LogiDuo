@@ -35,6 +35,7 @@ struct Layer {
 let layers: [Layer] = [
     Layer("LogiDuoDomain"),
     Layer("LogiDuoHIDPP", dependencies: ["LogiDuoDomain"]),
+    Layer("LogiDuoHID", dependencies: ["LogiDuoDomain", "LogiDuoHIDPP"]),
     Layer("LogiDuoFeatures", dependencies: ["LogiDuoDomain"], resources: [.process("Resources")]),
 ]
 
