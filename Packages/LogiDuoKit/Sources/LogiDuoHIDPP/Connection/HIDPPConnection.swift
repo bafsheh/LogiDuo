@@ -81,8 +81,9 @@ public actor HIDPPConnection<ChannelClock: Clock> where ChannelClock.Duration ==
         await attempt()
     }
 
-    /// Sends `request`, retrying transient failures of reads.
-    /// - Throws: ``HIDPPRequestError/notConnected`` unless the state is `.connected`.
+    /// Sends `request`, retrying transient failures of reads on the same session.
+    /// - Throws: ``HIDPPRequestError/notConnected`` if the state is not `.connected` when called;
+    ///   if the session ends between attempts, the error of the last attempt.
     public func perform(
         _ request: HIDPPRequest,
         timeout: Duration? = nil
@@ -90,7 +91,8 @@ public actor HIDPPConnection<ChannelClock: Clock> where ChannelClock.Duration ==
         let attempts = request.kind == .read ? 1 + max(0, configuration.readRetryLimit) : 1
         var lastError = HIDPPRequestError.notConnected
         for attemptNumber in 1...attempts {
-            guard state.acceptsCommands, let channel else { throw .notConnected }
+            // A retry after the session ended reports the failure that ended it.
+            guard state.acceptsCommands, let channel else { throw lastError }
             let session = generation
             do {
                 let reply = try await channel.send(request, timeout: timeout ?? configuration.requestTimeout)

@@ -64,6 +64,29 @@ struct HIDPPConnectionLifecycleTests {
         #expect(factory.transports.count == 2)
     }
 
+    @Test("a request outstanding when the link drops fails, and the reconnected session serves new requests")
+    func reconnectDuringOutstandingRequest() async throws {
+        let factory = FakeTransportFactory(fallback: .open(FakeTransportFactory.rootResponder))
+        let (connection, clock) = makeConnection(factory)
+        await connection.connect()
+        let old = try #require(factory.transports.first)
+        old.setResponder(Self.rootThen { _ in [] })
+        let outstanding = Task { try await connection.perform(Self.request(.read)) }
+        #expect(await eventually { old.sent.count == 2 })
+
+        old.disconnect()
+        await #expect(throws: HIDPPRequestError.transport(.disconnected)) { try await outstanding.value }
+        #expect(await eventually { await connection.state == .recovering(cause: .unresponsive, failedAttempts: 0) })
+        clock.advance(by: .milliseconds(1500))
+        #expect(await eventually { await connection.state == .connected })
+
+        let current = try #require(factory.transports.last)
+        current.setResponder(Self.rootThen { sent in [Traffic.reply(to: sent, parameters: [0x31])] })
+        old.deliver(Traffic.reply(to: old.sent[1], parameters: [0xEE]))
+        #expect(try await connection.perform(Self.request(.read)).parameters[0] == 0x31)
+        #expect(await connection.rejectedEvents == 0)
+    }
+
     @Test("callbacks from an old transport never affect the new session")
     func staleCallbacksIgnored() async throws {
         let factory = FakeTransportFactory(fallback: .open(FakeTransportFactory.rootResponder))
