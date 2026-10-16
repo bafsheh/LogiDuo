@@ -66,7 +66,7 @@ let package = Package(
         // hardware or install event taps.
         .testTarget(
             name: "LogiDuoHardwareTests",
-            dependencies: ["LogiDuoDomain", "LogiDuoHIDPP", "LogiDuoHID", "LogiDuoSystem"],
+            dependencies: ["LogiDuoDomain", "LogiDuoHIDPP", "LogiDuoHID", "LogiDuoSystem", "LogiDuoPersistence"],
             swiftSettings: strictSwiftSettings
         ),
         // Test doubles shared by test targets. Never linked into the app.
