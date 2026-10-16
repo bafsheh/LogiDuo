@@ -18,8 +18,10 @@ other bundled runtime.
 | Area | Status |
 | --- | --- |
 | Native macOS app shell (main window, menu bar extra, Settings) | Available |
-| Device discovery over Bluetooth, Logi Bolt and Unifying receivers | Planned |
-| Button remapping, keyboard shortcuts, media and macOS system actions | Planned |
+| HID++ communication with Bluetooth devices (read-only: name, firmware, features, battery) | Available (verified on MX Master 3S and MX Keys) |
+| Remapping of the middle, back and forward buttons (shortcuts, media keys, clicks) | Early validation: off by default, fixed test mappings only |
+| Device discovery through Logi Bolt and Unifying receivers | Planned |
+| Remapping of device-only buttons (gesture, mode shift) and a mapping editor | Planned |
 | Gesture button with directional gestures | Planned |
 | Per-application profiles | Planned |
 | DPI presets, SmartShift, ratchet/free-spin, scroll inversion | Planned |
@@ -75,11 +77,14 @@ Pull requests must pass the same checks in CI. Every warning is treated as an er
 LogiDuo will ask only for the permissions a feature needs, and will show what each one is for and
 what still works without it.
 
-| Permission | Needed for | Status |
+| Permission | Needed for | When LogiDuo asks |
 | --- | --- | --- |
-| Accessibility | Intercepting mouse buttons and sending shortcuts | Required once remapping lands |
+| Accessibility | Intercepting mouse buttons and sending shortcuts | Only when you turn on Remapping, at most once per launch |
+| Input Monitoring | Talking to some keyboards over HID++ | Only when a feature needs it |
 
-You will be able to grant it in **System Settings → Privacy & Security → Accessibility**. LogiDuo is
+Grant them in **System Settings → Privacy & Security**. Without Accessibility, all input stays native.
+Remapping is always one click away from off in the menu bar, and quitting LogiDuo restores normal
+input; if LogiDuo ever crashes, macOS removes its event tap automatically. LogiDuo is
 not sandboxed because event taps and HID++ device control are not available to sandboxed apps; it
 uses the hardened runtime without exceptions.
 
