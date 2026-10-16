@@ -16,7 +16,8 @@ let strictSwiftSettings: [SwiftSetting] = [
 ///
 /// Layer rules (also enforced by scripts/check-architecture.sh):
 /// * Domain depends on nothing but Foundation.
-/// * Infrastructure targets (HID, System, Persistence) depend on Domain only.
+/// * Infrastructure targets (HIDPP, HID, System, Persistence) depend on Domain;
+///   LogiDuoHID (IOKit) additionally builds on the transport-independent LogiDuoHIDPP.
 /// * Features (presentation) depends on Domain only; infrastructure is injected
 ///   by the application's composition root.
 struct Layer {
@@ -33,6 +34,7 @@ struct Layer {
 
 let layers: [Layer] = [
     Layer("LogiDuoDomain"),
+    Layer("LogiDuoHIDPP", dependencies: ["LogiDuoDomain"]),
     Layer("LogiDuoFeatures", dependencies: ["LogiDuoDomain"], resources: [.process("Resources")]),
 ]
 

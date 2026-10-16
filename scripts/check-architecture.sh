@@ -11,7 +11,8 @@ status=0
 allowed_imports() {
     case "$1" in
         LogiDuoDomain) echo "Foundation" ;;
-        LogiDuoHID) echo "Foundation IOKit os Synchronization LogiDuoDomain" ;;
+        LogiDuoHIDPP) echo "Foundation os Synchronization LogiDuoDomain" ;;
+        LogiDuoHID) echo "Foundation IOKit os Synchronization LogiDuoDomain LogiDuoHIDPP" ;;
         LogiDuoSystem) echo "Foundation AppKit ApplicationServices Carbon CoreGraphics IOKit os ServiceManagement Synchronization LogiDuoDomain" ;;
         LogiDuoPersistence) echo "Foundation os Synchronization LogiDuoDomain" ;;
         LogiDuoFeatures) echo "Foundation Observation SwiftUI os LogiDuoDomain" ;;
