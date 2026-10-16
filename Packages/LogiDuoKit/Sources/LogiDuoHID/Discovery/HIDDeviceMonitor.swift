@@ -107,19 +107,23 @@ public final class HIDDeviceMonitor: @unchecked Sendable {  // Invariant: `devic
     }
 
     /// Opens a HID++ transport to a present interface.
+    ///
+    /// Each call creates a fresh `IOHIDDevice` for the interface's IOKit service: the
+    /// monitor's own device objects belong to its scheduled manager, and an
+    /// `IOHIDDevice` can be given a dispatch queue only once (a second
+    /// `IOHIDDeviceSetDispatchQueue` traps), so they can neither be opened nor reopened
+    /// after a reconnect.
     /// - Throws: ``HIDPPTransportError/disconnected`` if the interface is gone.
     public func openTransport(
         registryID: UInt64,
         framing: HIDPPFraming
     ) throws(HIDPPTransportError) -> IOKitHIDTransport {
         let context = self.context
-        let device = queue.sync { context.devices[registryID].map(SendableDevice.init) }
-        guard let device else { throw .disconnected }
-        return try IOKitHIDTransport(device: device.device, framing: framing)
-    }
-
-    private struct SendableDevice: @unchecked Sendable {  // Invariant: CF reference, handed off once.
-        let device: IOHIDDevice
+        let service = queue.sync { context.devices[registryID].map { IOHIDDeviceGetService($0) } }
+        guard let service, service != IO_OBJECT_NULL, let fresh = IOHIDDeviceCreate(kCFAllocatorDefault, service) else {
+            throw .disconnected
+        }
+        return try IOKitHIDTransport(device: fresh, framing: framing)
     }
 
     // MARK: - C callbacks (on `queue`)
