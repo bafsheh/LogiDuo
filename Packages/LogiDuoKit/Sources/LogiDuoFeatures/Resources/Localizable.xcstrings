@@ -1033,6 +1033,66 @@
         }
       }
     },
+    "device.write.applied": {
+      "comment": "Result.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applied to the device."
+          }
+        }
+      }
+    },
+    "device.write.failed": {
+      "comment": "Result.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The device did not accept the change."
+          }
+        }
+      }
+    },
+    "device.write.unavailable": {
+      "comment": "Result.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The device is not connected."
+          }
+        }
+      }
+    },
+    "device.write.unsupported": {
+      "comment": "Result.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device does not support this setting."
+          }
+        }
+      }
+    },
+    "device.writes.disabled": {
+      "comment": "Writes disabled notice.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changing device settings is not enabled in this version. Your choice is saved and will be applied once it is."
+          }
+        }
+      }
+    },
     "devices.empty.message": {
       "comment": "Explains how to make a device appear.",
       "extractionState": "manual",
@@ -1329,6 +1389,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Permissions"
+          }
+        }
+      }
+    },
+    "pointer.deviceReports %lld": {
+      "comment": "Caption: the device currently reports another DPI.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The mouse currently uses %lld DPI."
+          }
+        }
+      }
+    },
+    "pointer.presets": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pointer Speed Presets"
+          }
+        }
+      }
+    },
+    "pointer.presets.add": {
+      "comment": "Button: add preset.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        }
+      }
+    },
+    "pointer.presets.footer": {
+      "comment": "Explains presets.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The “Cycle pointer speed” action steps through these values."
+          }
+        }
+      }
+    },
+    "pointer.presets.new": {
+      "comment": "Field: new preset DPI.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DPI"
+          }
+        }
+      }
+    },
+    "pointer.presets.remove": {
+      "comment": "VoiceOver: remove preset.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove preset"
+          }
+        }
+      }
+    },
+    "pointer.resolution": {
+      "comment": "Label: DPI.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pointer speed"
+          }
+        }
+      }
+    },
+    "pointer.section": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pointer"
           }
         }
       }
@@ -2589,6 +2745,78 @@
           "stringUnit": {
             "state": "translated",
             "value": "Swipe up"
+          }
+        }
+      }
+    },
+    "wheel.mode": {
+      "comment": "Picker: wheel mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wheel mode"
+          }
+        }
+      }
+    },
+    "wheel.mode.automatic": {
+      "comment": "Wheel mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartShift (automatic)"
+          }
+        }
+      }
+    },
+    "wheel.mode.freeSpin": {
+      "comment": "Wheel mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free spin"
+          }
+        }
+      }
+    },
+    "wheel.mode.ratchet": {
+      "comment": "Wheel mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ratchet (click-to-click)"
+          }
+        }
+      }
+    },
+    "wheel.section": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scroll Wheel"
+          }
+        }
+      }
+    },
+    "wheel.sensitivity %lld": {
+      "comment": "Stepper: SmartShift sensitivity.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SmartShift sensitivity: %lld"
           }
         }
       }

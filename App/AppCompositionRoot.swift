@@ -35,6 +35,9 @@ final class AppCompositionRoot {
     let profilesModel: ProfilesViewModel
     /// Scroll preferences.
     let scrollModel: ScrollSettingsViewModel
+    /// Performs device actions (cycle pointer speed, toggle SmartShift).
+    let deviceActions: DeviceActionController
+    private let executor: SyntheticInputExecutor
 
     /// Device configuration writes. Disabled: no physical write has been verified yet,
     /// so recovery inspects devices through the read-only transport guard only.
@@ -42,7 +45,9 @@ final class AppCompositionRoot {
 
     init(router: AppRouter = AppRouter(), remapping: RemappingCoordinator? = nil) {
         self.router = router
-        let coordinator = remapping ?? Self.makeRemapping()
+        let executor = SyntheticInputExecutor(poster: CoreGraphicsEventPoster())
+        self.executor = executor
+        let coordinator = remapping ?? Self.makeRemapping(executor: executor)
         self.remapping = coordinator
         let repository = ConfigurationRepository(store: FileConfigurationStore(), clock: ContinuousClock())
         self.configuration = repository
@@ -61,7 +66,14 @@ final class AppCompositionRoot {
             authorization: Self.deviceWrites
         )
         self.devices = directory
-        self.devicesModel = DevicesViewModel(service: directory, router: router)
+        self.devicesModel = DevicesViewModel(
+            service: directory,
+            router: router,
+            settings: directory,
+            repository: repository,
+            writesEnabled: Self.deviceWrites == .enabled
+        )
+        self.deviceActions = DeviceActionController(directory: directory, repository: repository)
     }
 
     /// The main window's screens.
@@ -78,7 +90,16 @@ final class AppCompositionRoot {
     /// Starts device discovery and forwards Mac sleep and wake to device connections.
     func startDevices() {
         let directory = devices
-        Task { await directory.start() }
+        let repository = configuration
+        let actions = deviceActions
+        executor.handleDeviceActions { action in
+            Task { await actions.perform(action) }
+        }
+        Task {
+            await directory.usePreferences { device in await repository.current().settings(for: device) }
+            await directory.start()
+            await actions.follow()
+        }
         Task {
             for await _ in NSWorkspace.shared.notificationCenter.notifications(named: NSWorkspace.willSleepNotification)
                 .map({ _ in () })
@@ -111,9 +132,8 @@ final class AppCompositionRoot {
         }
     }
 
-    private static func makeRemapping() -> RemappingCoordinator {
+    private static func makeRemapping(executor: SyntheticInputExecutor) -> RemappingCoordinator {
         let checker = SystemPermissionChecker()
-        let executor = SyntheticInputExecutor(poster: CoreGraphicsEventPoster())
         return RemappingCoordinator(
             engine: LiveInputEngine(executor: executor),
             checker: checker,

@@ -45,13 +45,14 @@ enum DeviceSessionUpdate: Sendable {
 actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration {
     typealias Publish = @Sendable (DeviceSessionUpdate) async -> Void
 
-    private let endpoint: TransportEndpoint
+    nonisolated let endpoint: TransportEndpoint
     private let fallbackName: String
     private let product: ProductID
     private let connection: HIDPPConnection<SessionClock>
     private let publish: Publish
     private var observer: Task<Void, Never>?
     private var batteryFeature: FeatureID?
+    private var resolutionRange: ResolutionRange?
 
     init(
         endpoint: TransportEndpoint,
@@ -106,6 +107,71 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
             )
         else { return }
         await publish(.battery(endpoint, DeviceSnapshotMapper.battery(reading)))
+    }
+
+    /// Writes the resolution (snapped to the supported range) and reads it back.
+    func setResolution(_ dpi: Int) async -> (DeviceSettingResult, Int?) {
+        guard await connection.state == .connected else { return (.unavailable, nil) }
+        guard let range = resolutionRange,
+            let index = try? await RootFeature.location(
+                of: .adjustableDPI,
+                via: connection,
+                device: connection.deviceIndex,
+                timeout: nil
+            )?.index
+        else { return (.unsupported, nil) }
+        let target = range.nearestSupported(to: dpi)
+        do {
+            _ = try await AdjustableDPIFeature.set(
+                target,
+                via: connection,
+                index: index,
+                deviceIndex: connection.deviceIndex
+            )
+            let confirmed = try await AdjustableDPIFeature.current(
+                via: connection,
+                index: index,
+                deviceIndex: connection.deviceIndex
+            )
+            return (confirmed == target ? .applied : .failed, confirmed)
+        } catch {
+            return (.failed, nil)
+        }
+    }
+
+    /// Writes the SmartShift mode and reads it back.
+    func setSmartShift(_ mode: SmartShiftMode) async -> (DeviceSettingResult, SmartShiftMode?) {
+        guard await connection.state == .connected else { return (.unavailable, nil) }
+        for feature in [FeatureID.smartShiftEnhanced, .smartShift] {
+            guard
+                let index = try? await RootFeature.location(
+                    of: feature,
+                    via: connection,
+                    device: connection.deviceIndex,
+                    timeout: nil
+                )?
+                .index
+            else { continue }
+            do {
+                try await SmartShiftFeature.set(
+                    mode,
+                    feature: feature,
+                    via: connection,
+                    index: index,
+                    deviceIndex: connection.deviceIndex
+                )
+                let confirmed = try await SmartShiftFeature.mode(
+                    feature: feature,
+                    via: connection,
+                    index: index,
+                    deviceIndex: connection.deviceIndex
+                )
+                return (confirmed == mode ? .applied : .failed, confirmed)
+            } catch {
+                return (.failed, nil)
+            }
+        }
+        return (.unsupported, nil)
     }
 
     func hostWillSleep() async { await connection.hostWillSleep() }
@@ -179,6 +245,7 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
                 product: product
             )
             draft.resolution = await readResolution(inventory)
+            resolutionRange = draft.resolution?.range
             draft.smartShift = await readSmartShift(inventory)
             await publish(.identified(observation, draft))
         } catch {

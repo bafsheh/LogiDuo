@@ -27,7 +27,10 @@ extension HIDDeviceMonitor: HIDInterfaceSource {
 ///   authorized, so discovery can never change a device.
 /// * Identities come from ``DeviceIdentityRegistry`` (firmware identity when
 ///   available), so a device keeps its identity across reconnects and transports.
-public actor DeviceDirectory<SessionClock: Clock>: DeviceServicing where SessionClock.Duration == Duration {
+public actor DeviceDirectory<SessionClock: Clock>: DeviceServicing, DeviceSettingsServicing
+where SessionClock.Duration == Duration {
+    /// The saved settings of a device, replayed when it connects (only while writes are enabled).
+    public typealias Preferences = @Sendable (DeviceID) async -> DeviceSettings
     private struct Attachment {
         let descriptor: HIDInterfaceDescriptor
         var sessions: [DeviceSession<SessionClock>]
@@ -42,10 +45,12 @@ public actor DeviceDirectory<SessionClock: Clock>: DeviceServicing where Session
     private var registry = DeviceIdentityRegistry()
     private var snapshotsByID: [DeviceID: DeviceSnapshot] = [:]
     private var order: [DeviceID] = []
+    private var sessionIDs: [TransportEndpoint: DeviceID] = [:]
     private var subscribers: [Int: AsyncStream<[DeviceSnapshot]>.Continuation] = [:]
     private var nextSubscriber = 0
     private var listener: Task<Void, Never>?
     private var poller: Task<Void, Never>?
+    private var preferences: Preferences = { _ in .unchanged }
 
     /// Creates a directory. Nothing happens until ``start()``.
     public init(
@@ -58,6 +63,35 @@ public actor DeviceDirectory<SessionClock: Clock>: DeviceServicing where Session
         self.clock = clock
         self.authorization = authorization
         self.batteryInterval = batteryInterval
+    }
+
+    /// Sets where saved device settings come from.
+    public func usePreferences(_ preferences: @escaping Preferences) {
+        self.preferences = preferences
+    }
+
+    /// Sets the pointer resolution of `device`.
+    public func setResolution(_ dpi: Int, on device: DeviceID) async -> DeviceSettingResult {
+        guard authorization == .enabled else { return .writesDisabled }
+        guard let session = session(for: device) else { return .unavailable }
+        let (result, confirmed) = await session.setResolution(dpi)
+        if let confirmed, let range = snapshotsByID[device]?.resolution?.range {
+            snapshotsByID[device]?.resolution = ResolutionState(current: confirmed, range: range)
+            broadcast()
+        }
+        return result
+    }
+
+    /// Sets the SmartShift mode of `device`.
+    public func setSmartShift(_ mode: SmartShiftMode, on device: DeviceID) async -> DeviceSettingResult {
+        guard authorization == .enabled else { return .writesDisabled }
+        guard let session = session(for: device) else { return .unavailable }
+        let (result, confirmed) = await session.setSmartShift(mode)
+        if let confirmed {
+            snapshotsByID[device]?.smartShift = confirmed
+            broadcast()
+        }
+        return result
     }
 
     /// Starts listening for interfaces and polling batteries.
@@ -228,6 +262,8 @@ public actor DeviceDirectory<SessionClock: Clock>: DeviceServicing where Session
             id = registry.reconcile(observation).identity.id
             snapshotsByID[id] = draft.snapshot(id: id)
             if !order.contains(id) { order.append(id) }
+            sessionIDs[observation.endpoint] = id
+            if authorization == .enabled { replayPreferences(for: id) }
         case .link(let endpoint, let link):
             guard
                 let known = snapshotsByID.values.first(where: { snapshot in
@@ -250,6 +286,21 @@ public actor DeviceDirectory<SessionClock: Clock>: DeviceServicing where Session
     }
 
     private var currentSnapshots: [DeviceSnapshot] { order.compactMap { snapshotsByID[$0] } }
+
+    private func session(for device: DeviceID) -> DeviceSession<SessionClock>? {
+        guard let endpoint = sessionIDs.first(where: { $0.value == device })?.key else { return nil }
+        return attachments.values.lazy.flatMap(\.sessions).first { $0.endpoint == endpoint }
+    }
+
+    /// Re-applies saved settings after a device connects (HID-052).
+    private func replayPreferences(for device: DeviceID) {
+        let preferences = preferences
+        Task { [weak self] in
+            let settings = await preferences(device)
+            if let resolution = settings.resolution { _ = await self?.setResolution(resolution, on: device) }
+            if let smartShift = settings.smartShift { _ = await self?.setSmartShift(smartShift, on: device) }
+        }
+    }
 
     private func broadcast() {
         let current = currentSnapshots

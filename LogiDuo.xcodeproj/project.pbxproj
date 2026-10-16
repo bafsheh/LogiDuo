@@ -25,6 +25,7 @@
 		A01B917C117F8C93606AA36C /* LogiDuoHID in Frameworks */ = {isa = PBXBuildFile; productRef = DD1287CD6C9791C6F82AE718 /* LogiDuoHID */; };
 		C1D086802BD1C7CB9ED5BB97 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 0A5E678C171BE10EAE164B5C /* LICENSE */; };
 		CBF3A79033D677089D0510AD /* LogiDuoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBDC38398F11B7253D9C696 /* LogiDuoApp.swift */; };
+		F28A892FD2A6F9FAB8BFEC4B /* DeviceActionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D711297D4B73D2D9E1EC28B /* DeviceActionController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		4A6B59151A1E5F24CC2CC755 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		514F08C9A9B4840E4E7CDB54 /* LogiDuo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LogiDuo.entitlements; sourceTree = "<group>"; };
 		5322A96065628078824944F3 /* LogiDuoKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LogiDuoKit; path = Packages/LogiDuoKit; sourceTree = SOURCE_ROOT; };
+		6D711297D4B73D2D9E1EC28B /* DeviceActionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActionController.swift; sourceTree = "<group>"; };
 		74B21E9416DAB3C32CF74CEF /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		7BA86672CA839D85C3CDFEA8 /* AppCompositionRootTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCompositionRootTests.swift; sourceTree = "<group>"; };
 		A64B275F7723E32708CB2F75 /* LogiDuo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LogiDuo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -136,6 +138,7 @@
 		DE3DE989F55A001ECCABE6B2 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				ED224D3FF5190440660A716C /* Devices */,
 				C8CF16C4D6BA5BF2B156FD62 /* Remapping */,
 				F81C97948E52B7352DAA5D22 /* Resources */,
 				40626EBF4C1B113631325F7D /* AppCompositionRoot.swift */,
@@ -154,6 +157,14 @@
 				0A5E678C171BE10EAE164B5C /* LICENSE */,
 				9F7A124F6C29F349FC6DC9ED /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		ED224D3FF5190440660A716C /* Devices */ = {
+			isa = PBXGroup;
+			children = (
+				6D711297D4B73D2D9E1EC28B /* DeviceActionController.swift */,
+			);
+			path = Devices;
 			sourceTree = "<group>";
 		};
 		F81C97948E52B7352DAA5D22 /* Resources */ = {
@@ -318,6 +329,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				323DA8E1851CA49FEA46A985 /* AppCompositionRoot.swift in Sources */,
+				F28A892FD2A6F9FAB8BFEC4B /* DeviceActionController.swift in Sources */,
 				CBF3A79033D677089D0510AD /* LogiDuoApp.swift in Sources */,
 				5C606EB20B9EFDFE1EC27EFF /* ProfileController.swift in Sources */,
 				429F3FB9046E8B7038B1F558 /* RemappingCoordinator.swift in Sources */,

@@ -23,7 +23,7 @@ public struct DevicesView: View {
                     DevicePicker(model: model)
                     Divider()
                     if let device = model.selected {
-                        DeviceStatusView(device: device)
+                        DeviceStatusView(device: device, model: model)
                     }
                 }
             }
@@ -109,13 +109,18 @@ private struct DeviceCard: View {
 /// The selected device's status and features.
 struct DeviceStatusView: View {
     let device: DeviceSnapshot
+    let model: DevicesViewModel
 
     var body: some View {
         Form {
             statusSection
+            if device.category == .mouse {
+                DevicePointerSections(device: device, model: model)
+            }
             featuresSection
         }
         .formStyle(.grouped)
+        .task(id: device.id) { await model.observePreferences() }
     }
 
     private var statusSection: some View {

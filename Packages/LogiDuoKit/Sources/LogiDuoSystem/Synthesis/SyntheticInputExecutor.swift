@@ -19,11 +19,17 @@ public final class SyntheticInputExecutor: InputCommandPerforming, @unchecked Se
     private let lock = NSLock()
     private var held: Set<SyntheticButton> = []
     private var gapCount = 0
+    private var deviceActionHandler: (@Sendable (DeviceAction) -> Void)?
     private let logger = Logger(subsystem: "io.github.bafsheh.LogiDuo", category: "SyntheticInput")
 
     /// Creates an executor posting through `poster`.
     public init(poster: any SyntheticEventPosting) {
         self.poster = poster
+    }
+
+    /// Routes device actions (cycle resolution, toggle SmartShift, …) to the device layer.
+    public func handleDeviceActions(_ handler: (@Sendable (DeviceAction) -> Void)?) {
+        lock.withLock { deviceActionHandler = handler }
     }
 
     /// Synthetic buttons currently held down.
@@ -36,7 +42,11 @@ public final class SyntheticInputExecutor: InputCommandPerforming, @unchecked Se
     public func perform(_ commands: [InputCommand]) {
         for command in commands {
             let plan = SyntheticEventPlanner.plan(command)
-            if let gap = plan.gap {
+            if case .requiresDeviceConfiguration(let action)? = plan.gap,
+                let handler = lock.withLock({ deviceActionHandler })
+            {
+                handler(action)
+            } else if let gap = plan.gap {
                 lock.withLock { gapCount += 1 }
                 logger.info("Not performed: \(String(describing: gap), privacy: .public)")
             }

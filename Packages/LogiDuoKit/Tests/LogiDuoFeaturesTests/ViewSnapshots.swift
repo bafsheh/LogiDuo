@@ -43,7 +43,11 @@ struct ViewSnapshots {
         link: .connected,
         battery: BatteryStatus(percentage: 65, isCharging: false),
         firmwareVersion: "RBM22.02_0009",
-        features: [.reprogrammableControls, .adjustableResolution, .smartShift, .hiResWheel, .thumbwheel, .battery]
+        features: [.reprogrammableControls, .adjustableResolution, .smartShift, .hiResWheel, .thumbwheel, .battery],
+        resolution: ResolutionRange(minimum: 200, maximum: 8000, step: 50).map { range in
+            ResolutionState(current: 1000, range: range)
+        },
+        smartShift: .freeSpin
     )
     static let keyboard = DeviceSnapshot(
         id: .fixture(2),
@@ -63,7 +67,7 @@ struct ViewSnapshots {
         service.send([Self.mouse, Self.keyboard])
         service.finish()
         await model.observe()
-        try await renderSnapshot(DevicesView(model: model), name: "devices")
+        try await renderSnapshot(DevicesView(model: model), name: "devices", size: CGSize(width: 820, height: 1100))
     }
 
     @Test("mapping editor")
