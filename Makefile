@@ -10,7 +10,7 @@ SWIFT_FORMAT  := $(TOOLS_DIR)/.build/release/swift-format
 SOURCES       := App AppTests UITests $(PACKAGE_DIR)/Sources $(PACKAGE_DIR)/Tests $(PACKAGE_DIR)/Package.swift \
                  $(TOOLS_DIR)/Package.swift
 
-.PHONY: help gate system-test hardware-test physical-observe bootstrap tools secrets project build build-for-testing test package-test app-test ui-test lint format format-check hygiene architecture check clean
+.PHONY: help gate system-test hardware-test physical-observe physical-validation bootstrap tools secrets project build build-for-testing test package-test app-test ui-test lint format format-check hygiene architecture check clean
 
 help: ## List available targets.
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-14s %s\n", $$1, $$2}'
@@ -76,6 +76,9 @@ system-test: ## Live event-pipeline tests (needs Accessibility for the terminal)
 
 physical-observe: ## Listen-only: report which button numbers your physical mouse produces (press buttons within 20 s).
 	LOGIDUO_PHYSICAL=1 swift test --package-path $(PACKAGE_DIR) --filter PhysicalObservation
+
+physical-validation: ## Guided physical validation with a person at the Mac (records evidence in build/validation).
+	./scripts/physical-validation.sh
 
 hardware-test: ## Read-only tests against connected Logitech devices (quit Mouser and Logi Options+ first).
 	LOGIDUO_HARDWARE=1 swift test --package-path $(PACKAGE_DIR) --filter Hardware
