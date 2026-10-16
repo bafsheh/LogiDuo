@@ -36,6 +36,7 @@ let layers: [Layer] = [
     Layer("LogiDuoDomain"),
     Layer("LogiDuoHIDPP", dependencies: ["LogiDuoDomain"]),
     Layer("LogiDuoHID", dependencies: ["LogiDuoDomain", "LogiDuoHIDPP"]),
+    Layer("LogiDuoSystem", dependencies: ["LogiDuoDomain"]),
     Layer("LogiDuoFeatures", dependencies: ["LogiDuoDomain"], resources: [.process("Resources")]),
 ]
 
@@ -59,11 +60,12 @@ let package = Package(
             ),
         ]
     } + [
-        // Physical-device verification. Skipped unless LOGIDUO_HARDWARE=1 is set,
-        // so CI and ordinary test runs never touch real hardware.
+        // Physical-device and live-system verification. Skipped unless LOGIDUO_HARDWARE=1
+        // or LOGIDUO_SYSTEM=1 is set, so CI and ordinary test runs never touch real
+        // hardware or install event taps.
         .testTarget(
             name: "LogiDuoHardwareTests",
-            dependencies: ["LogiDuoDomain", "LogiDuoHIDPP", "LogiDuoHID"],
+            dependencies: ["LogiDuoDomain", "LogiDuoHIDPP", "LogiDuoHID", "LogiDuoSystem"],
             swiftSettings: strictSwiftSettings
         ),
         // Test doubles shared by test targets. Never linked into the app.
