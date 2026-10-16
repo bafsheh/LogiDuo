@@ -18,6 +18,8 @@ public final class FakeReprogDevice: @unchecked Sendable {  // Invariant: state 
         case unresponsive
         /// Acknowledges setCidReporting but does not change state.
         case ignoresWrites
+        /// Applies setCidReporting but never answers it (the reply is lost).
+        case dropsWriteReplies
     }
 
     /// The default unit identifier reported by DeviceInformation.
@@ -148,7 +150,8 @@ public final class FakeReprogDevice: @unchecked Sendable {  // Invariant: state 
             guard control != 0x0050, !failingWrites.contains(control) else {
                 return ([HIDPPTestTraffic.featureError(for: sent, code: 0x02)], nil, nil)
             }
-            if fault == .none { flags[control] = Self.apply(sent[6], to: flags[control] ?? 0) }
+            if fault != .ignoresWrites { flags[control] = Self.apply(sent[6], to: flags[control] ?? 0) }
+            if fault == .dropsWriteReplies { return ([], afterWrite, control) }
             return ([HIDPPTestTraffic.reply(to: sent, parameters: [sent[4], sent[5], sent[6]])], afterWrite, control)
         default:
             return ([HIDPPTestTraffic.featureError(for: sent, code: 0x07)], nil, nil)
