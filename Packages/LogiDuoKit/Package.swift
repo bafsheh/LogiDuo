@@ -37,6 +37,7 @@ let layers: [Layer] = [
     Layer("LogiDuoHIDPP", dependencies: ["LogiDuoDomain"]),
     Layer("LogiDuoHID", dependencies: ["LogiDuoDomain", "LogiDuoHIDPP"]),
     Layer("LogiDuoSystem", dependencies: ["LogiDuoDomain"]),
+    Layer("LogiDuoPersistence", dependencies: ["LogiDuoDomain"]),
     Layer("LogiDuoFeatures", dependencies: ["LogiDuoDomain"], resources: [.process("Resources")]),
 ]
 
