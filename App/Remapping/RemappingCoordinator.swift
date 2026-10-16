@@ -22,6 +22,9 @@ final class RemappingCoordinator: RemappingService {
     private let openURL: (URL) -> Void
     private let statusSink: AsyncStream<RemappingStatus>.Continuation
     private var policy = PermissionRequestPolicy()
+    private var profile = ActiveProfile.none
+    /// Called with the enabled flag whenever the person turns remapping on or off.
+    var enabledChanged: (Bool) -> Void = { _ in }
     private var tasks: [Task<Void, Never>] = []
 
     init(
@@ -88,10 +91,21 @@ final class RemappingCoordinator: RemappingService {
 
     func setEnabled(_ enabled: Bool) {
         if enabled { enable() } else { disable() }
+        enabledChanged(enabled)
+    }
+
+    /// Applies the profile in effect (from the configuration and the frontmost application).
+    func apply(_ profile: ActiveProfile) {
+        guard profile != self.profile else { return }
+        self.profile = profile
+        status.activeProfileName = status.preset == .configured ? profile.name : nil
+        if status.isEnabled, status.preset == .configured { engine.updateMappings(resolved(.configured)) }
+        publish()
     }
 
     func select(_ preset: ValidationPreset) {
         status.preset = preset
+        status.activeProfileName = preset == .configured ? profile.name : nil
         if status.isEnabled { engine.updateMappings(resolved(preset)) }
         publish()
     }
@@ -121,7 +135,13 @@ final class RemappingCoordinator: RemappingService {
     private func disable() {
         engine.updateMappings(.passThrough)
         engine.stop()
-        status = RemappingStatus(isEnabled: false, isIntercepting: false, preset: status.preset, notice: nil)
+        status = RemappingStatus(
+            isEnabled: false,
+            isIntercepting: false,
+            preset: status.preset,
+            notice: nil,
+            activeProfileName: status.activeProfileName
+        )
         publish()
     }
 
@@ -162,8 +182,9 @@ final class RemappingCoordinator: RemappingService {
     }
 
     private func resolved(_ preset: ValidationPreset) -> ResolvedMappings {
-        // Phase 4 validates system-reported buttons only; no device capabilities or diversion are used.
-        MappingResolver.resolve(preset.mappings, capabilities: .undiscovered, mode: .enabled)
+        // System-reported buttons only until device diversion is authorized: no capabilities are used.
+        let mappings = preset == .configured ? profile.mappings : preset.mappings
+        return MappingResolver.resolve(mappings, capabilities: .undiscovered, mode: .enabled)
     }
 
     private func publish() {

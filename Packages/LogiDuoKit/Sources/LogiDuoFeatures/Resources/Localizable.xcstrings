@@ -937,6 +937,18 @@
         }
       }
     },
+    "remapping.activeProfile %@": {
+      "comment": "Menu line naming the active application profile.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile: %@"
+          }
+        }
+      }
+    },
     "remapping.openAccessibilitySettings": {
       "comment": "Button opening the Accessibility privacy pane.",
       "extractionState": "manual",
@@ -969,6 +981,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Back Button → Mission Control"
+          }
+        }
+      }
+    },
+    "remapping.preset.configured": {
+      "comment": "Mapping source: the user's own mappings and profiles.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My Mappings"
           }
         }
       }

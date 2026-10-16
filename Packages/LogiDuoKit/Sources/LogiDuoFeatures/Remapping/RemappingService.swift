@@ -4,6 +4,8 @@ public import LogiDuoDomain
 ///
 /// Each is non-destructive and affects one button at a time.
 public enum ValidationPreset: String, CaseIterable, Hashable, Sendable, Identifiable {
+    /// The person's configured mappings and application profiles (the normal mode).
+    case configured
     /// Intercept nothing; observe only.
     case observeOnly
     /// Back button opens Mission Control.
@@ -18,7 +20,7 @@ public enum ValidationPreset: String, CaseIterable, Hashable, Sendable, Identifi
     public var mappings: MappingSet {
         let mappings: [ButtonMapping] =
             switch self {
-            case .observeOnly: []
+            case .configured, .observeOnly: []
             case .backToMissionControl: [ButtonMapping(trigger: .press(.back), action: .system(.missionControl))]
             case .forwardToMiddleClick: [ButtonMapping(trigger: .press(.forward), action: .click(.middle))]
             }
@@ -44,20 +46,29 @@ public struct RemappingStatus: Hashable, Sendable {
     public var isEnabled: Bool
     /// Whether events are actually being intercepted.
     public var isIntercepting: Bool
-    /// The active validation preset.
+    /// The active validation preset (``ValidationPreset/configured`` normally).
     public var preset: ValidationPreset
+    /// The application profile in effect, if not the default profile.
+    public var activeProfileName: String?
     /// Why remapping is not running, if it should be.
     public var notice: RemappingNotice?
 
     /// Remapping off: the launch state.
-    public static let off = RemappingStatus(isEnabled: false, isIntercepting: false, preset: .observeOnly, notice: nil)
+    public static let off = RemappingStatus(isEnabled: false, isIntercepting: false, preset: .configured, notice: nil)
 
     /// Creates a status.
-    public init(isEnabled: Bool, isIntercepting: Bool, preset: ValidationPreset, notice: RemappingNotice?) {
+    public init(
+        isEnabled: Bool,
+        isIntercepting: Bool,
+        preset: ValidationPreset,
+        notice: RemappingNotice?,
+        activeProfileName: String? = nil
+    ) {
         self.isEnabled = isEnabled
         self.isIntercepting = isIntercepting
         self.preset = preset
         self.notice = notice
+        self.activeProfileName = activeProfileName
     }
 }
 

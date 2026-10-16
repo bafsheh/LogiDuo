@@ -33,8 +33,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         root.remapping.activate()
+        root.profiles.start()
         root.startDevices()
         Task { await root.checkRecoveryAtLaunch() }
+    }
+
+    /// Saves pending configuration changes before quitting.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let profiles = root.profiles
+        Task {
+            await profiles.stop()
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
     }
 
     func applicationWillTerminate(_ notification: Notification) {

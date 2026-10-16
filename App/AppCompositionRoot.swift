@@ -25,6 +25,10 @@ final class AppCompositionRoot {
     let devices: DeviceDirectory<ContinuousClock>
     /// The device dashboard.
     let devicesModel: DevicesViewModel
+    /// The configuration (mappings, profiles, preferences), saved debounced.
+    let configuration: ConfigurationRepository<ContinuousClock>
+    /// Follows the frontmost application's profile.
+    let profiles: ProfileController
 
     /// Device configuration writes. Disabled: no physical write has been verified yet,
     /// so recovery inspects devices through the read-only transport guard only.
@@ -34,6 +38,9 @@ final class AppCompositionRoot {
         self.router = router
         let coordinator = remapping ?? Self.makeRemapping()
         self.remapping = coordinator
+        let repository = ConfigurationRepository(store: FileConfigurationStore(), clock: ContinuousClock())
+        self.configuration = repository
+        self.profiles = ProfileController(repository: repository, coordinator: coordinator)
         self.remappingModel = RemappingViewModel(service: coordinator)
         self.recoveryModel = RecoveryViewModel(
             service: Self.makeRecovery(),

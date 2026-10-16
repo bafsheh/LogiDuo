@@ -105,6 +105,51 @@ struct RemappingCoordinatorTests {
         #expect(harness.executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
     }
 
+    @Test("configured mappings follow the active profile while remapping is on")
+    func configuredProfile() throws {
+        let harness = makeHarness()
+        harness.coordinator.setEnabled(true)
+        let mappings = try MappingSet([ButtonMapping(trigger: .press(.forward), action: .click(.middle))])
+        guard let id = ProfileID(rawValue: "safari") else { return }
+
+        harness.coordinator.apply(ActiveProfile(selection: .application(id), name: "Safari", mappings: mappings))
+
+        #expect(harness.coordinator.status.activeProfileName == "Safari")
+        #expect(harness.backend.deliver(.otherMouseDown, button: 4) == nil)
+        #expect(harness.backend.deliver(.otherMouseUp, button: 4) == nil)
+        harness.engine.drainCommands()
+        #expect(harness.executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
+
+        harness.coordinator.apply(.none)
+        #expect(harness.coordinator.status.activeProfileName == nil)
+        #expect(harness.backend.deliver(.otherMouseDown, button: 4) != nil)
+    }
+
+    @Test("a validation preset overrides the profile until switched back")
+    func presetOverridesProfile() throws {
+        let harness = makeHarness()
+        harness.coordinator.setEnabled(true)
+        let mappings = try MappingSet([ButtonMapping(trigger: .press(.forward), action: .click(.middle))])
+        harness.coordinator.apply(ActiveProfile(selection: .defaultProfile, name: nil, mappings: mappings))
+
+        harness.coordinator.select(.observeOnly)
+        #expect(harness.backend.deliver(.otherMouseDown, button: 4) != nil)
+        #expect(harness.backend.deliver(.otherMouseUp, button: 4) != nil)
+
+        harness.coordinator.select(.configured)
+        #expect(harness.backend.deliver(.otherMouseDown, button: 4) == nil)
+    }
+
+    @Test("turning remapping on or off is reported for persistence")
+    func reportsEnabled() {
+        let harness = makeHarness()
+        var reported: [Bool] = []
+        harness.coordinator.enabledChanged = { reported.append($0) }
+        harness.coordinator.setEnabled(true)
+        harness.coordinator.setEnabled(false)
+        #expect(reported == [true, false])
+    }
+
     @Test("without Accessibility, enabling prompts once per launch and never installs the tap")
     func enableWithoutPermission() {
         let harness = makeHarness(accessibility: .denied)

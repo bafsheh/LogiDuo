@@ -17,6 +17,9 @@ public struct RemappingMenuSection: View {
         .accessibilityIdentifier("menu.remapping")
 
         Text(LocalizedStringKey(model.statusKey), bundle: .module)
+        if let profile = model.status.activeProfileName {
+            Text("remapping.activeProfile \(profile)", bundle: .module)
+        }
 
         if model.offersPermissionSettings {
             Button {
@@ -39,6 +42,7 @@ public struct RemappingMenuSection: View {
 extension ValidationPreset {
     var titleKey: LocalizedStringKey {
         switch self {
+        case .configured: "remapping.preset.configured"
         case .observeOnly: "remapping.preset.observeOnly"
         case .backToMissionControl: "remapping.preset.backToMissionControl"
         case .forwardToMiddleClick: "remapping.preset.forwardToMiddleClick"
