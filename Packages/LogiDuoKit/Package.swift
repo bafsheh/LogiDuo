@@ -59,12 +59,19 @@ let package = Package(
             ),
         ]
     } + [
+        // Physical-device verification. Skipped unless LOGIDUO_HARDWARE=1 is set,
+        // so CI and ordinary test runs never touch real hardware.
+        .testTarget(
+            name: "LogiDuoHardwareTests",
+            dependencies: ["LogiDuoDomain", "LogiDuoHIDPP", "LogiDuoHID"],
+            swiftSettings: strictSwiftSettings
+        ),
         // Test doubles shared by test targets. Never linked into the app.
         .target(
             name: "LogiDuoTestSupport",
             dependencies: ["LogiDuoDomain", "LogiDuoHIDPP"],
             path: "Tests/LogiDuoTestSupport",
             swiftSettings: strictSwiftSettings
-        )
+        ),
     ]
 )
