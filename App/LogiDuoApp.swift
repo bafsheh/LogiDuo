@@ -23,7 +23,7 @@ struct LogiDuoApp: App {
         }
 
         Settings {
-            GeneralSettingsView(model: delegate.root.settingsModel)
+            GeneralSettingsView(model: delegate.root.settingsModel, importModel: delegate.root.importModel)
         }
     }
 }

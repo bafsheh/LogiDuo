@@ -114,4 +114,34 @@ struct ViewSnapshots {
         await observing.value
         try await renderSnapshot(ProfilesView(model: model) { _ in }, name: "profiles")
     }
+
+    @Test("Mouser import preview")
+    func mouserImport() async throws {
+        let preview = try MouserImporter.preview(Data(MouserImportFixture.version9.utf8))
+        let model = MouserImportViewModel(service: SnapshotImporter(preview: preview))
+        await model.loadDefault()
+        try await renderSnapshot(
+            MouserImportView(model: model) {},
+            name: "import",
+            size: CGSize(width: 520, height: 520)
+        )
+    }
+}
+
+private actor SnapshotImporter: MouserImportServicing {
+    let preview: MouserImportPreview
+    init(preview: MouserImportPreview) { self.preview = preview }
+    func previewDefaultFile() -> Result<MouserImportPreview, MouserImportFailure> { .success(preview) }
+    func preview(fileAt url: URL) -> Result<MouserImportPreview, MouserImportFailure> { .success(preview) }
+    func apply(_ preview: MouserImportPreview) -> Result<Void, MouserImportFailure> { .success(()) }
+    func canUndoImport() -> Bool { false }
+    func undoImport() -> Bool { false }
+}
+
+private enum MouserImportFixture {
+    static let version9 = #"""
+        {"version": 9, "profiles": {"default": {"mappings": {"xbutton1": "alt_tab", "xbutton2": "alt_tab",
+         "mode_shift": "mission_control", "middle": "none"}}},
+         "settings": {"start_at_login": true, "dpi": 1000, "smart_shift_mode": "freespin", "gesture_threshold": 50}}
+        """#
 }

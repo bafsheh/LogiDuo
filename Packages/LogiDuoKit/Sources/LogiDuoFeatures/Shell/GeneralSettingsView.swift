@@ -4,15 +4,28 @@ public import SwiftUI
 /// The application's Settings window.
 public struct GeneralSettingsView: View {
     private let model: AppSettingsViewModel
+    private let importModel: MouserImportViewModel?
+    @State private var importing = false
 
     /// Creates the settings view.
-    public init(model: AppSettingsViewModel) {
+    public init(model: AppSettingsViewModel, importModel: MouserImportViewModel? = nil) {
         self.model = model
+        self.importModel = importModel
     }
 
     public var body: some View {
         Form {
             startupSection
+            if importModel != nil {
+                Section {
+                    Button {
+                        importing = true
+                    } label: {
+                        Text("settings.importMouser", bundle: .module)
+                    }
+                    .accessibilityIdentifier("settings.importMouser")
+                }
+            }
             Section {
                 LabeledContent {
                     Text(Self.versionString)
@@ -26,6 +39,11 @@ public struct GeneralSettingsView: View {
         .frame(width: 460)
         .fixedSize(horizontal: false, vertical: true)
         .task { await model.load() }
+        .sheet(isPresented: $importing) {
+            if let importModel {
+                MouserImportView(model: importModel) { importing = false }
+            }
+        }
     }
 
     private var startupSection: some View {

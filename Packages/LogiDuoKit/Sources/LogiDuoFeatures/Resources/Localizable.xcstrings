@@ -1213,6 +1213,270 @@
         }
       }
     },
+    "import.cancel": {
+      "comment": "Button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "import.chooseFile": {
+      "comment": "Button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose File…"
+          }
+        }
+      }
+    },
+    "import.close": {
+      "comment": "Button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "import.confirm": {
+      "comment": "Button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import"
+          }
+        }
+      }
+    },
+    "import.done": {
+      "comment": "Result.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imported. Your previous settings were backed up and can be restored with Undo Import."
+          }
+        }
+      }
+    },
+    "import.failure.backup": {
+      "comment": "Error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your current settings could not be backed up, so nothing was imported."
+          }
+        }
+      }
+    },
+    "import.failure.invalid": {
+      "comment": "Error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This file is not a Mouser settings file."
+          }
+        }
+      }
+    },
+    "import.failure.newer %lld": {
+      "comment": "Error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These settings come from a newer Mouser (format %lld) that LogiDuo does not understand yet."
+          }
+        }
+      }
+    },
+    "import.failure.notFound": {
+      "comment": "Error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Mouser settings were found on this Mac. Choose the file if it is somewhere else."
+          }
+        }
+      }
+    },
+    "import.failure.unreadable": {
+      "comment": "Error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Mouser settings file could not be read."
+          }
+        }
+      }
+    },
+    "import.no": {
+      "comment": "Value.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        }
+      }
+    },
+    "import.preview.explanation %lld": {
+      "comment": "Preview explanation; argument is Mouser's schema version.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouser settings (format version %lld) were found. Nothing changes until you choose Import; Mouser's file is never modified."
+          }
+        }
+      }
+    },
+    "import.preview.keeps": {
+      "comment": "Footer.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your current mappings, profiles and scroll settings are replaced. Device list, permissions and other settings are kept."
+          }
+        }
+      }
+    },
+    "import.preview.mappings": {
+      "comment": "Section.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mappings for All Applications"
+          }
+        }
+      }
+    },
+    "import.preview.noMappings": {
+      "comment": "No mappings.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No button mappings to import."
+          }
+        }
+      }
+    },
+    "import.preview.notes": {
+      "comment": "Section.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Imported"
+          }
+        }
+      }
+    },
+    "import.preview.profile %@ %lld": {
+      "comment": "Profile line.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ (%2$lld mappings)"
+          }
+        }
+      }
+    },
+    "import.preview.profiles": {
+      "comment": "Section.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Application Profiles"
+          }
+        }
+      }
+    },
+    "import.preview.settings": {
+      "comment": "Section.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "import.title": {
+      "comment": "Sheet title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import Mouser Settings"
+          }
+        }
+      }
+    },
+    "import.undo": {
+      "comment": "Button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo Import"
+          }
+        }
+      }
+    },
+    "import.yes": {
+      "comment": "Value.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
+          }
+        }
+      }
+    },
     "keyboard.backlight": {
       "comment": "Label.",
       "extractionState": "manual",
@@ -2865,6 +3129,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "LogiDuo is an independent app for Logitech mice and keyboards. It is not affiliated with Logitech."
+          }
+        }
+      }
+    },
+    "settings.importMouser": {
+      "comment": "Button in Settings.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import Mouser Settings…"
           }
         }
       }

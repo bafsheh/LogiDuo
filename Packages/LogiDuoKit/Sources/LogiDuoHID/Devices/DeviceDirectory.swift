@@ -131,6 +131,9 @@ where SessionClock.Duration == Duration {
         attachments = [:]
     }
 
+    /// The devices known right now.
+    public func knownDevices() -> [DeviceSnapshot] { currentSnapshots }
+
     /// The current devices, then every change.
     public func snapshots() -> AsyncStream<[DeviceSnapshot]> {
         let (stream, continuation) = AsyncStream.makeStream(

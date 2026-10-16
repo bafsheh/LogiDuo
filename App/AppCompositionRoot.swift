@@ -39,6 +39,8 @@ final class AppCompositionRoot {
     let permissionsModel = PermissionsViewModel(service: PermissionsAdapter())
     /// The Settings window.
     let settingsModel: AppSettingsViewModel
+    /// Importing Mouser settings.
+    let importModel: MouserImportViewModel
     /// Performs device actions (cycle pointer speed, toggle SmartShift).
     let deviceActions: DeviceActionController
     private let executor: SyntheticInputExecutor
@@ -82,6 +84,13 @@ final class AppCompositionRoot {
             writesEnabled: Self.deviceWrites == .enabled
         )
         self.deviceActions = DeviceActionController(directory: directory, repository: repository)
+        let importer = MouserImportService(
+            repository: repository,
+            backup: FileConfigurationStore(fileURL: MouserImportService<ContinuousClock>.defaultBackupURL()),
+            mice: { await directory.knownDevices().filter { $0.category == .mouse }.map(\.id) },
+            resolveApplication: InstalledApplicationResolver.resolve
+        )
+        self.importModel = MouserImportViewModel(service: importer)
     }
 
     /// The main window's screens.
