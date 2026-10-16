@@ -7,7 +7,10 @@ import UniformTypeIdentifiers
 public struct MappingEditorView: View {
     @Bindable private var model: MappingEditorViewModel
     @State private var capturing: TriggerItem?
-    @State private var choosingApplication: InputTrigger?
+    /// The trigger the application picker is for; kept apart from the presentation flag,
+    /// which SwiftUI may reset before the completion handler runs.
+    @State private var applicationTarget: InputTrigger?
+    @State private var showsApplicationPicker = false
 
     /// Creates the view.
     public init(model: MappingEditorViewModel) {
@@ -31,7 +34,7 @@ public struct MappingEditorView: View {
             }
         }
         .fileImporter(
-            isPresented: Binding(get: { choosingApplication != nil }, set: { if !$0 { choosingApplication = nil } }),
+            isPresented: $showsApplicationPicker,
             allowedContentTypes: [.application],
             onCompletion: applicationChosen
         )
@@ -48,6 +51,14 @@ public struct MappingEditorView: View {
                 Text("mappings.profile", bundle: .module)
             }
             .accessibilityIdentifier("mappings.profile")
+            if let problem = model.saveProblem {
+                Label {
+                    Text(problem.titleKey, bundle: .module)
+                } icon: {
+                    Image(systemName: "exclamationmark.octagon").accessibilityHidden(true)
+                }
+                .foregroundStyle(.red)
+            }
             if let rejection = model.lastRejection {
                 Label {
                     Text(rejection.titleKey, bundle: .module)
@@ -77,8 +88,8 @@ public struct MappingEditorView: View {
     }
 
     private func applicationChosen(_ result: Result<URL, any Error>) {
-        guard let trigger = choosingApplication else { return }
-        choosingApplication = nil
+        guard let trigger = applicationTarget else { return }
+        applicationTarget = nil
         if case .success(let url) = result,
             let identifier = Bundle(url: url)?.bundleIdentifier.flatMap(BundleIdentifier.init)
         {
@@ -103,7 +114,10 @@ public struct MappingEditorView: View {
                     choose: { action in Task { await model.setAction(action, for: row.trigger) } },
                     reset: { Task { await model.resetToInherited(row.trigger) } },
                     captureShortcut: { capturing = TriggerItem(trigger: row.trigger) },
-                    chooseApplication: { choosingApplication = row.trigger }
+                    chooseApplication: {
+                        applicationTarget = row.trigger
+                        showsApplicationPicker = true
+                    }
                 )
             } label: {
                 VStack(alignment: .leading, spacing: 2) {
@@ -239,5 +253,16 @@ extension LocalizedStringKey {
     /// A key from a computed string. (An interpolated literal would become a format key with arguments.)
     static func literal(_ key: String) -> LocalizedStringKey {
         LocalizedStringKey(key)
+    }
+}
+
+extension ConfigurationSaveProblem {
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .newerVersion: "config.problem.newerVersion"
+        case .unreadable: "config.problem.unreadable"
+        case .recoveredFromCorruption: "config.problem.recovered"
+        case .saveFailed: "config.problem.saveFailed"
+        }
     }
 }

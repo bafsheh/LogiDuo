@@ -48,6 +48,8 @@ public final class MappingEditorViewModel {
     public var gestureButton = MouseButton.middle
     /// Why the last change was refused, if it was.
     public private(set) var lastRejection: MappingRejection?
+    /// Why changes are not being saved, if they are not.
+    public private(set) var saveProblem: ConfigurationSaveProblem?
 
     private let repository: any ConfigurationRepositing
 
@@ -87,6 +89,7 @@ public final class MappingEditorViewModel {
     public func observe() async {
         for await configuration in await repository.updates() {
             self.configuration = configuration
+            saveProblem = await repository.saveProblem()
             if case .application(let id) = profile, !configuration.profiles.contains(where: { $0.id == id }) {
                 profile = .defaultProfile
             }
@@ -138,7 +141,7 @@ public final class MappingEditorViewModel {
             guard let index = candidate.profiles.firstIndex(where: { $0.id == id }) else { return }
             candidate.profiles[index].mappings = mappings
         }
-        if let rejection = Self.rejection(in: candidate, for: profile) {
+        if let rejection = rejection(in: candidate, for: profile) {
             lastRejection = rejection
             return
         }
@@ -159,31 +162,54 @@ public final class MappingEditorViewModel {
         }
     }
 
-    private static func rejection(
-        in configuration: LogiDuoConfiguration,
-        for profile: ProfileSelection
-    ) -> MappingRejection? {
+    /// Why `candidate` must not be saved: an invalid edited mapping set, or — for an edit to
+    /// the default profile — any application profile that was valid and would become invalid
+    /// on top of the new defaults (it would otherwise be dropped silently).
+    private func rejection(in candidate: LogiDuoConfiguration, for profile: ProfileSelection) -> MappingRejection? {
+        let defaults: MappingSet
         do {
-            let defaults = try MappingSet(configuration.defaultMappings)
-            guard case .application(let id) = profile, let stored = configuration.profiles.first(where: { $0.id == id })
-            else { return nil }
-            guard
-                let application = ApplicationProfile(
-                    id: stored.id,
-                    name: stored.name,
-                    matchers: stored.matchers,
-                    overrides: try MappingSet(stored.mappings),
-                    isEnabled: stored.isEnabled
-                )
-            else { return nil }
-            do {
-                _ = try ProfileSet(defaultMappings: defaults, applicationProfiles: [application])
-            } catch {
-                if case .invalidEffectiveMappings(_, let rejection) = error { return rejection }
-            }
-            return nil
+            defaults = try MappingSet(candidate.defaultMappings)
         } catch {
             return error
         }
+        let checked: [StoredProfile] =
+            switch profile {
+            case .application(let id): candidate.profiles.filter { $0.id == id }
+            case .defaultProfile:
+                candidate.profiles.filter(wasValid)
+            }
+        return checked.lazy.compactMap { Self.overlayRejection($0, on: defaults) }.first
+    }
+
+    /// Whether `stored` is valid in the configuration as it is before the change.
+    private func wasValid(_ stored: StoredProfile) -> Bool {
+        guard let before = configuration.profiles.first(where: { $0.id == stored.id }) else { return false }
+        return Self.overlayRejection(before, on: currentDefaults) == nil
+    }
+
+    private var currentDefaults: MappingSet { (try? MappingSet(configuration.defaultMappings)) ?? .empty }
+
+    private static func overlayRejection(_ stored: StoredProfile, on defaults: MappingSet) -> MappingRejection? {
+        let overrides: MappingSet
+        do {
+            overrides = try MappingSet(stored.mappings)
+        } catch {
+            return error
+        }
+        guard
+            let application = ApplicationProfile(
+                id: stored.id,
+                name: stored.name,
+                matchers: stored.matchers,
+                overrides: overrides,
+                isEnabled: stored.isEnabled
+            )
+        else { return nil }
+        do {
+            _ = try ProfileSet(defaultMappings: defaults, applicationProfiles: [application])
+        } catch {
+            if case .invalidEffectiveMappings(_, let rejection) = error { return rejection }
+        }
+        return nil
     }
 }

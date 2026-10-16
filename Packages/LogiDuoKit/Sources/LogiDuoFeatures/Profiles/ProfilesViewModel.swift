@@ -68,7 +68,12 @@ public final class ProfilesViewModel {
 
     /// Deletes the profile awaiting confirmation.
     public func confirmDeletion() async {
-        guard let profile = pendingDeletion else { return }
+        await delete(pendingDeletion)
+    }
+
+    /// Deletes `profile` (the one the person confirmed).
+    public func delete(_ profile: StoredProfile?) async {
+        guard let profile else { return }
         pendingDeletion = nil
         profiles.removeAll { $0.id == profile.id }
         if selection == profile.id { selection = profiles.first?.id }

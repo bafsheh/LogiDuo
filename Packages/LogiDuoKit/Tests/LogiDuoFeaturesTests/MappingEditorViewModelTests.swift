@@ -16,7 +16,11 @@ actor FakeConfigurationRepository: ConfigurationRepositing {
         self.configuration = configuration
     }
 
+    var problem: ConfigurationSaveProblem?
+
     func current() -> LogiDuoConfiguration { configuration }
+    func saveProblem() -> ConfigurationSaveProblem? { problem }
+    func setProblem(_ problem: ConfigurationSaveProblem?) { self.problem = problem }
 
     func update(_ change: @Sendable (inout LogiDuoConfiguration) -> Void) {
         change(&configuration)

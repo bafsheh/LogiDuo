@@ -17,6 +17,8 @@ public actor ConfigurationRepository<SaveClock: Clock>: ConfigurationRepositing 
 
     /// How loading went.
     public let loadStatus: ConfigurationLoadStatus
+    /// The configuration as loaded at launch, readable synchronously (for launch decisions).
+    nonisolated public let launchConfiguration: LogiDuoConfiguration
     /// The last save failure, if any.
     public private(set) var lastSaveError: ConfigurationStoreError?
     /// How many saves reached the store.
@@ -29,11 +31,22 @@ public actor ConfigurationRepository<SaveClock: Clock>: ConfigurationRepositing 
         self.clock = clock
         self.delay = delay
         configuration = loaded.configuration
+        launchConfiguration = loaded.configuration
         loadStatus = loaded.status
     }
 
     /// The current configuration.
     public func current() -> LogiDuoConfiguration { configuration }
+
+    /// Why changes are not being saved, if they are not.
+    public func saveProblem() -> ConfigurationSaveProblem? {
+        switch loadStatus {
+        case .newerVersion: return .newerVersion
+        case .unreadable: return .unreadable
+        case .recovered: return lastSaveError == nil ? .recoveredFromCorruption : .saveFailed
+        case .fresh, .loaded: return lastSaveError == nil ? nil : .saveFailed
+        }
+    }
 
     /// Applies `change`, broadcasts it and schedules a save.
     public func update(_ change: @Sendable (inout LogiDuoConfiguration) -> Void) {

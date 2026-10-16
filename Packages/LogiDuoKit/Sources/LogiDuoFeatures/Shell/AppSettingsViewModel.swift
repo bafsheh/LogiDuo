@@ -7,6 +7,8 @@ public protocol LoginItemControlling: Sendable {
     func isEnabled() async -> Bool
     /// Turns starting at login on or off; returns the resulting state.
     func setEnabled(_ enabled: Bool) async -> Bool
+    /// Whether macOS waits for the person to approve the login item.
+    func requiresApproval() async -> Bool
 }
 
 /// Presentation state for the Settings window.
@@ -17,6 +19,8 @@ public final class AppSettingsViewModel {
     public private(set) var launchAtLogin = false
     /// Whether the main window opens at launch.
     public private(set) var showsWindowAtLaunch = true
+    /// Whether opening at login waits for approval in System Settings.
+    public private(set) var loginItemNeedsApproval = false
 
     private let loginItem: any LoginItemControlling
     private let repository: any ConfigurationRepositing
@@ -30,6 +34,7 @@ public final class AppSettingsViewModel {
     /// Turns starting at login on or off.
     public func setLaunchAtLogin(_ enabled: Bool) async {
         launchAtLogin = await loginItem.setEnabled(enabled)
+        loginItemNeedsApproval = await loginItem.requiresApproval()
     }
 
     /// Sets whether the main window opens at launch.
@@ -41,6 +46,7 @@ public final class AppSettingsViewModel {
     /// Loads the current values.
     public func load() async {
         launchAtLogin = await loginItem.isEnabled()
+        loginItemNeedsApproval = await loginItem.requiresApproval()
         showsWindowAtLaunch = await repository.current().general.showsWindowAtLaunch
     }
 }

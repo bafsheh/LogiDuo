@@ -126,3 +126,38 @@ struct LiveInputEngineDeviceInputTests {
         #expect(executor.commands.isEmpty)
     }
 }
+
+@Suite("LiveInputEngine scroll actions after rewriting (fake tap)", .serialized, .timeLimit(.minutes(1)))
+struct LiveInputEngineScrollActionTests {
+    @Test("regression: horizontal-scroll mappings follow the inverted direction the person sees")
+    func invertedTrigger() throws {
+        let set = try MappingSet([ButtonMapping(trigger: .horizontalScroll(.left), action: .shortcut(.previousTab))])
+        let executor = RecordingExecutor()
+        let backend = FakeEventTapBackend()
+        let engine = LiveInputEngine(
+            backend: backend,
+            executor: executor,
+            mappings: MappingResolver.resolve(set, capabilities: .undiscovered, mode: .enabled)
+        )
+        var settings = ScrollSettings.standard
+        settings.invertHorizontal = true
+        engine.updateScrollSettings(settings)
+        engine.start()
+        defer { engine.stop() }
+        guard
+            let event = CGEvent(
+                scrollWheelEvent2Source: nil,
+                units: .line,
+                wheelCount: 2,
+                wheel1: 0,
+                wheel2: 3,
+                wheel3: 0
+            )
+        else { return }
+
+        _ = backend.deliver(.scrollWheel, event)
+        engine.drainCommands()
+
+        #expect(executor.commands.contains(.perform(.shortcut(.previousTab))))
+    }
+}

@@ -781,6 +781,54 @@
         }
       }
     },
+    "config.problem.newerVersion": {
+      "comment": "Warning.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your settings were saved by a newer version of LogiDuo. Changes made here are kept only until you quit."
+          }
+        }
+      }
+    },
+    "config.problem.recovered": {
+      "comment": "Notice.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your settings file could not be read, so LogiDuo started with default settings. The old file was kept beside it."
+          }
+        }
+      }
+    },
+    "config.problem.saveFailed": {
+      "comment": "Warning.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LogiDuo could not save your changes. They are kept only until you quit."
+          }
+        }
+      }
+    },
+    "config.problem.unreadable": {
+      "comment": "Warning.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your settings file cannot be read. Changes made here are kept only until you quit."
+          }
+        }
+      }
+    },
     "conflict.message": {
       "comment": "Banner message.",
       "extractionState": "manual",
@@ -2720,7 +2768,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Applies to Logitech mice only. The trackpad keeps the direction set in System Settings."
+            "value": "Applies to scroll wheels and thumb wheels. Trackpad and Magic Mouse scrolling keeps the direction set in System Settings."
           }
         }
       }
@@ -2829,6 +2877,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open LogiDuo at login"
+          }
+        }
+      }
+    },
+    "settings.launchAtLogin.approval": {
+      "comment": "Caption: login item needs approval.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve LogiDuo in System Settings › General › Login Items."
           }
         }
       }

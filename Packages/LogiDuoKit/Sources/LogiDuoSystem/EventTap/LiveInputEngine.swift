@@ -115,14 +115,14 @@ public final class LiveInputEngine: Sendable {
     // MARK: - Callback path
 
     private func handle(_ type: CGEventType, _ event: CGEvent) -> CGEvent? {
+        // Rewritten first, so horizontal-scroll mappings see the scrolling the person sees.
+        if type == .scrollWheel { Self.applyScroll(scroll.value, to: event) }
         let decision = core.decide(Self.snapshot(type, event), at: now())
         enqueue(decision.commands)
         if !decision.effects.isEmpty {
             perform(effectsFromCallback: decision.effects)
         }
-        guard decision.disposition != .suppress else { return nil }
-        if type == .scrollWheel { Self.applyScroll(scroll.value, to: event) }
-        return event
+        return decision.disposition == .suppress ? nil : event
     }
 
     /// Rewrites a delivered scroll event according to `settings` (only LogiDuo's own

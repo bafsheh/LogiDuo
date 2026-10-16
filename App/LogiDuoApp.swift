@@ -13,7 +13,6 @@ struct LogiDuoApp: App {
     var body: some Scene {
         Window(Text("app.name"), id: SceneID.main) {
             RootView(router: delegate.root.router, screens: delegate.root.screens)
-                .task { await delegate.root.devicesModel.observe() }
         }
 
         MenuBarExtra {
@@ -51,13 +50,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         root.profiles.start()
         root.startDevices()
         let root = root
+        // Followed for the app's lifetime (the menu bar lists devices even with no window).
+        Task { await root.devicesModel.observe() }
+        // Hidden at launch: ordered out at once (not closed), so it can return for recovery.
+        let hidden = !root.configuration.launchConfiguration.general.showsWindowAtLaunch
+        if hidden {
+            for window in NSApplication.shared.windows where Self.isMainWindow(window) { window.orderOut(nil) }
+            NSApplication.shared.setActivationPolicy(.accessory)
+        }
         Task {
             await root.checkRecoveryAtLaunch()
-            // Recovery always shows the window; otherwise honor the preference.
-            if await !root.configuration.current().general.showsWindowAtLaunch, root.recoveryModel.journal == .clean {
-                for window in NSApplication.shared.windows where window.identifier?.rawValue == SceneID.main {
-                    window.close()
+            if hidden, root.recoveryModel.journal != .clean {
+                NSApplication.shared.setActivationPolicy(.regular)
+                for window in NSApplication.shared.windows where Self.isMainWindow(window) {
+                    window.makeKeyAndOrderFront(nil)
                 }
+                NSApplication.shared.activate()
             }
         }
     }

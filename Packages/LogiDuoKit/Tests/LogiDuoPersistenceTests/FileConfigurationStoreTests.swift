@@ -146,3 +146,24 @@ struct FileConfigurationStoreTests {
         #expect(try String(contentsOf: fileURL, encoding: .utf8) == text)
     }
 }
+
+@Suite("ConfigurationRepository save problems")
+struct ConfigurationSaveProblemTests {
+    @Test("a newer-version file is reported; a fresh store reports nothing")
+    func problems() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "logiduo-problem-\(UUID().uuidString)"
+        )
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let file = directory.appendingPathComponent("configuration.json")
+        #expect(
+            await ConfigurationRepository(store: FileConfigurationStore(fileURL: file), clock: ManualClock())
+                .saveProblem() == nil
+        )
+        try Data(#"{"version": 99, "configuration": {}}"#.utf8).write(to: file)
+        #expect(
+            await ConfigurationRepository(store: FileConfigurationStore(fileURL: file), clock: ManualClock())
+                .saveProblem() == .newerVersion
+        )
+    }
+}

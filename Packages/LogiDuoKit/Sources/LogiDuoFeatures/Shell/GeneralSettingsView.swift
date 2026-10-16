@@ -12,27 +12,7 @@ public struct GeneralSettingsView: View {
 
     public var body: some View {
         Form {
-            Section {
-                Toggle(
-                    isOn: Binding(
-                        get: { model.launchAtLogin },
-                        set: { value in Task { await model.setLaunchAtLogin(value) } }
-                    )
-                ) {
-                    Text("settings.launchAtLogin", bundle: .module)
-                }
-                .accessibilityIdentifier("settings.launchAtLogin")
-                Toggle(
-                    isOn: Binding(
-                        get: { model.showsWindowAtLaunch },
-                        set: { value in Task { await model.setShowsWindowAtLaunch(value) } }
-                    )
-                ) {
-                    Text("settings.showWindowAtLaunch", bundle: .module)
-                }
-            } footer: {
-                Text("settings.menuBar.footer", bundle: .module).foregroundStyle(.secondary)
-            }
+            startupSection
             Section {
                 LabeledContent {
                     Text(Self.versionString)
@@ -46,6 +26,31 @@ public struct GeneralSettingsView: View {
         .frame(width: 460)
         .fixedSize(horizontal: false, vertical: true)
         .task { await model.load() }
+    }
+
+    private var startupSection: some View {
+        Section {
+            Toggle(isOn: Binding(get: { model.launchAtLogin }, set: setLaunchAtLogin)) {
+                Text("settings.launchAtLogin", bundle: .module)
+            }
+            .accessibilityIdentifier("settings.launchAtLogin")
+            if model.loginItemNeedsApproval {
+                Text("settings.launchAtLogin.approval", bundle: .module).font(.caption).foregroundStyle(.orange)
+            }
+            Toggle(isOn: Binding(get: { model.showsWindowAtLaunch }, set: setShowsWindow)) {
+                Text("settings.showWindowAtLaunch", bundle: .module)
+            }
+        } footer: {
+            Text("settings.menuBar.footer", bundle: .module).foregroundStyle(.secondary)
+        }
+    }
+
+    private func setLaunchAtLogin(_ value: Bool) {
+        Task { await model.setLaunchAtLogin(value) }
+    }
+
+    private func setShowsWindow(_ value: Bool) {
+        Task { await model.setShowsWindowAtLaunch(value) }
     }
 
     private static var versionString: String {

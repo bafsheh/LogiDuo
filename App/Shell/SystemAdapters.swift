@@ -6,15 +6,15 @@ import LogiDuoSystem
 /// Permission statuses for the permission screen, from a polling monitor.
 final class PermissionsAdapter: PermissionsService {
     private let checker: any PermissionChecking
-    private let monitor: PermissionMonitor<ContinuousClock>
 
     init(checker: any PermissionChecking = SystemPermissionChecker()) {
         self.checker = checker
-        monitor = PermissionMonitor(checker: checker, clock: ContinuousClock())
     }
 
+    /// A fresh monitor per subscription: a monitor's stream ends for good when its
+    /// subscriber goes away, so a shared one would stop updating after the screen closes once.
     func statuses() -> AsyncStream<[PermissionKind: PermissionStatus]> {
-        let monitor = monitor
+        let monitor = PermissionMonitor(checker: checker, clock: ContinuousClock())
         let (stream, continuation) = AsyncStream.makeStream(of: [PermissionKind: PermissionStatus].self)
         continuation.yield(monitor.snapshot())
         let running = Task {
@@ -42,4 +42,5 @@ struct LoginItemAdapter: LoginItemControlling {
 
     func isEnabled() -> Bool { service.isEnabled }
     func setEnabled(_ enabled: Bool) -> Bool { service.setEnabled(enabled) }
+    func requiresApproval() -> Bool { service.requiresApproval }
 }

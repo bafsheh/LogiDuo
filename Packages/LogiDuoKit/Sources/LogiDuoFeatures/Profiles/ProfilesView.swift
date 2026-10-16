@@ -39,7 +39,9 @@ public struct ProfilesView: View {
             presenting: model.pendingDeletion
         ) { _ in
             Button(role: .destructive) {
-                Task { await model.confirmDeletion() }
+                // Captured now: dismissing the dialog clears the pending deletion before a Task runs.
+                let profile = model.pendingDeletion
+                Task { await model.delete(profile) }
             } label: {
                 Text("profiles.delete.confirm", bundle: .module)
             }
@@ -120,6 +122,7 @@ private struct ProfileDetailView: View {
         Section {
             TextField(text: $name) { Text("profiles.name", bundle: .module) }
                 .onSubmit { Task { await model.rename(profile.id, to: name) } }
+                .onDisappear { saveName() }
             Toggle(isOn: Binding(get: { profile.isEnabled }, set: setEnabled)) {
                 Text("profiles.enabled", bundle: .module)
             }
@@ -163,6 +166,14 @@ private struct ProfileDetailView: View {
         } footer: {
             Text("profiles.priority.footer", bundle: .module).foregroundStyle(.secondary)
         }
+    }
+
+    /// Saves a typed name even if Return was not pressed (selection change, leaving the screen).
+    private func saveName() {
+        guard name != profile.name.value else { return }
+        let id = profile.id
+        let typed = name
+        Task { await model.rename(id, to: typed) }
     }
 
     private func setEnabled(_ enabled: Bool) {

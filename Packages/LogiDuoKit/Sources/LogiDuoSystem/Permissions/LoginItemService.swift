@@ -8,6 +8,9 @@ public struct LoginItemService: Sendable {
     /// Whether LogiDuo is registered to open at login.
     public var isEnabled: Bool { SMAppService.mainApp.status == .enabled }
 
+    /// Whether macOS is waiting for the person to approve the login item in System Settings.
+    public var requiresApproval: Bool { SMAppService.mainApp.status == .requiresApproval }
+
     /// Registers or unregisters; returns the resulting state.
     @discardableResult
     public func setEnabled(_ enabled: Bool) -> Bool {

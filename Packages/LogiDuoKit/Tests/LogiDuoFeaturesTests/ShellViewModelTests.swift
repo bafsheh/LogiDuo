@@ -26,6 +26,7 @@ private actor FakePermissions: PermissionsService {
 private actor FakeLoginItem: LoginItemControlling {
     var enabled = false
     func isEnabled() -> Bool { enabled }
+    func requiresApproval() -> Bool { false }
     func setEnabled(_ enabled: Bool) -> Bool {
         self.enabled = enabled
         return enabled

@@ -38,8 +38,22 @@ public protocol ConfigurationStoring: Sendable {
     func save(_ configuration: LogiDuoConfiguration) throws(ConfigurationStoreError)
 }
 
+/// Why changes are not being saved (or were reset), shown to the person.
+public enum ConfigurationSaveProblem: Hashable, Sendable {
+    /// The settings file is from a newer LogiDuo; changes last only until quit.
+    case newerVersion
+    /// The settings file could not be read or moved aside; changes last only until quit.
+    case unreadable
+    /// The settings file was unreadable, kept aside, and defaults are in use.
+    case recoveredFromCorruption
+    /// The last save failed.
+    case saveFailed
+}
+
 /// The single owner of the in-memory configuration.
 public protocol ConfigurationRepositing: Sendable {
+    /// Why changes are not being saved, if they are not.
+    func saveProblem() async -> ConfigurationSaveProblem?
     /// The current configuration.
     func current() async -> LogiDuoConfiguration
     /// Applies `change` and schedules a save.
