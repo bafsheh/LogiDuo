@@ -12,6 +12,8 @@ public enum HIDPPRequestError: Error, Hashable, Sendable {
     case transport(HIDPPTransportError)
     /// The channel was closed before or while the request ran.
     case channelClosed
+    /// The device connection is not established (see `HIDPPConnection`).
+    case notConnected
     /// The request could not be framed for this transport.
     case framing(HIDPPFrameError)
 
@@ -22,7 +24,7 @@ public enum HIDPPRequestError: Error, Hashable, Sendable {
         case .deviceError(let code): code.isTransient
         case .receiverError(let code): code.isTransient
         case .transport(let error): error.isRecoverable
-        case .cancelled, .channelClosed, .framing: false
+        case .cancelled, .channelClosed, .notConnected, .framing: false
         }
     }
 }
@@ -123,6 +125,9 @@ public actor HIDPPChannel<ChannelClock: Clock> where ChannelClock.Duration == Du
     /// Whether the channel has been closed.
     public var isClosed: Bool { closure != nil }
 
+    /// Why the channel closed, once it has.
+    public var closureReason: HIDPPRequestError? { closure }
+
     /// The number of requests to `index` that are waiting behind the outstanding one.
     public func queueDepth(for index: DeviceIndex) -> Int { waiters[index]?.count ?? 0 }
 
@@ -156,14 +161,15 @@ public actor HIDPPChannel<ChannelClock: Clock> where ChannelClock.Duration == Du
             throw .framing(error)
         }
 
-        // Register before sending: the reply may arrive while `send` is suspended.
+        // Register and fix the deadline before sending: the reply may arrive while
+        // `send` is suspended, and time must be measured from before the send.
         pending[request.deviceIndex] = Pending(id: id, key: key)
+        scheduleTimeout(for: request.deviceIndex, id: id, deadline: clock.now.advanced(by: timeout))
         do {
             try await transport.send(bytes)
         } catch {
             complete(request.deviceIndex, id: id, with: .failure(.transport(error)))
         }
-        scheduleTimeout(for: request.deviceIndex, id: id, after: timeout)
         return try await awaitResult(request.deviceIndex, id: id).get()
     }
 
@@ -225,9 +231,8 @@ public actor HIDPPChannel<ChannelClock: Clock> where ChannelClock.Duration == Du
 
     // MARK: - Waiting
 
-    private func scheduleTimeout(for index: DeviceIndex, id: UInt64, after timeout: Duration) {
+    private func scheduleTimeout(for index: DeviceIndex, id: UInt64, deadline: ChannelClock.Instant) {
         guard pending[index]?.id == id, pending[index]?.result == nil else { return }
-        let deadline = clock.now.advanced(by: timeout)
         let clock = self.clock
         pending[index]?.timeout = Task { [weak self] in
             do {

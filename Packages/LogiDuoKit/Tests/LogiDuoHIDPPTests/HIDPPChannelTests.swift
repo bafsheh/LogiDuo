@@ -3,7 +3,7 @@ import LogiDuoHIDPP
 import LogiDuoTestSupport
 import Testing
 
-@Suite("HIDPPChannel correlation")
+@Suite("HIDPPChannel correlation", .timeLimit(.minutes(1)))
 struct HIDPPChannelTests {
     private typealias Traffic = HIDPPTestTraffic
 

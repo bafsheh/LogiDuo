@@ -3,7 +3,7 @@ import LogiDuoHIDPP
 import LogiDuoTestSupport
 import Testing
 
-@Suite("HIDPPChannel timeouts, cancellation and closure")
+@Suite("HIDPPChannel timeouts, cancellation and closure", .timeLimit(.minutes(1)))
 struct HIDPPChannelLifecycleTests {
     private typealias Traffic = HIDPPTestTraffic
 
