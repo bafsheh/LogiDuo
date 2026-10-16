@@ -86,7 +86,14 @@ final class SinkBackend: @unchecked Sendable {  // Invariant: guarded by `lock`.
 }
 
 /// Minimal tail tap on its own run-loop thread (test-only; mirrors the production backend's ownership).
+/// `listenOnly` creates a tap that can only observe.
 final class TailTap: @unchecked Sendable {  // Invariant: guarded by `lock`.
+    private let options: CGEventTapOptions
+
+    init(listenOnly: Bool = false) {
+        options = listenOnly ? .listenOnly : .defaultTap
+    }
+
     private final class Box: @unchecked Sendable {  // Invariant: immutable after init.
         let handler: EventTapHandler
         init(_ handler: @escaping EventTapHandler) { self.handler = handler }
