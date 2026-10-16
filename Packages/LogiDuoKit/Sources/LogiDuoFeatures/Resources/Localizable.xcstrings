@@ -1117,6 +1117,18 @@
         }
       }
     },
+    "devices.diagnostics": {
+      "comment": "Toolbar: share a diagnostics report.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share Diagnostics…"
+          }
+        }
+      }
+    },
     "devices.empty.message": {
       "comment": "Explains how to make a device appear.",
       "extractionState": "manual",

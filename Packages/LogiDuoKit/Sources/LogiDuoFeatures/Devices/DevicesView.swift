@@ -33,6 +33,16 @@ public struct DevicesView: View {
         }
         .toolbar {
             ToolbarItem {
+                ShareLink(item: DiagnosticsReport.current(for: model.devices)) {
+                    Label {
+                        Text("devices.diagnostics", bundle: .module)
+                    } icon: {
+                        Image(systemName: "doc.text.magnifyingglass")
+                    }
+                }
+                .accessibilityIdentifier("devices.diagnostics")
+            }
+            ToolbarItem {
                 Button {
                     Task { await model.refresh() }
                 } label: {
