@@ -29,6 +29,7 @@ public final class LiveInputEngine: Sendable {
     private let commandQueue = DispatchQueue(label: "io.github.bafsheh.LogiDuo.input.commands")
     private let controlQueue = DispatchQueue(label: "io.github.bafsheh.LogiDuo.input.control")
     private let stateSink: AsyncStream<EventTapState>.Continuation
+    private let scroll = LockedScrollSettings()
 
     /// Creates an engine. Nothing is tapped until ``start()``.
     public init(
@@ -85,6 +86,11 @@ public final class LiveInputEngine: Sendable {
         commandQueue.sync {}
     }
 
+    /// Replaces the scroll preferences (inversion, Shift for horizontal, trackpad exclusion).
+    public func updateScrollSettings(_ settings: ScrollSettings) {
+        scroll.value = settings
+    }
+
     /// Releases all held synthetic input without stopping interception (for example before sleep).
     public func cancelHeldInput() {
         enqueue(core.cancelHeldInput(at: now()))
@@ -109,7 +115,40 @@ public final class LiveInputEngine: Sendable {
         if !decision.effects.isEmpty {
             perform(effectsFromCallback: decision.effects)
         }
-        return decision.disposition == .suppress ? nil : event
+        guard decision.disposition != .suppress else { return nil }
+        if type == .scrollWheel { Self.applyScroll(scroll.value, to: event) }
+        return event
+    }
+
+    /// Rewrites a delivered scroll event according to `settings` (only LogiDuo's own
+    /// synthetic events are never touched; they are classified as ignored and
+    /// carry no wheel deltas).
+    static func applyScroll(_ settings: ScrollSettings, to event: CGEvent) {
+        guard !SyntheticEventMarker.isLogiDuoEvent(userData: event.getIntegerValueField(.eventSourceUserData)) else {
+            return
+        }
+        let fields = ScrollFields(
+            vertical: ScrollAxis(
+                lines: event.getIntegerValueField(.scrollWheelEventDeltaAxis1),
+                fixed: event.getDoubleValueField(.scrollWheelEventFixedPtDeltaAxis1),
+                points: event.getIntegerValueField(.scrollWheelEventPointDeltaAxis1)
+            ),
+            horizontal: ScrollAxis(
+                lines: event.getIntegerValueField(.scrollWheelEventDeltaAxis2),
+                fixed: event.getDoubleValueField(.scrollWheelEventFixedPtDeltaAxis2),
+                points: event.getIntegerValueField(.scrollWheelEventPointDeltaAxis2)
+            ),
+            scrollPhase: event.getIntegerValueField(.scrollWheelEventScrollPhase),
+            momentumPhase: event.getIntegerValueField(.scrollWheelEventMomentumPhase),
+            shift: event.flags.contains(.maskShift)
+        )
+        guard let changed = ScrollTransform.apply(settings, to: fields) else { return }
+        event.setIntegerValueField(.scrollWheelEventDeltaAxis1, value: changed.vertical.lines)
+        event.setDoubleValueField(.scrollWheelEventFixedPtDeltaAxis1, value: changed.vertical.fixed)
+        event.setIntegerValueField(.scrollWheelEventPointDeltaAxis1, value: changed.vertical.points)
+        event.setIntegerValueField(.scrollWheelEventDeltaAxis2, value: changed.horizontal.lines)
+        event.setDoubleValueField(.scrollWheelEventFixedPtDeltaAxis2, value: changed.horizontal.fixed)
+        event.setIntegerValueField(.scrollWheelEventPointDeltaAxis2, value: changed.horizontal.points)
     }
 
     /// Re-enabling must happen immediately; everything else is deferred off the callback.
@@ -179,5 +218,16 @@ public final class LiveInputEngine: Sendable {
             scrollPhase: event.getIntegerValueField(.scrollWheelEventScrollPhase),
             momentumPhase: event.getIntegerValueField(.scrollWheelEventMomentumPhase)
         )
+    }
+}
+
+/// Scroll settings shared between the control side and the tap callback.
+private final class LockedScrollSettings: @unchecked Sendable {  // Invariant: `lock`.
+    private let lock = NSLock()
+    private var stored = ScrollSettings.standard
+
+    var value: ScrollSettings {
+        get { lock.withLock { stored } }
+        set { lock.withLock { stored = newValue } }
     }
 }
