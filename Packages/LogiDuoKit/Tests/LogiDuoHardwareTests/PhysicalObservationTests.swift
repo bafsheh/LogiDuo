@@ -1,5 +1,6 @@
 import CoreGraphics
 import Foundation
+import LogiDuoDomain
 import Testing
 
 /// Whether a person is at the Mac to press physical buttons.
@@ -10,17 +11,27 @@ final class ListenOnlyObserver: @unchecked Sendable {  // Invariant: `seen` guar
     private let lock = NSLock()
     private var seen: [Int64: Int] = [:]
     private var leftRight = 0
+    private var marked: [Int64: Int] = [:]
     private let tap = TailTap(listenOnly: true)
 
     /// Counts of physical (unmarked) presses per button number.
     var presses: [Int64: Int] { lock.withLock { seen } }
+
+    /// Counts of LogiDuo's own synthetic presses per button number (marked events).
+    var syntheticPresses: [Int64: Int] { lock.withLock { marked } }
 
     /// Physical primary and secondary presses observed (proves they still reach the system).
     var primaryAndSecondary: Int { lock.withLock { leftRight } }
 
     func start() -> Bool {
         tap.install { [weak self] type, event in
-            guard event.getIntegerValueField(.eventSourceUserData) == 0 else { return event }
+            let userData = event.getIntegerValueField(.eventSourceUserData)
+            if SyntheticEventMarker.isLogiDuoEvent(userData: userData), type == .otherMouseDown {
+                self?.lock.withLock {
+                    self?.marked[event.getIntegerValueField(.mouseEventButtonNumber), default: 0] += 1
+                }
+            }
+            guard userData == 0 else { return event }
             self?.lock.withLock {
                 switch type {
                 case .otherMouseDown: self?.seen[event.getIntegerValueField(.mouseEventButtonNumber), default: 0] += 1
@@ -53,6 +64,10 @@ struct PhysicalObservationTests {
         try await ContinuousClock().sleep(for: .seconds(seconds))
         print("[physical] other-button presses by number: \(observer.presses.sorted { $0.key < $1.key })")
         print("[physical] left/right presses observed: \(observer.primaryAndSecondary)")
-        #expect(!observer.presses.isEmpty, "no physical presses observed")
+        print("[physical] LogiDuo synthetic presses by number: \(observer.syntheticPresses.sorted { $0.key < $1.key })")
+        // Report-only runs (guided validation) expect suppressed buttons to be absent.
+        if ProcessInfo.processInfo.environment["LOGIDUO_PHYSICAL_REPORT_ONLY"] != "1" {
+            #expect(!observer.presses.isEmpty, "no physical presses observed")
+        }
     }
 }
