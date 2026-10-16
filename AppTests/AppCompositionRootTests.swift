@@ -6,11 +6,13 @@ import Testing
 @MainActor
 @Suite("AppCompositionRoot")
 struct AppCompositionRootTests {
-    @Test("wires a router that opens on the device list")
+    @Test("wires a router that opens on the device list and remapping that starts off")
     func defaultGraph() {
         let root = AppCompositionRoot()
 
         #expect(root.router.currentRoute == .devices(selected: nil))
+        #expect(root.remapping.status == .off)
+        #expect(!root.remappingModel.isEnabled)
     }
 
     @Test("uses the injected router instance")

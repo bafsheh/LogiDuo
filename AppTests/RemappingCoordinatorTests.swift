@@ -1,0 +1,166 @@
+import CoreGraphics
+import Foundation
+import LogiDuoDomain
+import LogiDuoFeatures
+import LogiDuoSystem
+import Testing
+
+@testable import LogiDuo
+
+final class AppFakeTapBackend: EventTapBackend, @unchecked Sendable {  // Invariant: guarded by `lock`.
+    private let lock = NSLock()
+    private var handler: EventTapHandler?
+    private(set) var installs = 0
+
+    var isInstalled: Bool { lock.withLock { handler != nil } }
+
+    func install(mask: CGEventMask, handler: @escaping EventTapHandler) -> Bool {
+        lock.withLock {
+            installs += 1
+            self.handler = handler
+            return true
+        }
+    }
+
+    func reenable() {}
+    func remove() { lock.withLock { handler = nil } }
+
+    func deliver(_ type: CGEventType, button: Int64) -> CGEvent? {
+        guard
+            let handler = lock.withLock({ self.handler }),
+            let event = CGEvent(
+                mouseEventSource: nil,
+                mouseType: type,
+                mouseCursorPosition: .zero,
+                mouseButton: .center
+            )
+        else { return nil }
+        event.setIntegerValueField(.mouseEventButtonNumber, value: button)
+        return handler(type, event)
+    }
+}
+
+final class AppFakeChecker: PermissionChecking, @unchecked Sendable {  // Invariant: guarded by `lock`.
+    private let lock = NSLock()
+    private var accessibility: PermissionStatus
+    private(set) var prompts = 0
+
+    init(_ accessibility: PermissionStatus) { self.accessibility = accessibility }
+    func grant() { lock.withLock { accessibility = .granted } }
+    func status(of kind: PermissionKind) -> PermissionStatus {
+        lock.withLock { kind == .accessibility ? accessibility : .granted }
+    }
+    func requestPrompt(for kind: PermissionKind) { lock.withLock { prompts += 1 } }
+}
+
+final class AppRecordingExecutor: InputCommandPerforming, @unchecked Sendable {  // Invariant: guarded by `lock`.
+    private let lock = NSLock()
+    private var log: [InputCommand] = []
+    var commands: [InputCommand] { lock.withLock { log } }
+    func perform(_ commands: [InputCommand]) { lock.withLock { log += commands } }
+}
+
+@MainActor
+@Suite("RemappingCoordinator", .serialized)
+struct RemappingCoordinatorTests {
+    private struct Harness {
+        let coordinator: RemappingCoordinator
+        let backend: AppFakeTapBackend
+        let checker: AppFakeChecker
+        let executor: AppRecordingExecutor
+        let engine: LiveInputEngine
+    }
+
+    private func makeHarness(accessibility: PermissionStatus = .granted) -> Harness {
+        let backend = AppFakeTapBackend()
+        let checker = AppFakeChecker(accessibility)
+        let executor = AppRecordingExecutor()
+        let engine = LiveInputEngine(backend: backend, executor: executor)
+        let coordinator = RemappingCoordinator(
+            engine: engine,
+            checker: checker,
+            permissionMonitor: PermissionMonitor(checker: checker, clock: ContinuousClock()),
+            openURL: { _ in }
+        )
+        return Harness(coordinator: coordinator, backend: backend, checker: checker, executor: executor, engine: engine)
+    }
+
+    @Test("remapping is off at launch and no event tap exists")
+    func offAtLaunch() {
+        let harness = makeHarness()
+        #expect(harness.coordinator.status == .off)
+        #expect(harness.backend.installs == 0)
+    }
+
+    @Test("enabling with permission installs the tap and applies the preset")
+    func enableWithPermission() {
+        let harness = makeHarness()
+        harness.coordinator.select(.forwardToMiddleClick)
+        harness.coordinator.setEnabled(true)
+
+        #expect(harness.coordinator.status.isIntercepting)
+        #expect(harness.backend.deliver(.otherMouseDown, button: 4) == nil)
+        #expect(harness.backend.deliver(.otherMouseUp, button: 4) == nil)
+        harness.engine.drainCommands()
+        #expect(harness.executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
+    }
+
+    @Test("without Accessibility, enabling prompts once per launch and never installs the tap")
+    func enableWithoutPermission() {
+        let harness = makeHarness(accessibility: .denied)
+        harness.coordinator.setEnabled(true)
+        #expect(harness.coordinator.status.notice == .accessibilityRequired)
+        #expect(!harness.coordinator.status.isIntercepting)
+
+        harness.coordinator.setEnabled(false)
+        harness.coordinator.setEnabled(true)
+        #expect(harness.checker.prompts == 1)
+        #expect(harness.backend.installs == 0)
+    }
+
+    @Test("permission granted later starts interception without another prompt")
+    func permissionGrantedLater() {
+        let harness = makeHarness(accessibility: .denied)
+        harness.coordinator.setEnabled(true)
+        harness.checker.grant()
+
+        harness.coordinator.permissionsChanged([.accessibility: .granted, .inputMonitoring: .granted])
+
+        #expect(harness.coordinator.status.isIntercepting)
+        #expect(harness.coordinator.status.notice == nil)
+        #expect(harness.checker.prompts == 1)
+    }
+
+    @Test("revoked permission stops interception and restores native input")
+    func permissionRevoked() {
+        let harness = makeHarness()
+        harness.coordinator.select(.forwardToMiddleClick)
+        harness.coordinator.setEnabled(true)
+        _ = harness.backend.deliver(.otherMouseDown, button: 4)
+
+        harness.coordinator.permissionsChanged([.accessibility: .denied, .inputMonitoring: .granted])
+        harness.engine.drainCommands()
+
+        #expect(!harness.backend.isInstalled)
+        #expect(harness.coordinator.status.notice == .accessibilityRequired)
+        #expect(harness.executor.commands.last == .releaseSynthetic(.middle))
+    }
+
+    @Test("disabling removes the tap; quitting mid-press releases the synthetic button")
+    func disableAndShutdown() {
+        let harness = makeHarness()
+        harness.coordinator.select(.forwardToMiddleClick)
+        harness.coordinator.setEnabled(true)
+        _ = harness.backend.deliver(.otherMouseDown, button: 4)
+
+        harness.coordinator.shutdown()
+
+        #expect(!harness.backend.isInstalled)
+        #expect(
+            harness.coordinator.status
+                == RemappingStatus(isEnabled: false, isIntercepting: false, preset: .forwardToMiddleClick, notice: nil)
+        )
+        #expect(harness.executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
+        #expect(harness.backend.deliver(.otherMouseUp, button: 4) == nil)
+    }
+}

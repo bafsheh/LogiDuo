@@ -61,6 +61,18 @@
         }
       }
     },
+    "menu.remapping": {
+      "comment": "Menu toggle that turns button remapping on or off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remapping"
+          }
+        }
+      }
+    },
     "menu.settings": {
       "comment": "Menu bar item that opens the Settings window.",
       "extractionState": "manual",
@@ -93,6 +105,126 @@
           "stringUnit": {
             "state": "translated",
             "value": "No Profiles"
+          }
+        }
+      }
+    },
+    "remapping.openAccessibilitySettings": {
+      "comment": "Button opening the Accessibility privacy pane.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Accessibility Settings…"
+          }
+        }
+      }
+    },
+    "remapping.preset": {
+      "comment": "Picker for the temporary validation mapping.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Validation Mapping"
+          }
+        }
+      }
+    },
+    "remapping.preset.backToMissionControl": {
+      "comment": "Validation preset.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back Button → Mission Control"
+          }
+        }
+      }
+    },
+    "remapping.preset.forwardToMiddleClick": {
+      "comment": "Validation preset.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forward Button → Middle Click"
+          }
+        }
+      }
+    },
+    "remapping.preset.observeOnly": {
+      "comment": "Validation preset that changes nothing.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Observe Only (no changes)"
+          }
+        }
+      }
+    },
+    "remapping.status.needsAccessibility": {
+      "comment": "Status when Accessibility is missing.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs Accessibility permission. Input stays native until it is granted."
+          }
+        }
+      }
+    },
+    "remapping.status.off": {
+      "comment": "Status when remapping is off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remapping is off — all input is native."
+          }
+        }
+      }
+    },
+    "remapping.status.on": {
+      "comment": "Status when the event tap is active.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remapping is on."
+          }
+        }
+      }
+    },
+    "remapping.status.starting": {
+      "comment": "Status while the event tap is being installed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starting remapping…"
+          }
+        }
+      }
+    },
+    "remapping.status.stopped": {
+      "comment": "Status after repeated event tap timeouts.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped: macOS kept interrupting remapping. Input is native."
           }
         }
       }
