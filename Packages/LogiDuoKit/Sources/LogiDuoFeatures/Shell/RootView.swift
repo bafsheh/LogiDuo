@@ -6,18 +6,22 @@ public import SwiftUI
 /// through the injected ``AppRouter``.
 public struct RootView: View {
     @Bindable private var router: AppRouter
+    private let recovery: RecoveryViewModel
 
     /// Creates the root view.
-    /// - Parameter router: The navigation state shared with the menu bar.
-    public init(router: AppRouter) {
+    /// - Parameters:
+    ///   - router: The navigation state shared with the menu bar.
+    ///   - recovery: The device recovery screen's model.
+    public init(router: AppRouter, recovery: RecoveryViewModel) {
         self.router = router
+        self.recovery = recovery
     }
 
     public var body: some View {
         NavigationSplitView {
             SidebarView(selection: sidebarSelection)
         } detail: {
-            DestinationView(destination: router.destination)
+            DestinationView(destination: router.destination, recovery: recovery)
         }
         .frame(minWidth: 720, minHeight: 480)
     }
@@ -37,6 +41,7 @@ public struct RootView: View {
 /// Detail content for a sidebar destination.
 struct DestinationView: View {
     let destination: SidebarDestination
+    let recovery: RecoveryViewModel
 
     var body: some View {
         switch destination {
@@ -50,6 +55,8 @@ struct DestinationView: View {
             EmptyStateView(title: "profiles.empty.title", systemImage: "person.crop.rectangle.stack")
         case .permissions:
             EmptyStateView(title: "permissions.title", systemImage: "lock.shield")
+        case .recovery:
+            RecoveryView(model: recovery)
         }
     }
 }

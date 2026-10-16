@@ -60,6 +60,9 @@ public actor RestorationLedger {
     /// quarantine. Devices with entries from an earlier run must be restored
     /// before they can be configured again.
     public func load() -> LoadOutcome {
+        // The unreadable file is already in quarantine; reading again would find
+        // nothing and hide the corruption.
+        if quarantined != nil { return .corrupted }
         do {
             journal = try store.load()
             quarantined = nil
@@ -86,6 +89,9 @@ public actor RestorationLedger {
     public func hasInheritedEntries(_ device: DeviceID) -> Bool {
         inherited.contains(store.key(for: device))
     }
+
+    /// How many entries are pending across all devices.
+    public var pendingEntryCount: Int { journal.entries.count }
 
     /// The journal key of `device`.
     nonisolated public func key(for device: DeviceID) -> RestorationDeviceKey {

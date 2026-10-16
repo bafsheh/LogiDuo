@@ -5,6 +5,7 @@ public enum SidebarDestination: String, CaseIterable, Hashable, Sendable, Identi
     case devices
     case profiles
     case permissions
+    case recovery
 
     /// Stable identity for SwiftUI lists.
     public var id: String { rawValue }
@@ -21,6 +22,8 @@ public enum AppRoute: Hashable, Sendable {
     case profiles
     /// The permission status overview.
     case permissions
+    /// Device recovery (exact restore and emergency reset).
+    case recovery
 
     /// The sidebar entry that owns this route.
     public var destination: SidebarDestination {
@@ -28,6 +31,7 @@ public enum AppRoute: Hashable, Sendable {
         case .devices: .devices
         case .profiles: .profiles
         case .permissions: .permissions
+        case .recovery: .recovery
         }
     }
 }

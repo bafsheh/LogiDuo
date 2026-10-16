@@ -22,6 +22,12 @@ public struct DeviceID: RawRepresentable, Hashable, Sendable, Codable, CustomStr
         self.rawValue = rawValue
     }
 
+    /// The identifier of a device with a firmware identity; the same one
+    /// ``DeviceIdentityRegistry`` registers it under, on any transport.
+    public init(physical: PhysicalDeviceID) {
+        self.init(derived: "phy.\(physical.model).\(hexString(physical.unit.rawValue, digits: 8))")
+    }
+
     /// A redacted form safe for logs; it does not reveal serial numbers.
     public var description: String {
         "DeviceID(\(rawValue.count) chars)"

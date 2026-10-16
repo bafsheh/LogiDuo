@@ -109,6 +109,570 @@
         }
       }
     },
+    "recovery.block.deviceUnavailable": {
+      "comment": "Blocked: device unavailable.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The device is not connected or did not answer."
+          }
+        }
+      }
+    },
+    "recovery.block.identityUnverified": {
+      "comment": "Blocked: identity unknown.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The device’s identity could not be verified, so nothing was changed."
+          }
+        }
+      }
+    },
+    "recovery.block.journalCorrupted": {
+      "comment": "Blocked: unreadable records.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exact restore needs readable records. Use emergency reset instead."
+          }
+        }
+      }
+    },
+    "recovery.block.notConfirmed": {
+      "comment": "Blocked: not confirmed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This plan is out of date. Review the device again."
+          }
+        }
+      }
+    },
+    "recovery.block.unsupportedDevice": {
+      "comment": "Blocked: unsupported device.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device has no buttons LogiDuo manages."
+          }
+        }
+      }
+    },
+    "recovery.block.writesDisabled": {
+      "comment": "Blocked: writes disabled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device changes are disabled in this version."
+          }
+        }
+      }
+    },
+    "recovery.confirm.decline": {
+      "comment": "Cancel button of the confirmation.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don’t Reset"
+          }
+        }
+      }
+    },
+    "recovery.confirm.message %lld %@": {
+      "comment": "Confirmation message; arguments: button count, device name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld buttons on %2$@ will return to their normal behavior. Nothing else on the device changes."
+          }
+        }
+      }
+    },
+    "recovery.confirm.reset": {
+      "comment": "Destructive confirmation button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Buttons"
+          }
+        }
+      }
+    },
+    "recovery.confirm.title": {
+      "comment": "Confirmation dialog title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset these buttons?"
+          }
+        }
+      }
+    },
+    "recovery.control.gesture": {
+      "comment": "Gesture button name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesture button"
+          }
+        }
+      }
+    },
+    "recovery.control.modeShift": {
+      "comment": "Mode shift button name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode shift button"
+          }
+        }
+      }
+    },
+    "recovery.control.other %@": {
+      "comment": "Other control; argument is its identifier.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control %@"
+          }
+        }
+      }
+    },
+    "recovery.control.virtualGesture": {
+      "comment": "Virtual gesture button name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Virtual gesture button"
+          }
+        }
+      }
+    },
+    "recovery.devices.header": {
+      "comment": "Section header for devices.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected Devices"
+          }
+        }
+      }
+    },
+    "recovery.devices.none": {
+      "comment": "No device with a verified identity.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No device with a verified identity is connected."
+          }
+        }
+      }
+    },
+    "recovery.devices.pending %lld": {
+      "comment": "Recovery records for one device.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld recorded changes"
+          }
+        }
+      }
+    },
+    "recovery.devices.refresh": {
+      "comment": "Button to reload devices.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh"
+          }
+        }
+      }
+    },
+    "recovery.journal.acknowledge": {
+      "comment": "Button acknowledging the unreadable-records notice.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I Have Reviewed My Devices"
+          }
+        }
+      }
+    },
+    "recovery.journal.clean": {
+      "comment": "No pending recovery records.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No changes are waiting to be undone."
+          }
+        }
+      }
+    },
+    "recovery.journal.corrupted": {
+      "comment": "The recovery record file was unreadable.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The recovery records could not be read. They were kept aside, not deleted. Device state is unknown: review each device below. LogiDuo will not change any device on its own."
+          }
+        }
+      }
+    },
+    "recovery.journal.header": {
+      "comment": "Section header for the recovery record status.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery Records"
+          }
+        }
+      }
+    },
+    "recovery.journal.pending %lld": {
+      "comment": "Pending recovery record count.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld recorded changes are waiting to be undone."
+          }
+        }
+      }
+    },
+    "recovery.outcome.alreadyNative": {
+      "comment": "Outcome: already normal.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already normal"
+          }
+        }
+      }
+    },
+    "recovery.outcome.changed": {
+      "comment": "Outcome: changed since planning.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changed since review — not touched"
+          }
+        }
+      }
+    },
+    "recovery.outcome.failed": {
+      "comment": "Outcome: failed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed — record kept"
+          }
+        }
+      }
+    },
+    "recovery.outcome.restored": {
+      "comment": "Outcome: restored.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returned to normal (verified)"
+          }
+        }
+      }
+    },
+    "recovery.outcome.skipped": {
+      "comment": "Outcome: skipped.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left alone"
+          }
+        }
+      }
+    },
+    "recovery.plan.alreadyNative": {
+      "comment": "Plan: control already normal.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already normal — unchanged"
+          }
+        }
+      }
+    },
+    "recovery.plan.cancel": {
+      "comment": "Button that discards the plan.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "recovery.plan.explanation": {
+      "comment": "Explains the emergency reset.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emergency reset returns only the buttons LogiDuo can take over to their normal behavior. It does not touch the primary or secondary buttons, stored device settings, other controls, or remappings, and it is not a factory reset. Each button is checked afterwards. If another app such as Logi Options+ is running, it may need to reapply its settings."
+          }
+        }
+      }
+    },
+    "recovery.plan.header %@": {
+      "comment": "Header of the emergency reset plan; argument is the device name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emergency Reset: %@"
+          }
+        }
+      }
+    },
+    "recovery.plan.journalCorrupted": {
+      "comment": "Plan note when records were unreadable.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The recovery records were unreadable, so this plan is based only on what the device reports now."
+          }
+        }
+      }
+    },
+    "recovery.plan.reset %lld": {
+      "comment": "Button that asks for confirmation.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset %lld Buttons…"
+          }
+        }
+      }
+    },
+    "recovery.plan.skippedNotDivertable": {
+      "comment": "Plan: not divertable.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not changeable — left alone"
+          }
+        }
+      }
+    },
+    "recovery.plan.skippedPersistent": {
+      "comment": "Plan: stored divert left alone.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored setting — left alone"
+          }
+        }
+      }
+    },
+    "recovery.plan.skippedRemapped": {
+      "comment": "Plan: remapped control left alone.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remapped elsewhere — left alone"
+          }
+        }
+      }
+    },
+    "recovery.plan.skippedUnexpected": {
+      "comment": "Plan: unexpected state.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unexpected state — left alone"
+          }
+        }
+      }
+    },
+    "recovery.plan.verifiedModel": {
+      "comment": "Label for the verified device model.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verified model"
+          }
+        }
+      }
+    },
+    "recovery.plan.willReset": {
+      "comment": "Plan: control will be reset.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Will return to normal"
+          }
+        }
+      }
+    },
+    "recovery.restore": {
+      "comment": "Button for exact restore.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Exactly"
+          }
+        }
+      }
+    },
+    "recovery.result.complete": {
+      "comment": "All steps verified.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done. Every change was verified on the device."
+          }
+        }
+      }
+    },
+    "recovery.result.header": {
+      "comment": "Section header for the result.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Result"
+          }
+        }
+      }
+    },
+    "recovery.result.incomplete": {
+      "comment": "Some steps failed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not everything could be completed. Records for unfinished changes were kept, so you can try again."
+          }
+        }
+      }
+    },
+    "recovery.result.recordsKept": {
+      "comment": "Some records kept.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some recorded changes could not be completed and were kept."
+          }
+        }
+      }
+    },
+    "recovery.review": {
+      "comment": "Button to review an emergency reset.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emergency Reset…"
+          }
+        }
+      }
+    },
+    "recovery.writesDisabled": {
+      "comment": "Banner when device writes are disabled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device changes are disabled in this version. Recovery can inspect devices but will not change them."
+          }
+        }
+      }
+    },
     "remapping.openAccessibilitySettings": {
       "comment": "Button opening the Accessibility privacy pane.",
       "extractionState": "manual",
@@ -273,6 +837,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Profiles"
+          }
+        }
+      }
+    },
+    "sidebar.recovery": {
+      "comment": "Sidebar entry for device recovery.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery"
           }
         }
       }

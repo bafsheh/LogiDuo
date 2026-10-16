@@ -119,7 +119,7 @@ public struct DeviceIdentityRegistry: Hashable, Sendable {
     /// `phy.<model>.<unit>` for firmware identities, `ep.<endpoint>.<product>` otherwise.
     static func derivedRawValue(for observation: DeviceObservation) -> String {
         if let physical = observation.physical {
-            return "phy.\(physical.model).\(hexString(physical.unit.rawValue, digits: 8))"
+            return DeviceID(physical: physical).rawValue
         }
         return "ep.\(observation.endpoint.fingerprint).\(hexString(observation.model.product.rawValue, digits: 4))"
     }

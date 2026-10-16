@@ -27,6 +27,7 @@ public final class AppRouter {
         case .devices: .devices(selected: selectedDevice)
         case .profiles: .profiles
         case .permissions: .permissions
+        case .recovery: .recovery
         }
     }
 

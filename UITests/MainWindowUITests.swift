@@ -6,7 +6,7 @@ final class MainWindowUITests: XCTestCase {
     func testSidebarListsTopLevelDestinations() {
         let window = launchMainWindow()
 
-        for identifier in ["sidebar.devices", "sidebar.profiles", "sidebar.permissions"] {
+        for identifier in ["sidebar.devices", "sidebar.profiles", "sidebar.permissions", "sidebar.recovery"] {
             XCTAssertTrue(window.descendants(matching: .any)[identifier].exists, "missing \(identifier)")
         }
     }

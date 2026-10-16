@@ -138,6 +138,9 @@ public struct DeviceRecovery<Device: HIDPPRequestPerforming>: Sendable {
         )
     }
 
+    /// The device this recovery works on.
+    public var target: ConfigurableDevice { transaction.target }
+
     /// Restores every valid recovery record of the device, verifying each.
     public func exactRestore() async -> RestorationReport {
         if let corruption = await transaction.ledger.corruption {

@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1AE5B37617A196F5DC4C8D47 /* LogiDuoPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = 7252BFD3F3C862CAE751D93F /* LogiDuoPersistence */; };
 		1B606F6EA50B265890BAB95B /* AppCompositionRootTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA86672CA839D85C3CDFEA8 /* AppCompositionRootTests.swift */; };
 		323DA8E1851CA49FEA46A985 /* AppCompositionRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40626EBF4C1B113631325F7D /* AppCompositionRoot.swift */; };
+		32B651CDD724DE37CDB4DC9B /* LogiDuoHIDPP in Frameworks */ = {isa = PBXBuildFile; productRef = E2E1C5AE89BDD2DB5F2BA29F /* LogiDuoHIDPP */; };
 		429F3FB9046E8B7038B1F558 /* RemappingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470E7EDAE1E1DAC61308A5EB /* RemappingCoordinator.swift */; };
 		49C77C41A9ED6147E1D9D4EF /* LogiDuoSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 4A3840F1AD9E1B3FAC432921 /* LogiDuoSystem */; };
 		512E87A37AD17079C67A6A42 /* RemappingCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02002A944025525B5002D6D4 /* RemappingCoordinatorTests.swift */; };
@@ -19,6 +21,7 @@
 		8580681C8CEDFEC284C4CDE9 /* MainWindowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F89DEE158C91A95676B8BF3 /* MainWindowUITests.swift */; };
 		8CD108B51EB50243ADD905AB /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 74B21E9416DAB3C32CF74CEF /* Localizable.xcstrings */; };
 		9DDD296712C6B306FD337068 /* LogiDuoFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = BF4EEC8DE3BBC7C0775F94F9 /* LogiDuoFeatures */; };
+		A01B917C117F8C93606AA36C /* LogiDuoHID in Frameworks */ = {isa = PBXBuildFile; productRef = DD1287CD6C9791C6F82AE718 /* LogiDuoHID */; };
 		C1D086802BD1C7CB9ED5BB97 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 0A5E678C171BE10EAE164B5C /* LICENSE */; };
 		CBF3A79033D677089D0510AD /* LogiDuoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBDC38398F11B7253D9C696 /* LogiDuoApp.swift */; };
 /* End PBXBuildFile section */
@@ -66,6 +69,9 @@
 				615A0636501CF5AB65285EE3 /* LogiDuoDomain in Frameworks */,
 				9DDD296712C6B306FD337068 /* LogiDuoFeatures in Frameworks */,
 				49C77C41A9ED6147E1D9D4EF /* LogiDuoSystem in Frameworks */,
+				32B651CDD724DE37CDB4DC9B /* LogiDuoHIDPP in Frameworks */,
+				A01B917C117F8C93606AA36C /* LogiDuoHID in Frameworks */,
+				1AE5B37617A196F5DC4C8D47 /* LogiDuoPersistence in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,6 +202,9 @@
 				02314A38A473E9EBF74FB629 /* LogiDuoDomain */,
 				BF4EEC8DE3BBC7C0775F94F9 /* LogiDuoFeatures */,
 				4A3840F1AD9E1B3FAC432921 /* LogiDuoSystem */,
+				E2E1C5AE89BDD2DB5F2BA29F /* LogiDuoHIDPP */,
+				DD1287CD6C9791C6F82AE718 /* LogiDuoHID */,
+				7252BFD3F3C862CAE751D93F /* LogiDuoPersistence */,
 			);
 			productName = LogiDuo;
 			productReference = A64B275F7723E32708CB2F75 /* LogiDuo.app */;
@@ -631,6 +640,10 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = LogiDuoDomain;
 		};
+		7252BFD3F3C862CAE751D93F /* LogiDuoPersistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LogiDuoPersistence;
+		};
 		8985D822B63AD33AE2C62744 /* LogiDuoSystem */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LogiDuoSystem;
@@ -638,6 +651,14 @@
 		BF4EEC8DE3BBC7C0775F94F9 /* LogiDuoFeatures */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LogiDuoFeatures;
+		};
+		DD1287CD6C9791C6F82AE718 /* LogiDuoHID */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LogiDuoHID;
+		};
+		E2E1C5AE89BDD2DB5F2BA29F /* LogiDuoHIDPP */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LogiDuoHIDPP;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

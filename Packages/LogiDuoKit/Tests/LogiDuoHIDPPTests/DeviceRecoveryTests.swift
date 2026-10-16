@@ -203,6 +203,18 @@ struct DeviceRecoveryTests {
         try await rig.transaction.divert(Rigs.gesture, with: .divertWithRawXY)
     }
 
+    @Test("regression: loading again after a corrupted load still reports corruption")
+    func reloadKeepsCorruption() async {
+        let store = InMemoryJournalStore()
+        store.corrupt()
+        let ledger = RestorationLedger(store: store)
+        #expect(await ledger.load() == .corrupted)
+        // The file is now in quarantine: a naive reload would find nothing and report clean.
+        #expect(await ledger.load() == .corrupted)
+        await ledger.acknowledgeCorruption()
+        #expect(await ledger.load() == .clean)
+    }
+
     @Test("regression: after a corrupted load nothing new is recorded or diverted, even on a native control")
     func corruptedJournalBlocksNewDiverts() async throws {
         let device = FakeReprogDevice()

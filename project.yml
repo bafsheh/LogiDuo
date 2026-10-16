@@ -49,6 +49,12 @@ targets:
         product: LogiDuoFeatures
       - package: LogiDuoKit
         product: LogiDuoSystem
+      - package: LogiDuoKit
+        product: LogiDuoHIDPP
+      - package: LogiDuoKit
+        product: LogiDuoHID
+      - package: LogiDuoKit
+        product: LogiDuoPersistence
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.bafsheh.LogiDuo

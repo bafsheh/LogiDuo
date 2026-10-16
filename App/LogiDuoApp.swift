@@ -9,7 +9,7 @@ struct LogiDuoApp: App {
 
     var body: some Scene {
         Window(Text("app.name"), id: SceneID.main) {
-            RootView(router: delegate.root.router)
+            RootView(router: delegate.root.router, recovery: delegate.root.recoveryModel)
         }
 
         MenuBarExtra {
@@ -32,6 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         root.remapping.activate()
+        Task { await root.checkRecoveryAtLaunch() }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

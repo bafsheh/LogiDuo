@@ -25,6 +25,7 @@ extension SidebarDestination {
         case .devices: "sidebar.devices"
         case .profiles: "sidebar.profiles"
         case .permissions: "sidebar.permissions"
+        case .recovery: "sidebar.recovery"
         }
     }
 
@@ -33,6 +34,7 @@ extension SidebarDestination {
         case .devices: "computermouse"
         case .profiles: "person.crop.rectangle.stack"
         case .permissions: "lock.shield"
+        case .recovery: "arrow.uturn.backward.circle"
         }
     }
 }
