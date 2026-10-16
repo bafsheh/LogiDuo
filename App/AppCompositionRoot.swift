@@ -33,6 +33,8 @@ final class AppCompositionRoot {
     let mappingsModel: MappingEditorViewModel
     /// Application profiles.
     let profilesModel: ProfilesViewModel
+    /// Scroll preferences.
+    let scrollModel: ScrollSettingsViewModel
 
     /// Device configuration writes. Disabled: no physical write has been verified yet,
     /// so recovery inspects devices through the read-only transport guard only.
@@ -47,6 +49,7 @@ final class AppCompositionRoot {
         self.profiles = ProfileController(repository: repository, coordinator: coordinator)
         self.mappingsModel = MappingEditorViewModel(repository: repository)
         self.profilesModel = ProfilesViewModel(repository: repository)
+        self.scrollModel = ScrollSettingsViewModel(repository: repository)
         self.remappingModel = RemappingViewModel(service: coordinator)
         self.recoveryModel = RecoveryViewModel(
             service: Self.makeRecovery(),
@@ -63,7 +66,13 @@ final class AppCompositionRoot {
 
     /// The main window's screens.
     var screens: RootScreens {
-        RootScreens(devices: devicesModel, mappings: mappingsModel, profiles: profilesModel, recovery: recoveryModel)
+        RootScreens(
+            devices: devicesModel,
+            mappings: mappingsModel,
+            scrolling: scrollModel,
+            profiles: profilesModel,
+            recovery: recoveryModel
+        )
     }
 
     /// Starts device discovery and forwards Mac sleep and wake to device connections.

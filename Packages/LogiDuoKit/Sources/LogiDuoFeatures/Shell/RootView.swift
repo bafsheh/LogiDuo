@@ -8,6 +8,8 @@ public struct RootScreens {
     public let devices: DevicesViewModel
     /// The mapping editor.
     public let mappings: MappingEditorViewModel
+    /// Scroll preferences.
+    public let scrolling: ScrollSettingsViewModel
     /// Application profiles.
     public let profiles: ProfilesViewModel
     /// Device recovery.
@@ -17,11 +19,13 @@ public struct RootScreens {
     public init(
         devices: DevicesViewModel,
         mappings: MappingEditorViewModel,
+        scrolling: ScrollSettingsViewModel,
         profiles: ProfilesViewModel,
         recovery: RecoveryViewModel
     ) {
         self.devices = devices
         self.mappings = mappings
+        self.scrolling = scrolling
         self.profiles = profiles
         self.recovery = recovery
     }
@@ -77,6 +81,8 @@ struct DestinationView: View {
             DevicesView(model: screens.devices)
         case .mappings:
             MappingEditorView(model: screens.mappings)
+        case .scrolling:
+            ScrollSettingsView(model: screens.scrolling)
         case .profiles:
             ProfilesView(model: screens.profiles) { id in
                 screens.mappings.profile = .application(id)

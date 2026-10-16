@@ -2221,6 +2221,102 @@
         }
       }
     },
+    "scroll.direction.footer": {
+      "comment": "Explains inversion scope.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies to Logitech mice only. The trackpad keeps the direction set in System Settings."
+          }
+        }
+      }
+    },
+    "scroll.ignoreTrackpad": {
+      "comment": "Toggle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave trackpad and Magic Mouse scrolling unchanged"
+          }
+        }
+      }
+    },
+    "scroll.invertHorizontal": {
+      "comment": "Toggle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reverse thumb wheel direction"
+          }
+        }
+      }
+    },
+    "scroll.invertVertical": {
+      "comment": "Toggle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reverse scroll wheel direction"
+          }
+        }
+      }
+    },
+    "scroll.requiresRemapping": {
+      "comment": "Explains that remapping must be on.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scroll settings apply while remapping is on."
+          }
+        }
+      }
+    },
+    "scroll.section.behavior": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Behavior"
+          }
+        }
+      }
+    },
+    "scroll.section.direction": {
+      "comment": "Section header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direction"
+          }
+        }
+      }
+    },
+    "scroll.shiftHorizontal": {
+      "comment": "Toggle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold Shift to scroll horizontally"
+          }
+        }
+      }
+    },
     "settings.version": {
       "comment": "Label for the application version in Settings.",
       "extractionState": "manual",
@@ -2289,6 +2385,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Recovery"
+          }
+        }
+      }
+    },
+    "sidebar.scrolling": {
+      "comment": "Sidebar entry.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scrolling"
           }
         }
       }

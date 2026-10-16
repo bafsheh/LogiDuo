@@ -94,6 +94,11 @@ final class RemappingCoordinator: RemappingService {
         enabledChanged(enabled)
     }
 
+    /// Applies the scroll preferences.
+    func applyScroll(_ settings: ScrollSettings) {
+        engine.updateScrollSettings(settings)
+    }
+
     /// Applies the profile in effect (from the configuration and the frontmost application).
     func apply(_ profile: ActiveProfile) {
         guard profile != self.profile else { return }

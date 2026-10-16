@@ -7,7 +7,8 @@ final class MainWindowUITests: XCTestCase {
         let window = launchMainWindow()
 
         for identifier in [
-            "sidebar.devices", "sidebar.mappings", "sidebar.profiles", "sidebar.permissions", "sidebar.recovery",
+            "sidebar.devices", "sidebar.mappings", "sidebar.scrolling", "sidebar.profiles", "sidebar.permissions",
+            "sidebar.recovery",
         ] {
             XCTAssertTrue(window.descendants(matching: .any)[identifier].exists, "missing \(identifier)")
         }

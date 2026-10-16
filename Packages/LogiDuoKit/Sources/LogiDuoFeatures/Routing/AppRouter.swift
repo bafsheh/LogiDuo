@@ -26,6 +26,7 @@ public final class AppRouter {
         switch destination {
         case .devices: .devices(selected: selectedDevice)
         case .mappings: .mappings
+        case .scrolling: .scrolling
         case .profiles: .profiles
         case .permissions: .permissions
         case .recovery: .recovery

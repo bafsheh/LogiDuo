@@ -4,6 +4,7 @@ public import LogiDuoDomain
 public enum SidebarDestination: String, CaseIterable, Hashable, Sendable, Identifiable {
     case devices
     case mappings
+    case scrolling
     case profiles
     case permissions
     case recovery
@@ -21,6 +22,8 @@ public enum AppRoute: Hashable, Sendable {
     case devices(selected: DeviceID?)
     /// Button, gesture and scroll mappings.
     case mappings
+    /// Scroll preferences.
+    case scrolling
     /// Application profile management.
     case profiles
     /// The permission status overview.
@@ -33,6 +36,7 @@ public enum AppRoute: Hashable, Sendable {
         switch self {
         case .devices: .devices
         case .mappings: .mappings
+        case .scrolling: .scrolling
         case .profiles: .profiles
         case .permissions: .permissions
         case .recovery: .recovery

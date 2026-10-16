@@ -24,6 +24,7 @@ extension SidebarDestination {
         switch self {
         case .devices: "sidebar.devices"
         case .mappings: "sidebar.mappings"
+        case .scrolling: "sidebar.scrolling"
         case .profiles: "sidebar.profiles"
         case .permissions: "sidebar.permissions"
         case .recovery: "sidebar.recovery"
@@ -34,6 +35,7 @@ extension SidebarDestination {
         switch self {
         case .devices: "computermouse"
         case .mappings: "computermouse.fill"
+        case .scrolling: "scroll"
         case .profiles: "person.crop.rectangle.stack"
         case .permissions: "lock.shield"
         case .recovery: "arrow.uturn.backward.circle"

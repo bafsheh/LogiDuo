@@ -69,6 +69,7 @@ final class ProfileController {
 
     private func configurationChanged(_ configuration: LogiDuoConfiguration, restoreRemapping: Bool) {
         self.configuration = configuration
+        coordinator.applyScroll(configuration.scroll)
         update()
         if restoreRemapping, configuration.general.remappingEnabled, !coordinator.status.isEnabled {
             coordinator.setEnabled(true)
