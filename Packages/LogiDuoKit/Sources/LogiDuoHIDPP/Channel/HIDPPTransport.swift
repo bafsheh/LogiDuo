@@ -8,12 +8,14 @@ public enum HIDPPTransportError: Error, Hashable, Sendable {
     case accessDenied
     /// The HID stack reported an I/O failure with the given `IOReturn` code.
     case ioFailure(code: Int32)
+    /// A transport policy (such as ``ReadOnlyTransportGuard``) refused to send the report.
+    case blockedByPolicy
 
     /// Whether reopening the transport later may succeed without user action.
     public var isRecoverable: Bool {
         switch self {
         case .disconnected, .notOpen, .ioFailure: true
-        case .accessDenied: false
+        case .accessDenied, .blockedByPolicy: false
         }
     }
 }

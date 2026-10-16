@@ -86,6 +86,22 @@ public final class HIDDeviceMonitor: @unchecked Sendable {  // Invariant: `devic
         return devices.map(HIDPropertyReader.descriptor(of:)).sorted { $0.registryID < $1.registryID }
     }
 
+    /// Opens a HID++ transport to an interface found by ``snapshot(vendor:)``, without a running monitor.
+    /// - Throws: ``HIDPPTransportError/disconnected`` if the interface is gone.
+    public static func openSnapshotTransport(
+        registryID: UInt64,
+        framing: HIDPPFraming,
+        vendor: VendorID = .logitech
+    ) throws(HIDPPTransportError) -> IOKitHIDTransport {
+        let manager = IOHIDManagerCreate(kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone))
+        IOHIDManagerSetDeviceMatching(manager, matching(vendor))
+        let devices = (IOHIDManagerCopyDevices(manager) as? Set<IOHIDDevice>) ?? []
+        guard let device = devices.first(where: { HIDPropertyReader.registryID(of: $0) == registryID }) else {
+            throw .disconnected
+        }
+        return try IOKitHIDTransport(device: device, framing: framing)
+    }
+
     private static func matching(_ vendor: VendorID) -> CFDictionary {
         [kIOHIDVendorIDKey: Int(vendor.rawValue)] as CFDictionary
     }

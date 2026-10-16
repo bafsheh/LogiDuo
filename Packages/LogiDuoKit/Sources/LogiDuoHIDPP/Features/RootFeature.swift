@@ -38,26 +38,26 @@ public enum RootFeature {
     /// Asks for the protocol version and checks the echoed ping byte.
     /// - Throws: ``HIDPPRequestError``; a reply with a wrong ping byte is reported as
     ///   ``HIDPPRequestError/deviceError(_:)`` with ``HIDPP20ErrorCode/unknown``.
-    public static func protocolVersion<C: Clock>(
-        on channel: HIDPPChannel<C>,
+    public static func protocolVersion(
+        via performer: some HIDPPRequestPerforming,
         device: DeviceIndex,
-        timeout: Duration
-    ) async throws(HIDPPRequestError) -> HIDPPProtocolVersion where C.Duration == Duration {
+        timeout: Duration?
+    ) async throws(HIDPPRequestError) -> HIDPPProtocolVersion {
         let request = try makeRequest(device, getProtocolVersion, [0x00, 0x00, pingByte])
-        let reply = try await channel.send(request, timeout: timeout)
+        let reply = try await performer.perform(request, timeout: timeout)
         guard reply.parameters[2] == pingByte else { throw .deviceError(.unknown) }
         return HIDPPProtocolVersion(major: reply.parameters[0], minor: reply.parameters[1])
     }
 
     /// Looks up the index of `feature`, or `nil` if the device does not have it.
-    public static func location<C: Clock>(
+    public static func location(
         of feature: FeatureID,
-        on channel: HIDPPChannel<C>,
+        via performer: some HIDPPRequestPerforming,
         device: DeviceIndex,
-        timeout: Duration
-    ) async throws(HIDPPRequestError) -> FeatureLocation? where C.Duration == Duration {
+        timeout: Duration?
+    ) async throws(HIDPPRequestError) -> FeatureLocation? {
         let request = try makeRequest(device, getFeature, feature.bytes)
-        let reply = try await channel.send(request, timeout: timeout)
+        let reply = try await performer.perform(request, timeout: timeout)
         guard reply.parameters[0] != 0 || feature == .root else { return nil }
         return FeatureLocation(
             index: FeatureIndex(rawValue: reply.parameters[0]),
@@ -72,7 +72,7 @@ public enum RootFeature {
         _ device: DeviceIndex,
         _ timeout: Duration
     ) async throws(HIDPPRequestError) where C.Duration == Duration {
-        _ = try await protocolVersion(on: channel, device: device, timeout: timeout)
+        _ = try await protocolVersion(via: channel, device: device, timeout: timeout)
     }
 
     private static func makeRequest(
