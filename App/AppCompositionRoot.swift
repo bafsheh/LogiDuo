@@ -61,14 +61,17 @@ final class AppCompositionRoot {
         self.scrollModel = ScrollSettingsViewModel(repository: repository)
         self.settingsModel = AppSettingsViewModel(loginItem: LoginItemAdapter(), repository: repository)
         self.remappingModel = RemappingViewModel(service: coordinator)
+        // One ledger for the journal file: two would each save a stale copy over the other's records.
+        let ledger = RestorationLedger(store: FileRestorationJournalStore())
         self.recoveryModel = RecoveryViewModel(
-            service: Self.makeRecovery(),
+            service: Self.makeRecovery(ledger: ledger),
             writesEnabled: Self.deviceWrites == .enabled
         )
         let directory = DeviceDirectory(
             source: HIDDeviceMonitor(),
             clock: ContinuousClock(),
-            authorization: Self.deviceWrites
+            authorization: Self.deviceWrites,
+            ledger: ledger
         )
         self.devices = directory
         self.devicesModel = DevicesViewModel(
@@ -101,6 +104,11 @@ final class AppCompositionRoot {
         executor.handleDeviceActions { action in
             Task { await actions.perform(action) }
         }
+        let coordinator = remapping
+        coordinator.diversionChanged = { buttons in
+            Task { await directory.setDiversion(buttons) }
+        }
+        Task { await directory.useDeviceInput { event in await MainActor.run { coordinator.deviceInput(event) } } }
         Task {
             await directory.usePreferences { device in await repository.current().settings(for: device) }
             await directory.start()
@@ -131,8 +139,7 @@ final class AppCompositionRoot {
         }
     }
 
-    private static func makeRecovery() -> HIDPPRecoveryService {
-        let ledger = RestorationLedger(store: FileRestorationJournalStore())
+    private static func makeRecovery(ledger: RestorationLedger) -> HIDPPRecoveryService {
         return HIDPPRecoveryService(ledger: ledger) {
             await LiveRecoveryConnector.endpoints(ledger: ledger, authorization: deviceWrites)
         }

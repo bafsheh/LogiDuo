@@ -25,6 +25,8 @@ final class RemappingCoordinator: RemappingService {
     private var profile = ActiveProfile.none
     /// Called with the enabled flag whenever the person turns remapping on or off.
     var enabledChanged: (Bool) -> Void = { _ in }
+    /// Called with the buttons the device must divert (macOS does not report them).
+    var diversionChanged: (Set<MouseButton>) -> Void = { _ in }
     private var tasks: [Task<Void, Never>] = []
 
     init(
@@ -194,5 +196,17 @@ final class RemappingCoordinator: RemappingService {
 
     private func publish() {
         statusSink.yield(status)
+        diversionChanged(requiredDiversion)
+    }
+
+    /// Device-only buttons the active mappings use, while remapping is on.
+    private var requiredDiversion: Set<MouseButton> {
+        guard status.isEnabled, status.preset == .configured else { return [] }
+        return Set(profile.mappings.mappings.keys.compactMap(\.button).filter { !$0.isSystemReported })
+    }
+
+    /// Feeds an event the device reported (diverted button, raw motion) to the engine.
+    func deviceInput(_ event: InputEvent) {
+        engine.deviceInput(event)
     }
 }

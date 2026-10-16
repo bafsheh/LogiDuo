@@ -52,6 +52,16 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
     let connection: HIDPPConnection<SessionClock>
     let deviceIndex: DeviceIndex
     var resolutionRange: ResolutionRange?
+    var wantedDiversion: Set<MouseButton> = []
+    var activeDiversion: Set<UInt16> = []
+    var diversionContext: DiversionContext?
+    var decoder = DivertedControlsDecoder()
+    var applyingDiversion = false
+    var diversionDirty = false
+    var diversionWaiters: [CheckedContinuation<Void, Never>] = []
+    private let ledger: RestorationLedger?
+    private let deliver: @Sendable (InputEvent) async -> Void
+    private var notificationObserver: Task<Void, Never>?
     private let fallbackName: String
     private let product: ProductID
     private let publish: Publish
@@ -65,8 +75,12 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
         deviceIndex: DeviceIndex,
         clock: SessionClock,
         openTransport: @escaping HIDPPConnection<SessionClock>.TransportFactory,
+        ledger: RestorationLedger? = nil,
+        deliver: @escaping @Sendable (InputEvent) async -> Void = { _ in },
         publish: @escaping Publish
     ) {
+        self.ledger = ledger
+        self.deliver = deliver
         self.endpoint = endpoint
         self.fallbackName = fallbackName
         self.product = product
@@ -91,6 +105,12 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
                 await self?.handle(state)
             }
         }
+        let notifications = connection.notifications
+        notificationObserver = Task { [weak self] in
+            for await notification in notifications {
+                await self?.received(notification)
+            }
+        }
         await connection.connect()
     }
 
@@ -111,14 +131,27 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
     func hostDidWake() async { await connection.hostDidWake() }
 
     func removed() async {
+        await releaseHeld()
         await connection.deviceRemoved()
         await publish(.link(endpoint, .unavailable))
         observer?.cancel()
+        notificationObserver?.cancel()
     }
 
     func close() async {
+        await restoreDiversion()
+        await releaseHeld()
         await connection.disconnect()
         observer?.cancel()
+        notificationObserver?.cancel()
+    }
+
+    private func received(_ notification: HIDPPNotification) async {
+        for event in decode(notification) { await deliver(event) }
+    }
+
+    private func releaseHeld() async {
+        for event in decoder.releaseAll() { await deliver(event) }
     }
 
     /// The index of `feature`, looked up through Root so the read-only guard can verify it.
@@ -138,6 +171,8 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
 
     private func handle(_ state: ConnectionState) async {
         guard state == .connected else {
+            await releaseHeld()
+            activeDiversion = []
             await publish(.link(endpoint, DeviceSnapshotMapper.link(for: state)))
             return
         }
@@ -155,9 +190,28 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
             draft.smartShift = await readSmartShift(inventory)
             if draft.category == .keyboard { draft.keyboard = await readKeyboard(inventory) }
             await publish(.identified(observation, draft))
+            await prepareDiversion(inventory)
         } catch {
             await publish(.link(endpoint, .reconnecting))
         }
+    }
+
+    /// Learns where to divert (only with a ledger, which the directory passes when writes are authorized).
+    private func prepareDiversion(_ inventory: HIDPPDeviceInventory) async {
+        activeDiversion = []
+        guard let ledger, let physical = inventory.information?.physicalID,
+            let reprog = await locate(.reprogControlsV4, in: inventory),
+            let information = await index(of: .deviceInformation)
+        else { return }
+        let target = ConfigurableDevice(
+            identity: DeviceID(physical: physical),
+            physical: physical,
+            deviceIndex: deviceIndex,
+            reprogIndex: reprog,
+            informationIndex: information
+        )
+        diversionContext = DiversionContext(target: target, ledger: ledger)
+        await applyDiversion()
     }
 
     private func locate(_ feature: FeatureID, in inventory: HIDPPDeviceInventory) async -> FeatureIndex? {

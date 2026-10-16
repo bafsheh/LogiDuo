@@ -51,18 +51,38 @@ where SessionClock.Duration == Duration {
     private var listener: Task<Void, Never>?
     private var poller: Task<Void, Never>?
     private var preferences: Preferences = { _ in .unchanged }
+    private let ledger: RestorationLedger?
+    private var deviceInput: @Sendable (InputEvent) async -> Void = { _ in }
+    private var diversion: Set<MouseButton> = []
 
     /// Creates a directory. Nothing happens until ``start()``.
     public init(
         source: any HIDInterfaceSource,
         clock: SessionClock,
         authorization: DeviceWriteAuthorization,
+        ledger: RestorationLedger? = nil,
         batteryInterval: Duration = .seconds(300)
     ) {
+        // Diversion needs both: without authorization no ledger is used and nothing is diverted.
+        self.ledger = authorization == .enabled ? ledger : nil
         self.source = source
         self.clock = clock
         self.authorization = authorization
         self.batteryInterval = batteryInterval
+    }
+
+    /// Sets where device-reported input (diverted buttons, raw motion) goes.
+    public func useDeviceInput(_ deliver: @escaping @Sendable (InputEvent) async -> Void) {
+        deviceInput = deliver
+    }
+
+    /// Diverts exactly `buttons` on every connected device that can (only with write authorization).
+    public func setDiversion(_ buttons: Set<MouseButton>) async {
+        diversion = buttons
+        guard ledger != nil else { return }
+        for attachment in attachments.values {
+            for session in attachment.sessions { await session.setDiversion(buttons) }
+        }
     }
 
     /// Sets where saved device settings come from.
@@ -163,6 +183,7 @@ where SessionClock.Duration == Duration {
             guard let key else { return }
             let session = makeSession(descriptor, framing: framing, index: .direct, endpoint: .direct(link, key))
             attachments[descriptor.registryID] = Attachment(descriptor: descriptor, sessions: [session])
+            await session.setDiversion(diversion)
             await session.start()
         case .receiver(_, let framing):
             attachments[descriptor.registryID] = Attachment(descriptor: descriptor, sessions: [])
@@ -195,7 +216,10 @@ where SessionClock.Duration == Duration {
         }
         await channel.close()
         attachments[descriptor.registryID]?.sessions = sessions
-        for session in sessions { await session.start() }
+        for session in sessions {
+            await session.setDiversion(diversion)
+            await session.start()
+        }
     }
 
     private func makeSession(
@@ -215,10 +239,13 @@ where SessionClock.Duration == Duration {
             product: descriptor.hardware.product,
             deviceIndex: index,
             clock: clock,
-            openTransport: open
-        ) { [weak self] update in
-            await self?.apply(update)
-        }
+            openTransport: open,
+            ledger: ledger,
+            deliver: { [weak self] event in await self?.forward(event) },
+            publish: { [weak self] update in
+                await self?.apply(update)
+            }
+        )
     }
 
     private func openGuarded(
@@ -227,6 +254,10 @@ where SessionClock.Duration == Duration {
     ) throws(HIDPPTransportError) -> any HIDPPTransport {
         let raw = try source.transport(registryID: registryID, framing: framing)
         return authorization == .enabled ? raw : ReadOnlyTransportGuard(wrapping: raw)
+    }
+
+    private func forward(_ event: InputEvent) async {
+        await deviceInput(event)
     }
 
     // MARK: - Snapshots

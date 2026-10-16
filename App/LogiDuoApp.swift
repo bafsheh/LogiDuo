@@ -1,6 +1,7 @@
 import AppKit
 import LogiDuoDomain
 import LogiDuoFeatures
+import LogiDuoHID
 import LogiDuoPersistence
 import SwiftUI
 
@@ -85,8 +86,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Saves pending configuration changes before quitting.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         let profiles = root.profiles
+        let devices = root.devices
         Task {
             await profiles.stop()
+            // Restores any device diversion before closing the connections.
+            await devices.stop()
             sender.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
