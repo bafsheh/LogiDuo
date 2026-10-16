@@ -1,5 +1,5 @@
 import Foundation
-public import IOKit.hid
+import IOKit.hid
 public import LogiDuoDomain
 public import LogiDuoHIDPP
 
