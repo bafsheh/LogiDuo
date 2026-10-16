@@ -26,6 +26,9 @@ final class FakeEventTapBackend: EventTapBackend, @unchecked Sendable {  // Inva
 
     func reenable() { lock.withLock { reenables += 1 } }
 
+    /// The installed handler, for checking behavior after the engine is gone.
+    var currentHandler: EventTapHandler? { lock.withLock { handler } }
+
     func remove() {
         lock.withLock {
             if handler != nil { removals += 1 }
@@ -278,6 +281,38 @@ struct LiveInputEngineTests {
         engine.drainCommands()
 
         #expect(executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
+    }
+
+    @Test("regression: an engine released without stop removes its tap and never swallows afterwards")
+    func releasedEngineRemovesTap() {
+        let backend = FakeEventTapBackend()
+        var engine: LiveInputEngine? = LiveInputEngine(
+            backend: backend,
+            executor: RecordingExecutor(),
+            mappings: Self.mappings(ButtonMapping(trigger: .press(.forward), action: .click(.middle)))
+        )
+        engine?.start()
+        let handler = backend.currentHandler
+        #expect(backend.isInstalled)
+
+        engine = nil
+
+        #expect(!backend.isInstalled)
+        let event = Self.button(.otherMouseDown, 4)
+        #expect(handler?(.otherMouseDown, event) === event)
+    }
+
+    @Test("cancelling held input releases synthetic presses and keeps the tap")
+    func cancelHeldInput() {
+        let harness = makeHarness(Self.mappings(ButtonMapping(trigger: .press(.forward), action: .click(.middle))))
+        harness.engine.start()
+        _ = harness.backend.deliver(.otherMouseDown, Self.button(.otherMouseDown, 4))
+
+        harness.engine.cancelHeldInput()
+
+        #expect(harness.executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
+        #expect(harness.backend.isInstalled)
+        #expect(harness.backend.deliver(.otherMouseUp, Self.button(.otherMouseUp, 4)) == nil)
     }
 
     @Test("the tap mask excludes primary and secondary buttons and the keyboard")

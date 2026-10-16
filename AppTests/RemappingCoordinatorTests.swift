@@ -163,4 +163,17 @@ struct RemappingCoordinatorTests {
         #expect(harness.executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
         #expect(harness.backend.deliver(.otherMouseUp, button: 4) == nil)
     }
+
+    @Test("going to sleep releases a held synthetic button but keeps remapping on")
+    func sleepReleasesHeldInput() {
+        let harness = makeHarness()
+        harness.coordinator.select(.forwardToMiddleClick)
+        harness.coordinator.setEnabled(true)
+        _ = harness.backend.deliver(.otherMouseDown, button: 4)
+
+        harness.coordinator.hostWillSleep()
+
+        #expect(harness.executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
+        #expect(harness.coordinator.status.isIntercepting)
+    }
 }

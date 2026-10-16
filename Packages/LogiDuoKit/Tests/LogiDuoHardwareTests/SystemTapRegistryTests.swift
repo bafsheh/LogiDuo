@@ -80,3 +80,80 @@ extension LiveSystemSuites {
         }
     }
 }
+
+extension LiveSystemSuites.SystemTapRegistryTests {
+    @Test("regression: releasing a started engine without stop removes its tap from macOS")
+    func releasedEngine() {
+        let before = TapRegistry.activeTaps(of: pid)
+        do {
+            let engine = LiveInputEngine(executor: SyntheticInputExecutor(poster: CoreGraphicsEventPoster()))
+            engine.start()
+            #expect(TapRegistry.activeTaps(of: pid) == before + 1)
+        }
+        #expect(TapRegistry.activeTaps(of: pid) == before)
+    }
+}
+
+extension LiveSystemSuites.SystemTapRegistryTests {
+    /// A helper that installs a pass-through active tap and runs until killed.
+    private static let crashHelperSource = """
+        import CoreGraphics
+        import Foundation
+        let mask = CGEventMask(1) << CGEventMask(CGEventType.otherMouseDown.rawValue)
+        guard let port = CGEvent.tapCreate(
+            tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap, eventsOfInterest: mask,
+            callback: { _, _, event, _ in Unmanaged.passUnretained(event) }, userInfo: nil
+        ), let source = CFMachPortCreateRunLoopSource(nil, port, 0) else { exit(2) }
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .commonModes)
+        CGEvent.tapEnable(tap: port, enable: true)
+        print("ready"); fflush(stdout)
+        CFRunLoopRun()
+        """
+
+    @Test("a process killed with SIGKILL loses its event tap: macOS removes it with the process")
+    func crashRemovesTap() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "logiduo-crash-\(UUID().uuidString)"
+        )
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appendingPathComponent("main.swift")
+        let binary = directory.appendingPathComponent("helper")
+        try Self.crashHelperSource.write(to: source, atomically: true, encoding: .utf8)
+
+        let compile = Process()
+        compile.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+        compile.arguments = ["swiftc", "-O", source.path, "-o", binary.path]
+        try compile.run()
+        compile.waitUntilExit()
+        try #require(compile.terminationStatus == 0, "helper did not compile")
+
+        let helper = Process()
+        helper.executableURL = binary
+        let output = Pipe()
+        helper.standardOutput = output
+        try helper.run()
+        let ready = String(bytes: output.fileHandleForReading.availableDataUntilNewline(), encoding: .utf8) ?? ""
+        try #require(ready.hasPrefix("ready"), "helper could not install its tap")
+        let pid = helper.processIdentifier
+        #expect(TapRegistry.activeTaps(of: pid) == 1)
+
+        kill(pid, SIGKILL)
+        helper.waitUntilExit()
+
+        print("[system] helper pid=\(pid) killed; taps now: \(TapRegistry.activeTaps(of: pid))")
+        #expect(TapRegistry.activeTaps(of: pid) == 0)
+    }
+}
+
+extension FileHandle {
+    /// Reads until a newline (or end of file).
+    func availableDataUntilNewline() -> Data {
+        var data = Data()
+        while let byte = try? read(upToCount: 1), !byte.isEmpty {
+            data.append(byte)
+            if byte.first == 0x0A { break }
+        }
+        return data
+    }
+}

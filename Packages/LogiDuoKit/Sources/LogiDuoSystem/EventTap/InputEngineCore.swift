@@ -85,6 +85,15 @@ public final class InputEngineCore: @unchecked Sendable {  // Invariant: all sta
         }
     }
 
+    /// Abandons every hold, returning releases for synthetic input still down.
+    public func cancelHeldInput(at time: Duration) -> [InputCommand] {
+        lock.withLock {
+            let commands = interpreter.cancelAll(at: time)
+            count(commands)
+            return commands
+        }
+    }
+
     /// Releases synthetic presses held longer than the safety timeout.
     public func expireStalePresses(at time: Duration) -> [InputCommand] {
         lock.withLock {

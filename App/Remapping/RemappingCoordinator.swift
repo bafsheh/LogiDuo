@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 import LogiDuoDomain
 import LogiDuoFeatures
 import LogiDuoSystem
@@ -55,6 +55,14 @@ final class RemappingCoordinator: RemappingService {
                 }
             },
             Task { [weak self] in
+                let sleeps = NSWorkspace.shared.notificationCenter.notifications(
+                    named: NSWorkspace.willSleepNotification
+                )
+                for await _ in sleeps.map({ _ in () }) {
+                    self?.hostWillSleep()
+                }
+            },
+            Task { [weak self] in
                 let clock = ContinuousClock()
                 var deadline = clock.now + .seconds(1)
                 while !Task.isCancelled {
@@ -71,6 +79,11 @@ final class RemappingCoordinator: RemappingService {
         disable()
         for task in tasks { task.cancel() }
         tasks = []
+    }
+
+    /// Releases held synthetic input before the Mac sleeps (internal for tests).
+    func hostWillSleep() {
+        engine.cancelHeldInput()
     }
 
     func setEnabled(_ enabled: Bool) {

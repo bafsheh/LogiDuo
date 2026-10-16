@@ -44,6 +44,12 @@ public final class LiveInputEngine: Sendable {
         (states, stateSink) = AsyncStream.makeStream(bufferingPolicy: .bufferingNewest(32))
     }
 
+    deinit {
+        // An engine released without stop() must not leave a tap behind; its handler
+        // already passes every event through once the engine is gone.
+        backend.remove()
+    }
+
     /// Monotonic time since an arbitrary origin.
     public static let monotonicNow: @Sendable () -> Duration = {
         let origin = ContinuousClock.now
@@ -76,6 +82,12 @@ public final class LiveInputEngine: Sendable {
     public func updateMappings(_ mappings: ResolvedMappings) {
         let commands = core.updateMappings(mappings)
         enqueue(commands)
+        commandQueue.sync {}
+    }
+
+    /// Releases all held synthetic input without stopping interception (for example before sleep).
+    public func cancelHeldInput() {
+        enqueue(core.cancelHeldInput(at: now()))
         commandQueue.sync {}
     }
 

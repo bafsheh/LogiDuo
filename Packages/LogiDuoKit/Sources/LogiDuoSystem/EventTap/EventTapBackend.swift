@@ -124,6 +124,11 @@ public final class CoreGraphicsEventTapBackend: EventTapBackend, @unchecked Send
     }
 
     /// Disables and removes the tap, then releases the handler.
+    ///
+    /// Safe from any thread, including inside the tap callback (for example when the
+    /// last owner is released there): on the tap's own thread it does not wait for
+    /// that thread to finish, which would deadlock. A callback in progress keeps the
+    /// handler box alive through its own strong reference.
     public func remove() {
         guard
             let removed = lock.withLock({ () -> Installation? in
@@ -131,12 +136,19 @@ public final class CoreGraphicsEventTapBackend: EventTapBackend, @unchecked Send
                 return installation
             })
         else { return }
+        let onTapThread = CFRunLoopGetCurrent() === removed.runLoop
         CGEvent.tapEnable(tap: removed.port, enable: false)
         CFRunLoopRemoveSource(removed.runLoop, removed.source, .commonModes)
         CFMachPortInvalidate(removed.port)
         CFRunLoopStop(removed.runLoop)
-        removed.finished.wait()
+        if !onTapThread {
+            removed.finished.wait()
+        }
         removed.box.release()
+    }
+
+    deinit {
+        remove()
     }
 
     private static let callback: CGEventTapCallBack = { _, type, event, userInfo in
