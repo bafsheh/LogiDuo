@@ -20,6 +20,9 @@ public struct DevicesView: View {
                 )
             } else {
                 VStack(alignment: .leading, spacing: 0) {
+                    if !model.conflicts.isEmpty {
+                        ConflictBanner(conflicts: model.conflicts)
+                    }
                     DevicePicker(model: model)
                     Divider()
                     if let device = model.selected {
@@ -264,6 +267,42 @@ extension DeviceCategory {
         case .keyboard: "keyboard"
         case .receiver: "dot.radiowaves.left.and.right"
         case .unclassified: "questionmark.circle"
+        }
+    }
+}
+
+/// Warns that other device software is running.
+struct ConflictBanner: View {
+    let conflicts: Set<ConflictingSoftware>
+
+    var body: some View {
+        Label {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("conflict.title \(names)", bundle: .module).font(.headline)
+                Text("conflict.message", bundle: .module).font(.callout).foregroundStyle(.secondary)
+            }
+        } icon: {
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange).accessibilityHidden(true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.12))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("devices.conflict")
+    }
+
+    private var names: String {
+        conflicts.sorted { $0.rawValue < $1.rawValue }.map(\.displayName).formatted(.list(type: .and))
+    }
+}
+
+extension ConflictingSoftware {
+    var displayName: String {
+        switch self {
+        case .logiOptionsPlus: "Logi Options+"
+        case .logitechOptions: "Logitech Options"
+        case .gHub: "G HUB"
+        case .mouser: "Mouser"
         }
     }
 }

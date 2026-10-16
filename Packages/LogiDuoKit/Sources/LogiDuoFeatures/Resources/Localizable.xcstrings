@@ -781,6 +781,30 @@
         }
       }
     },
+    "conflict.message": {
+      "comment": "Banner message.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It also configures Logitech devices and may override LogiDuo's buttons and settings. Quit it while you use LogiDuo."
+          }
+        }
+      }
+    },
+    "conflict.title %@": {
+      "comment": "Banner title; argument lists the running apps.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is running"
+          }
+        }
+      }
+    },
     "device.battery.accessibility %lld": {
       "comment": "VoiceOver: battery level.",
       "extractionState": "manual",

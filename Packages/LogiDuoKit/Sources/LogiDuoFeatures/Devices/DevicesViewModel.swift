@@ -13,6 +13,8 @@ public final class DevicesViewModel {
     public private(set) var lastResult: [DeviceID: DeviceSettingResult] = [:]
     /// Whether this version may change device settings.
     public let writesEnabled: Bool
+    /// Other software that may override LogiDuo, if running.
+    public var conflicts: Set<ConflictingSoftware> = []
 
     private let service: any DeviceServicing
     private let settings: (any DeviceSettingsServicing)?

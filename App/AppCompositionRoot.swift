@@ -96,8 +96,15 @@ final class AppCompositionRoot {
         )
     }
 
+    /// Warns about other device software.
+    private let conflicts = ConflictingSoftwareMonitor()
+
     /// Starts device discovery and forwards Mac sleep and wake to device connections.
     func startDevices() {
+        conflicts.start()
+        let model = devicesModel
+        let running = conflicts.running
+        Task { for await software in running { model.conflicts = software } }
         let directory = devices
         let repository = configuration
         let actions = deviceActions
