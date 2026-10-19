@@ -49,8 +49,25 @@ public struct CoreGraphicsEventPoster: SyntheticEventPosting {
         guard let event = CGEvent(keyboardEventSource: source, virtualKey: key.rawValue, keyDown: isDown) else {
             return
         }
-        event.flags = isDown ? Self.flags(modifiers) : []
+        event.flags = Self.keyFlags(key).union(isDown ? Self.flags(modifiers) : [])
         mark(event).post(tap: .cghidEventTap)
+    }
+
+    /// Arrow keys (Fn and numeric-pad flags; macOS's default Mission Control,
+    /// App Exposé and Spaces shortcuts are registered with Fn).
+    static let arrowKeys: Set<UInt16> = [0x7B, 0x7C, 0x7D, 0x7E]
+    /// Function and navigation keys (Fn flag): F1–F20, Help, Home, End, Page Up/Down, Forward Delete.
+    static let functionKeys: Set<UInt16> = [
+        0x7A, 0x78, 0x63, 0x76, 0x60, 0x61, 0x62, 0x64, 0x65, 0x6D, 0x67, 0x6F, 0x69, 0x6B, 0x71, 0x6A,
+        0x40, 0x4F, 0x50, 0x5A, 0x72, 0x73, 0x74, 0x75, 0x77, 0x79,
+    ]
+
+    /// The flags a physical press of `key` always carries, on key-down and key-up alike;
+    /// without them a synthetic press does not match system shortcuts such as ⌃↑.
+    static func keyFlags(_ key: KeyCode) -> CGEventFlags {
+        if arrowKeys.contains(key.rawValue) { return [.maskSecondaryFn, .maskNumericPad] }
+        if functionKeys.contains(key.rawValue) { return .maskSecondaryFn }
+        return []
     }
 
     private func postMedia(_ key: MediaKey, isDown: Bool) {

@@ -1,7 +1,9 @@
+import CoreGraphics
 import Foundation
 import LogiDuoDomain
-import LogiDuoSystem
 import Testing
+
+@testable import LogiDuoSystem
 
 @Suite("SyntheticEventPlanner")
 struct SyntheticEventPlannerTests {
@@ -171,5 +173,27 @@ struct SyntheticInputExecutorTests {
         executor.perform([.perform(.device(.toggleScrollMode)), .perform(.system(.cycleSpaces))])
         #expect(poster.posted.isEmpty)
         #expect(executor.unperformedCommands == 2)
+    }
+}
+
+@Suite("CoreGraphicsEventPoster key flags")
+struct CoreGraphicsEventPosterKeyFlagsTests {
+    private static func key(_ raw: UInt16) -> KeyCode {
+        guard let key = KeyCode(rawValue: raw) else { preconditionFailure("valid") }
+        return key
+    }
+
+    @Test("arrow keys carry Fn and numeric pad, as a physical press does (⌃↑ is Mission Control)")
+    func arrows() {
+        for raw: UInt16 in [0x7B, 0x7C, 0x7D, 0x7E] {
+            #expect(CoreGraphicsEventPoster.keyFlags(Self.key(raw)) == [.maskSecondaryFn, .maskNumericPad])
+        }
+    }
+
+    @Test("function keys carry Fn (F11 is Show Desktop, F4 Launchpad); letters carry nothing")
+    func functionKeysAndLetters() {
+        #expect(CoreGraphicsEventPoster.keyFlags(Self.key(0x67)) == .maskSecondaryFn)
+        #expect(CoreGraphicsEventPoster.keyFlags(Self.key(0x76)) == .maskSecondaryFn)
+        #expect(CoreGraphicsEventPoster.keyFlags(Self.key(0x00)).isEmpty)
     }
 }

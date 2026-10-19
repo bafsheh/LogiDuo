@@ -2,6 +2,7 @@ import AppKit
 import LogiDuoDomain
 import LogiDuoFeatures
 import LogiDuoSystem
+import os
 
 /// Connects the remapping control to the live input engine and the permission service.
 ///
@@ -29,6 +30,7 @@ final class RemappingCoordinator: RemappingService {
     /// Called with the buttons the device must divert (macOS does not report them).
     var diversionChanged: (Set<MouseButton>) -> Void = { _ in }
     private var tasks: [Task<Void, Never>] = []
+    private let logger = Logger(subsystem: "io.github.bafsheh.LogiDuo", category: "Remapping")
 
     init(
         engine: LiveInputEngine,
@@ -210,6 +212,13 @@ final class RemappingCoordinator: RemappingService {
 
     /// Feeds an event the device reported (diverted button, raw motion) to the engine.
     func deviceInput(_ event: InputEvent) {
+        if case .buttonDown(let button) = event {
+            // Presses only (never motion): a few per minute at most, and the first thing to check
+            // when a device-only button seems to do nothing.
+            logger.notice(
+                "device button \(button.rawValue, privacy: .public) down, intercepting=\(self.status.isIntercepting)"
+            )
+        }
         engine.deviceInput(event)
     }
 }
