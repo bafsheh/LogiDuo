@@ -166,7 +166,8 @@ struct DeviceStatusView: View {
             }
             if let firmware = device.firmwareVersion {
                 LabeledContent {
-                    Text(firmware).textSelection(.enabled)
+                    // Selectable text keeps a stale accessibility value when reused; one identity per device.
+                    Text(firmware).textSelection(.enabled).id(device.id)
                 } label: {
                     Text("device.status.firmware", bundle: .module)
                 }

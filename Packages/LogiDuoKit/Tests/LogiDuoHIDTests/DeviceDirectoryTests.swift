@@ -13,6 +13,8 @@ private final class FakeInterfaceSource: HIDInterfaceSource, @unchecked Sendable
     private let lock = NSLock()
     private var responders: [UInt64: FakeHIDPPTransport.Responder] = [:]
     private var opened: [FakeHIDPPTransport] = []
+    private var denied = false
+    private var refused = 0
 
     init() {
         (events, sink) = AsyncStream.makeStream()
@@ -30,7 +32,18 @@ private final class FakeInterfaceSource: HIDInterfaceSource, @unchecked Sendable
 
     var transports: [FakeHIDPPTransport] { lock.withLock { opened } }
 
+    /// Opens refused as macOS refuses them without Input Monitoring.
+    var refusedOpens: Int { lock.withLock { refused } }
+
+    /// Whether opens are refused with ``HIDPPTransportError/accessDenied``.
+    func denyAccess(_ deny: Bool) { lock.withLock { denied = deny } }
+
     func transport(registryID: UInt64, framing: HIDPPFraming) throws(HIDPPTransportError) -> any HIDPPTransport {
+        let isDenied = lock.withLock {
+            if denied { refused += 1 }
+            return denied
+        }
+        if isDenied { throw .accessDenied }
         guard let responder = lock.withLock({ responders[registryID] }) else { throw .disconnected }
         let transport = FakeHIDPPTransport(responder: responder)
         lock.withLock { opened.append(transport) }
@@ -99,6 +112,54 @@ struct DeviceDirectoryTests {
         #expect(mouse.features.contains([.reprogrammableControls, .battery]))
         #expect(mouse.firmwareVersion == "RBM22.02_0009")
         #expect(mouse.id.rawValue.hasPrefix("phy."))
+        await directory.stop()
+    }
+
+    @Test("a device refused for missing Input Monitoring connects once access is granted, without a relaunch")
+    func accessGrantedAfterRefusal() async throws {
+        let source = FakeInterfaceSource()
+        source.denyAccess(true)
+        let directory = await Self.directory(source)
+        source.add(Self.descriptor(registryID: 1), responder: FakeHIDPPDevice().responder)
+        while source.refusedOpens == 0 { await Task.yield() }
+
+        source.denyAccess(false)
+        let connected = Task { await Self.await(directory) { $0.first?.link == .connected } }
+        // The failed state lands just after the refused open returns, and a never-identified
+        // device publishes nothing to wait on; repeat the grant until the retry happens.
+        let grants = Task {
+            while !Task.isCancelled {
+                await directory.accessGranted()
+                await Task.yield()
+            }
+        }
+        let mouse = try #require(await connected.value?.first)
+        grants.cancel()
+
+        #expect(mouse.name == "MX Master 3S")
+        #expect(source.refusedOpens >= 1)
+        await directory.stop()
+    }
+
+    @Test("refresh retries a device whose connection gave up")
+    func refreshRetriesGivenUpDevice() async throws {
+        let source = FakeInterfaceSource()
+        source.denyAccess(true)
+        let directory = await Self.directory(source)
+        source.add(Self.descriptor(registryID: 1), responder: FakeHIDPPDevice().responder)
+        while source.refusedOpens == 0 { await Task.yield() }
+
+        source.denyAccess(false)
+        let connected = Task { await Self.await(directory) { $0.first?.link == .connected } }
+        // Same race as above: repeat until the failed state has landed.
+        let refreshes = Task {
+            while !Task.isCancelled {
+                await directory.refresh()
+                await Task.yield()
+            }
+        }
+        #expect(try #require(await connected.value).count == 1)
+        refreshes.cancel()
         await directory.stop()
     }
 

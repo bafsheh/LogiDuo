@@ -115,9 +115,15 @@ final class AppCompositionRoot {
         let running = conflicts.running
         Task { for await software in running { model.conflicts = software } }
         let permissions = PermissionsAdapter()
+        let directory = devices
         Task {
+            var wasGranted = false
             for await statuses in permissions.statuses() {
-                model.inputMonitoringMissing = statuses[.inputMonitoring] != .granted
+                let granted = statuses[.inputMonitoring] == .granted
+                model.inputMonitoringMissing = !granted
+                // Interfaces refused before the grant stay failed until asked to connect again.
+                if granted, !wasGranted { await directory.accessGranted() }
+                wasGranted = granted
             }
         }
     }

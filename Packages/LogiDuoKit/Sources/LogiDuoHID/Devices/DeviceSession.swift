@@ -133,6 +133,16 @@ actor DeviceSession<SessionClock: Clock> where SessionClock.Duration == Duration
         await publish(.battery(endpoint, DeviceSnapshotMapper.battery(reading)))
     }
 
+    /// Connects again if the connection gave up because macOS refused access or the device
+    /// stopped answering (for example a mouse asleep for minutes); anything else is left alone.
+    func retryIfGaveUp() async {
+        guard !isRemoved else { return }
+        switch await connection.state {
+        case .failed(.accessDenied), .failed(.retriesExhausted): await connection.connect()
+        default: return
+        }
+    }
+
     func hostWillSleep() async { await connection.hostWillSleep() }
     func hostDidWake() async { await connection.hostDidWake() }
 

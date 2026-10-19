@@ -150,11 +150,27 @@ where SessionClock.Duration == Duration {
         return stream
     }
 
-    /// Re-reads every connected device.
+    /// Re-reads every connected device and retries those whose connection gave up.
     public func refresh() async {
         await reprobeReceivers()
         for attachment in attachments.values {
-            for session in attachment.sessions { await session.refresh() }
+            for session in attachment.sessions {
+                await session.retryIfGaveUp()
+                await session.refresh()
+            }
+        }
+    }
+
+    /// Input Monitoring was granted: retries every interface macOS refused to open,
+    /// so devices appear without relaunching LogiDuo.
+    public func accessGranted() async {
+        await reprobeReceivers()
+        await retryGivenUpSessions()
+    }
+
+    private func retryGivenUpSessions() async {
+        for attachment in attachments.values {
+            for session in attachment.sessions { await session.retryIfGaveUp() }
         }
     }
 
@@ -165,11 +181,13 @@ where SessionClock.Duration == Duration {
         }
     }
 
-    /// The Mac woke.
+    /// The Mac woke. Devices that gave up while it slept or idled get another attempt:
+    /// a wake usually means someone is using them again.
     public func hostDidWake() async {
         for attachment in attachments.values {
             for session in attachment.sessions { await session.hostDidWake() }
         }
+        await retryGivenUpSessions()
     }
 
     // MARK: - Discovery
