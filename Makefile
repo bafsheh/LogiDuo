@@ -5,6 +5,7 @@ PACKAGE_DIR   := Packages/LogiDuoKit
 PROJECT       := LogiDuo.xcodeproj
 SCHEME        := LogiDuo
 DERIVED_DATA  := build/DerivedData
+RUN_DATA      := build/RunData
 TOOLS_DIR     := BuildTools
 SWIFT_FORMAT  := $(TOOLS_DIR)/.build/release/swift-format
 SOURCES       := App AppTests UITests $(PACKAGE_DIR)/Sources $(PACKAGE_DIR)/Tests $(PACKAGE_DIR)/Package.swift \
@@ -34,6 +35,14 @@ project: ## Regenerate LogiDuo.xcodeproj from project.yml.
 build: ## Build the macOS app (Debug).
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration Debug \
 		-derivedDataPath $(DERIVED_DATA) -destination 'platform=macOS' -quiet build
+
+run: ## Build a Debug app signed with your team (DEVELOPMENT_TEAM=...) in its own folder and launch it.
+	@test -n "$(DEVELOPMENT_TEAM)" || { echo "Set DEVELOPMENT_TEAM to your Apple Development team ID."; exit 1; }
+	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration Debug \
+		-derivedDataPath $(RUN_DATA) -destination 'platform=macOS' -quiet build \
+		DEVELOPMENT_TEAM=$(DEVELOPMENT_TEAM) CODE_SIGN_IDENTITY="Apple Development" CODE_SIGN_STYLE=Manual
+	-osascript -e 'quit app id "io.github.bafsheh.LogiDuo"'
+	open $(RUN_DATA)/Build/Products/Debug/LogiDuo.app
 
 build-for-testing: ## Compile the app and every test target, including UI tests.
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -derivedDataPath $(DERIVED_DATA) \

@@ -57,6 +57,11 @@ open LogiDuo.xcodeproj
 
 Or build from the command line with `make build`. Run `make help` to list every target.
 
+To use the app day to day, run `DEVELOPMENT_TEAM=<your team ID> make run`. It builds a copy signed
+with your Apple Development certificate in its own folder, so macOS keeps its permissions across
+rebuilds and test runs. Ad-hoc builds (`make build`, Xcode without a team) count as a new app for
+macOS privacy settings every time they are rebuilt.
+
 `LogiDuo.xcodeproj` is generated from `project.yml`. After adding, moving or removing files, run
 `make project` and commit the regenerated project; CI rejects a stale project.
 
@@ -80,7 +85,7 @@ what still works without it.
 | Permission | Needed for | When LogiDuo asks |
 | --- | --- | --- |
 | Accessibility | Intercepting mouse buttons and sending shortcuts | Only when you turn on Remapping, at most once per launch |
-| Input Monitoring | Talking to some keyboards over HID++ | Only when a feature needs it |
+| Input Monitoring | Talking to devices over HID++ (battery, settings, device information); Bluetooth mice and keyboards alike | Only when you ask from the Permissions screen |
 
 Grant them in **System Settings → Privacy & Security**. Without Accessibility, all input stays native.
 Remapping is always one click away from off in the menu bar, and quitting LogiDuo restores normal
@@ -121,6 +126,11 @@ import. The code is compiled in Swift 6 language mode with complete strict-concu
 
 - **Build fails with an Xcode version error.** Select Xcode 26.6 or later with
   `sudo xcode-select -s /Applications/Xcode.app`.
+- **No devices, or permissions shown as missing although they are on in System Settings.** The
+  running copy is probably an ad-hoc build that macOS treats as a different app. Quit LogiDuo, run
+  `tccutil reset ListenEvent io.github.bafsheh.LogiDuo`, launch a signed build (`make run`) and
+  allow Input Monitoring again. Devices appear as soon as it is granted.
+- **A device that was asleep does not appear.** Move or press a key on it, then click Refresh.
 
 ## Contributing
 
