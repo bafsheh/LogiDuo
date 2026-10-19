@@ -182,7 +182,9 @@ public struct DeviceRecovery<Device: HIDPPRequestPerforming>: Sendable {
         guard confirmation.plan == plan, plan.device == transaction.target else {
             return EmergencyResetReport(blocked: .notConfirmed)
         }
-        guard transaction.authorization == .enabled else { return EmergencyResetReport(blocked: .writesNotAuthorized) }
+        guard transaction.authorization.allowsDiversion else {
+            return EmergencyResetReport(blocked: .writesNotAuthorized)
+        }
         // Once confirmed, the reset runs to completion even if the caller is cancelled.
         let recovery = self
         return await Task {

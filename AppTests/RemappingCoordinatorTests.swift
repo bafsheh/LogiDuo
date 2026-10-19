@@ -71,7 +71,10 @@ struct RemappingCoordinatorTests {
         let engine: LiveInputEngine
     }
 
-    private func makeHarness(accessibility: PermissionStatus = .granted) -> Harness {
+    private func makeHarness(
+        accessibility: PermissionStatus = .granted,
+        capabilities: MouseCapabilities = .undiscovered
+    ) -> Harness {
         let backend = AppFakeTapBackend()
         let checker = AppFakeChecker(accessibility)
         let executor = AppRecordingExecutor()
@@ -80,6 +83,7 @@ struct RemappingCoordinatorTests {
             engine: engine,
             checker: checker,
             permissionMonitor: PermissionMonitor(checker: checker, clock: ContinuousClock()),
+            capabilities: capabilities,
             openURL: { _ in }
         )
         return Harness(coordinator: coordinator, backend: backend, checker: checker, executor: executor, engine: engine)
@@ -123,6 +127,41 @@ struct RemappingCoordinatorTests {
         harness.coordinator.apply(.none)
         #expect(harness.coordinator.status.activeProfileName == nil)
         #expect(harness.backend.deliver(.otherMouseDown, button: 4) != nil)
+    }
+
+    @Test("with diversion authorized, a gesture-button mapping diverts the button and runs its action")
+    func gestureButtonMapping() throws {
+        let harness = makeHarness(capabilities: AppCompositionRoot.mouseCapabilities)
+        var diverted: [Set<MouseButton>] = []
+        harness.coordinator.diversionChanged = { diverted.append($0) }
+        harness.coordinator.setEnabled(true)
+        let mappings = try MappingSet([ButtonMapping(trigger: .press(.gesture), action: .click(.middle))])
+
+        harness.coordinator.apply(ActiveProfile(selection: .defaultProfile, name: nil, mappings: mappings))
+        harness.coordinator.deviceInput(.buttonDown(.gesture))
+        harness.coordinator.deviceInput(.buttonUp(.gesture))
+        harness.engine.drainCommands()
+
+        #expect(diverted.last == [.gesture])
+        #expect(harness.executor.commands == [.pressSynthetic(.middle), .releaseSynthetic(.middle)])
+    }
+
+    @Test("without diversion, a gesture-button mapping asks for nothing and does nothing")
+    func gestureButtonWithoutDiversion() throws {
+        let harness = makeHarness()
+        var diverted: [Set<MouseButton>] = []
+        harness.coordinator.diversionChanged = { diverted.append($0) }
+        harness.coordinator.setEnabled(true)
+        let mappings = try MappingSet([ButtonMapping(trigger: .press(.gesture), action: .click(.middle))])
+
+        harness.coordinator.apply(ActiveProfile(selection: .defaultProfile, name: nil, mappings: mappings))
+        harness.coordinator.deviceInput(.buttonDown(.gesture))
+        harness.coordinator.deviceInput(.buttonUp(.gesture))
+        harness.engine.drainCommands()
+
+        let divertedAnything = diverted.contains { !$0.isEmpty }
+        #expect(!divertedAnything)
+        #expect(harness.executor.commands.isEmpty)
     }
 
     @Test("a validation preset overrides the profile until switched back")

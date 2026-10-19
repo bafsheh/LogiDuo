@@ -52,13 +52,16 @@ public final class MappingEditorViewModel {
     public private(set) var saveProblem: ConfigurationSaveProblem?
 
     private let repository: any ConfigurationRepositing
+    private let deviceButtonsAvailable: Bool
 
     /// Buttons that can carry gestures.
     public static let gestureButtons: [MouseButton] = [.middle, .back, .forward, .gesture]
 
-    /// Creates a view model.
-    public init(repository: any ConfigurationRepositing) {
+    /// Creates a view model. `deviceButtonsAvailable` says whether LogiDuo may divert buttons
+    /// macOS does not report (gesture, mode shift); without it their rows say they need device access.
+    public init(repository: any ConfigurationRepositing, deviceButtonsAvailable: Bool = false) {
         self.repository = repository
+        self.deviceButtonsAvailable = deviceButtonsAvailable
     }
 
     /// Application profiles, in priority order.
@@ -117,7 +120,7 @@ public final class MappingEditorViewModel {
             } else {
                 (.passThrough, .native)
             }
-        let needsDevice = trigger.button.map { !$0.isSystemReported } ?? false
+        let needsDevice = !deviceButtonsAvailable && (trigger.button.map { !$0.isSystemReported } ?? false)
         return MappingRow(trigger: trigger, action: action, source: source, needsDeviceAccess: needsDevice)
     }
 

@@ -3,8 +3,8 @@ public import LogiDuoHIDPP
 /// Connects recovery to the Logitech devices attached right now.
 ///
 /// Only directly attached devices (Bluetooth or USB) are offered; devices behind a
-/// receiver are not yet supported. With writes disabled every transport is
-/// wrapped in ``ReadOnlyTransportGuard``, so not even a defect can send a write.
+/// receiver are not yet supported. Unless every write is authorized, each transport is
+/// wrapped in ``ReadOnlyTransportGuard``, so not even a defect can send a write it does not allow.
 public enum LiveRecoveryConnector {
     /// Opens, locates and verifies every present device. Devices without a firmware
     /// identity are not offered.
@@ -22,8 +22,7 @@ public enum LiveRecoveryConnector {
                     framing: framing
                 )
             else { continue }
-            let transport: any HIDPPTransport =
-                authorization == .enabled ? raw : ReadOnlyTransportGuard(wrapping: raw)
+            let transport = authorization.limiting(raw)
             let channel = HIDPPChannel(transport: transport, clock: ContinuousClock())
             await channel.start()
             guard

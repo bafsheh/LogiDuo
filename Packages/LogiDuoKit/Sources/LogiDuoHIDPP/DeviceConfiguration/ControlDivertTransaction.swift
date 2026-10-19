@@ -36,8 +36,14 @@ public enum DeviceConfigurationError: Error, Hashable, Sendable {
 public enum DeviceWriteAuthorization: Hashable, Sendable {
     /// Writes are refused before anything is sent.
     case disabled
+    /// Only temporary button diverts and their restoration (``ReportingCommand``); settings the
+    /// device stores (DPI, SmartShift, keyboard) stay read-only. See ``ReadOnlyTransportGuard``.
+    case diversionOnly
     /// Writes are allowed.
     case enabled
+
+    /// Whether temporary button diverts (and restoring them) may be sent.
+    public var allowsDiversion: Bool { self != .disabled }
 }
 
 /// The outcome of restoring one device.
@@ -125,7 +131,7 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
         _ control: ReprogrammableControl,
         with command: ReportingCommand
     ) async throws(DeviceConfigurationError) {
-        guard authorization == .enabled else { throw .writesNotAuthorized }
+        guard authorization.allowsDiversion else { throw .writesNotAuthorized }
         guard command.diverts else { throw .unsupportedCombination(control.control) }
         try command.validate(for: control)
         await ledger.beginExclusive(target.identity)
@@ -157,7 +163,7 @@ public struct ControlDivertTransaction<Device: HIDPPRequestPerforming>: Sendable
     private func restoreNow(only controls: Set<UInt16>?) async -> RestorationReport {
         let pending = await ledger.pending(for: target.identity).filter { Self.matches($0, controls) }
         guard !pending.isEmpty else { return RestorationReport() }
-        guard authorization == .enabled else { return Self.failing(pending, .writesNotAuthorized) }
+        guard authorization.allowsDiversion else { return Self.failing(pending, .writesNotAuthorized) }
         await ledger.beginExclusive(target.identity)
         let report = await restoreExclusively(only: controls)
         await ledger.endExclusive(target.identity)

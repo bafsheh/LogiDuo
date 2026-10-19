@@ -20,6 +20,7 @@ final class RemappingCoordinator: RemappingService {
     private let checker: any PermissionChecking
     private let permissionMonitor: PermissionMonitor<ContinuousClock>
     private let openURL: (URL) -> Void
+    private let capabilities: MouseCapabilities
     private let statusSink: AsyncStream<RemappingStatus>.Continuation
     private var policy = PermissionRequestPolicy()
     private var profile = ActiveProfile.none
@@ -33,9 +34,11 @@ final class RemappingCoordinator: RemappingService {
         engine: LiveInputEngine,
         checker: any PermissionChecking,
         permissionMonitor: PermissionMonitor<ContinuousClock>,
+        capabilities: MouseCapabilities = .undiscovered,
         openURL: @escaping (URL) -> Void
     ) {
         self.engine = engine
+        self.capabilities = capabilities
         self.checker = checker
         self.permissionMonitor = permissionMonitor
         self.openURL = openURL
@@ -189,9 +192,9 @@ final class RemappingCoordinator: RemappingService {
     }
 
     private func resolved(_ preset: ValidationPreset) -> ResolvedMappings {
-        // System-reported buttons only until device diversion is authorized: no capabilities are used.
+        // Without diversion the capabilities are undiscovered, so only system-reported buttons resolve.
         let mappings = preset == .configured ? profile.mappings : preset.mappings
-        return MappingResolver.resolve(mappings, capabilities: .undiscovered, mode: .enabled)
+        return MappingResolver.resolve(mappings, capabilities: capabilities, mode: .enabled)
     }
 
     private func publish() {
@@ -202,7 +205,7 @@ final class RemappingCoordinator: RemappingService {
     /// Device-only buttons the active mappings use, while remapping is on.
     private var requiredDiversion: Set<MouseButton> {
         guard status.isEnabled, status.preset == .configured else { return [] }
-        return Set(profile.mappings.mappings.keys.compactMap(\.button).filter { !$0.isSystemReported })
+        return resolved(.configured).buttonsRequiringDiversion
     }
 
     /// Feeds an event the device reported (diverted button, raw motion) to the engine.

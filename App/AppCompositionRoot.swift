@@ -45,9 +45,24 @@ final class AppCompositionRoot {
     let deviceActions: DeviceActionController
     private let executor: SyntheticInputExecutor
 
-    /// Device configuration writes. Disabled: no physical write has been verified yet,
-    /// so recovery inspects devices through the read-only transport guard only.
-    static let deviceWrites = DeviceWriteAuthorization.disabled
+    /// Device configuration writes: temporary button diverts only (verified on an MX Master 3S,
+    /// divert and exact restore of 0x00C3). Settings the device stores stay read-only.
+    static let deviceWrites = DeviceWriteAuthorization.diversionOnly
+
+    /// Whether buttons macOS does not report (gesture, mode shift) can be diverted and remapped.
+    static var divertsButtons: Bool { deviceWrites.allowsDiversion }
+
+    /// What remapping may rely on: buttons LogiDuo can divert, and swipes on the gesture
+    /// button, once diversion is authorized. A device without a control just never reports it.
+    static var mouseCapabilities: MouseCapabilities {
+        guard divertsButtons,
+            let gestures = GestureCapability(buttons: [.gesture], supportsDirectionalSwipes: true)
+        else { return .undiscovered }
+        return MouseCapabilities(
+            divertableButtons: .supported(Set(DivertedControlsDecoder.buttons.values)),
+            gestures: .supported(gestures)
+        )
+    }
 
     init(router: AppRouter = AppRouter(), remapping: RemappingCoordinator? = nil) {
         self.router = router
@@ -58,7 +73,7 @@ final class AppCompositionRoot {
         let repository = ConfigurationRepository(store: FileConfigurationStore(), clock: ContinuousClock())
         self.configuration = repository
         self.profiles = ProfileController(repository: repository, coordinator: coordinator)
-        self.mappingsModel = MappingEditorViewModel(repository: repository)
+        self.mappingsModel = MappingEditorViewModel(repository: repository, deviceButtonsAvailable: Self.divertsButtons)
         self.profilesModel = ProfilesViewModel(repository: repository)
         self.scrollModel = ScrollSettingsViewModel(repository: repository)
         self.settingsModel = AppSettingsViewModel(loginItem: LoginItemAdapter(), repository: repository)
@@ -67,7 +82,7 @@ final class AppCompositionRoot {
         let ledger = RestorationLedger(store: FileRestorationJournalStore())
         self.recoveryModel = RecoveryViewModel(
             service: Self.makeRecovery(ledger: ledger),
-            writesEnabled: Self.deviceWrites == .enabled
+            writesEnabled: Self.deviceWrites.allowsDiversion
         )
         let directory = DeviceDirectory(
             source: HIDDeviceMonitor(),
@@ -188,6 +203,7 @@ final class AppCompositionRoot {
             engine: LiveInputEngine(executor: executor),
             checker: checker,
             permissionMonitor: PermissionMonitor(checker: checker, clock: ContinuousClock()),
+            capabilities: mouseCapabilities,
             openURL: { NSWorkspace.shared.open($0) }
         )
     }

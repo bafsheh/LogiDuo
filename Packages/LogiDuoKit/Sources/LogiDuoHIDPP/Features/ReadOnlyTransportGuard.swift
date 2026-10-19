@@ -10,7 +10,9 @@ import Foundation
 /// functions not on the list — is refused with
 /// ``HIDPPTransportError/blockedByPolicy`` and never reaches the device.
 ///
-/// Used for live hardware verification before configuration features exist.
+/// With `allowingDiversion`, one write is added: ReprogControlsV4 `setCidReporting`,
+/// only for a control LogiDuo diverts (``DivertedControlsDecoder/buttons``), only with a
+/// ``ReportingCommand`` flags byte (no persist bits) and only with remapping left unchanged.
 public final class ReadOnlyTransportGuard: HIDPPTransport, @unchecked Sendable {  // Invariant: guarded by `lock`.
     /// Read-only ("get") functions per feature, from the HID++ 2.0 feature specifications.
     public static let allowedFunctions: [FeatureID: Set<UInt8>] = [
@@ -32,6 +34,9 @@ public final class ReadOnlyTransportGuard: HIDPPTransport, @unchecked Sendable {
         .disableKeys: [0, 1],  // getCapabilities, getDisabledKeys (setDisabledKeys excluded)
     ]
 
+    /// ReprogControlsV4 `setCidReporting`.
+    static let setControlReporting: UInt8 = 3
+
     private struct Lookup: Hashable {
         let device: UInt8
         let softwareID: UInt8
@@ -48,15 +53,17 @@ public final class ReadOnlyTransportGuard: HIDPPTransport, @unchecked Sendable {
     public let events: AsyncStream<HIDPPTransportEvent>
 
     private let inner: any HIDPPTransport
+    private let allowsDiversion: Bool
     private let lock = NSLock()
     private var pendingLookups: [Lookup: FeatureID] = [:]
     private var features: [Slot: FeatureID] = [:]
     private var refused = 0
     private var relay: Task<Void, Never>?
 
-    /// Wraps `inner`.
-    public init(wrapping inner: any HIDPPTransport) {
+    /// Wraps `inner`; with `allowingDiversion`, temporary button diverts also pass (see the type's documentation).
+    public init(wrapping inner: any HIDPPTransport, allowingDiversion: Bool = false) {
         self.inner = inner
+        self.allowsDiversion = allowingDiversion
         self.framing = inner.framing
         let (events, sink) = AsyncStream.makeStream(of: HIDPPTransportEvent.self)
         self.events = events
@@ -99,7 +106,11 @@ public final class ReadOnlyTransportGuard: HIDPPTransport, @unchecked Sendable {
             let feature: FeatureID? =
                 request.featureIndex == .root
                 ? .root : features[Slot(device: request.deviceIndex.rawValue, index: request.featureIndex.rawValue)]
-            guard let feature, Self.allowedFunctions[feature]?.contains(function) == true else { return false }
+            guard let feature else { return false }
+            if allowsDiversion, feature == .reprogControlsV4, function == Self.setControlReporting {
+                return Self.isTemporaryDivert(request.parameters)
+            }
+            guard Self.allowedFunctions[feature]?.contains(function) == true else { return false }
             if feature == .root, function == 0 {
                 let requested = FeatureID(rawValue: UInt16(request.parameters[0]) << 8 | UInt16(request.parameters[1]))
                 pendingLookups[Lookup(device: request.deviceIndex.rawValue, softwareID: request.softwareID.rawValue)] =
@@ -120,6 +131,27 @@ public final class ReadOnlyTransportGuard: HIDPPTransport, @unchecked Sendable {
         lock.withLock {
             guard let feature = pendingLookups.removeValue(forKey: lookup), reply.parameters[0] != 0 else { return }
             features[Slot(device: lookup.device, index: reply.parameters[0])] = feature
+        }
+    }
+
+    /// `[cid hi, cid lo, flags, remap hi, remap lo, 0…]`: a managed control, a ``ReportingCommand``
+    /// flags byte and nothing else (remap 0 leaves remapping unchanged).
+    static func isTemporaryDivert(_ parameters: [UInt8]) -> Bool {
+        guard parameters.count >= 5 else { return false }
+        let control = UInt16(parameters[0]) << 8 | UInt16(parameters[1])
+        return DivertedControlsDecoder.buttons[control] != nil
+            && ReportingCommand.allCases.contains { $0.flagsByte == parameters[2] }
+            && parameters[3...].allSatisfy { $0 == 0 }
+    }
+}
+
+extension DeviceWriteAuthorization {
+    /// `transport`, limited to the writes this authorization allows.
+    public func limiting(_ transport: any HIDPPTransport) -> any HIDPPTransport {
+        switch self {
+        case .enabled: transport
+        case .diversionOnly: ReadOnlyTransportGuard(wrapping: transport, allowingDiversion: true)
+        case .disabled: ReadOnlyTransportGuard(wrapping: transport)
         }
     }
 }

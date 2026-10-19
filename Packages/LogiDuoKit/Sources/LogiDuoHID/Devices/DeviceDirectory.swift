@@ -66,7 +66,7 @@ where SessionClock.Duration == Duration {
         batteryInterval: Duration = .seconds(300)
     ) {
         // Diversion needs both: without authorization no ledger is used and nothing is diverted.
-        self.ledger = authorization == .enabled ? ledger : nil
+        self.ledger = authorization.allowsDiversion ? ledger : nil
         self.source = source
         self.clock = clock
         self.authorization = authorization
@@ -240,7 +240,7 @@ where SessionClock.Duration == Duration {
             logger.notice("could not open a device interface: \(String(describing: error), privacy: .public)")
             throw error
         }
-        return authorization == .enabled ? raw : ReadOnlyTransportGuard(wrapping: raw)
+        return authorization.limiting(raw)
     }
 
     private func forward(_ event: InputEvent) async {

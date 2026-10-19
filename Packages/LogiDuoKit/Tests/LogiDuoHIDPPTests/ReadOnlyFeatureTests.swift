@@ -92,12 +92,13 @@ struct ReadOnlyTransportGuardTests {
     private typealias Traffic = HIDPPTestTraffic
 
     private func guarded(
-        _ device: FakeHIDPPDevice = FakeHIDPPDevice()
+        _ device: FakeHIDPPDevice = FakeHIDPPDevice(),
+        allowingDiversion: Bool = false
     ) async
         -> (HIDPPChannel<ManualClock>, ReadOnlyTransportGuard, FakeHIDPPTransport)
     {
         let inner = FakeHIDPPTransport(framing: .receiver, responder: device.responder)
-        let guardTransport = ReadOnlyTransportGuard(wrapping: inner)
+        let guardTransport = ReadOnlyTransportGuard(wrapping: inner, allowingDiversion: allowingDiversion)
         let channel = HIDPPChannel(transport: guardTransport, clock: ManualClock())
         await channel.start()
         return (channel, guardTransport, inner)
@@ -152,6 +153,70 @@ struct ReadOnlyTransportGuardTests {
             )
         }
         #expect(inner.sent.count == sentBefore)
+    }
+
+    /// The raw setCidReporting report for `parameters`, after looking up ReprogControlsV4 through `channel`.
+    private static func setReporting(
+        _ parameters: [UInt8],
+        via channel: HIDPPChannel<ManualClock>,
+        framing: HIDPPFraming
+    ) async throws -> [UInt8] {
+        let reprog = try #require(
+            try await RootFeature.location(of: .reprogControlsV4, via: channel, device: .direct, timeout: nil)
+        )
+        let request = try request(feature: reprog.index.rawValue, function: 3, parameters)
+        return try framing.encode(request.report(softwareID: try #require(SoftwareID(rawValue: 9))))
+    }
+
+    @Test(
+        "with diversion allowed, temporary divert and undivert of a managed control pass",
+        arguments: [
+            [0x00, 0xC3, 0x03], [0x00, 0xC3, 0x33], [0x00, 0xC3, 0x02], [0x00, 0xC3, 0x22], [0x00, 0xC4, 0x03],
+        ] as [[UInt8]]
+    )
+    func temporaryDivertAllowed(parameters: [UInt8]) async throws {
+        let (channel, guardTransport, inner) = await guarded(allowingDiversion: true)
+        let report = try await Self.setReporting(parameters, via: channel, framing: inner.framing)
+        let sentBefore = inner.sent.count
+
+        try await guardTransport.send(report)
+        #expect(inner.sent.count == sentBefore + 1)
+    }
+
+    @Test(
+        "with diversion allowed, persist bits, remapping and other controls are still refused",
+        arguments: [
+            [0x00, 0xC3, 0x0F],  // persist + persist-valid
+            [0x00, 0xC3, 0x03, 0x00, 0x52],  // remap to another control
+            [0x00, 0x50, 0x03],  // left click
+            [0x00, 0x52, 0x03],  // middle button (macOS reports it; never diverted)
+            [0x00, 0xC3, 0x03, 0x00, 0x00, 0x01],  // trailing garbage
+        ] as [[UInt8]]
+    )
+    func otherReportingRefused(parameters: [UInt8]) async throws {
+        let (channel, guardTransport, inner) = await guarded(allowingDiversion: true)
+        let report = try await Self.setReporting(parameters, via: channel, framing: inner.framing)
+        let sentBefore = inner.sent.count
+
+        await #expect(throws: HIDPPTransportError.blockedByPolicy) { try await guardTransport.send(report) }
+        #expect(inner.sent.count == sentBefore)
+    }
+
+    @Test("diversion-only authorization allows diverts but no other write; disabled allows none")
+    func authorizationLimits() {
+        let device = FakeHIDPPDevice()
+        let divertOnly = DeviceWriteAuthorization.diversionOnly.limiting(
+            FakeHIDPPTransport(framing: .receiver, responder: device.responder)
+        )
+        let disabled = DeviceWriteAuthorization.disabled.limiting(
+            FakeHIDPPTransport(framing: .receiver, responder: device.responder)
+        )
+        #expect((divertOnly as? ReadOnlyTransportGuard) != nil)
+        #expect((disabled as? ReadOnlyTransportGuard) != nil)
+        let raw = FakeHIDPPTransport(framing: .receiver, responder: device.responder)
+        #expect((DeviceWriteAuthorization.enabled.limiting(raw) as? FakeHIDPPTransport) === raw)
+        #expect(DeviceWriteAuthorization.diversionOnly.allowsDiversion)
+        #expect(!DeviceWriteAuthorization.disabled.allowsDiversion)
     }
 
     @Test("functions outside the allow-list of an allowed feature are refused (serial number)")
