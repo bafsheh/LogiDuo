@@ -42,6 +42,12 @@ while IFS= read -r path; do
             fail "signing material or secrets must not be tracked: $path" ;;
         .build/* | */.build/* | DerivedData/* | build/* | *.xcresult/* | */xcuserdata/*)
             fail "build output must not be tracked: $path" ;;
+        .cursor | .cursor/* | .claude | .claude/* | .codex | .codex/* | .continue | .continue/* | \
+        .windsurf | .windsurf/* | .agents | .agents/* | .aider | .aider/* | .aider* | \
+        .specstory | .specstory/* | CLAUDE.md | AGENTS.md | GEMINI.md | .cursorrules | .cursorignore | \
+        .mcp.json | mcp.json | skills-lock.json | */skills-lock.json | \
+        .github/copilot-instructions.md)
+            fail "local tool working directory must not be tracked: $path" ;;
     esac
 done < <(tracked_files)
 

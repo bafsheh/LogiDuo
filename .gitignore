@@ -5,8 +5,26 @@
 *.markdown
 !/README.md
 
-# --- Local, per-developer tooling --------------------------------------
-# Tool-specific working directories belong in .git/info/exclude.
+# --- Local editor / agent working directories (never publish) -------------
+.cursor/
+.claude/
+.codex/
+.continue/
+.windsurf/
+.agents/
+.aider/
+.aider*
+.specstory/
+.github/copilot-instructions.md
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+.cursorrules
+.cursorignore
+.mcp.json
+mcp.json
+skills-lock.json
+**/skills-lock.json
 
 # --- Xcode / SwiftPM build output ----------------------------------------
 .build/
