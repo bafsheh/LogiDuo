@@ -2,77 +2,14 @@
 import AppKit
 import Foundation
 
-/// Renders LogiDuo App Icon PNGs from a vector mark (no wordmark).
+/// Renders LogiDuo App Icon PNGs: blueprint keyboard + teardrop mouse (no wordmark).
 /// Usage: swift scripts/render-app-icon.swift
 
 struct Palette {
-    static let top = NSColor(srgbRed: 0.043, green: 0.110, blue: 0.141, alpha: 1)
-    static let bottom = NSColor(srgbRed: 0.071, green: 0.239, blue: 0.267, alpha: 1)
-    static let mouse = NSColor(srgbRed: 0.949, green: 0.984, blue: 0.980, alpha: 1)
-    static let accent = NSColor(srgbRed: 0.180, green: 0.769, blue: 0.714, alpha: 1)
-    static let ink = NSColor(srgbRed: 0.055, green: 0.125, blue: 0.153, alpha: 1)
-}
-
-func point(_ x: CGFloat, _ y: CGFloat, in rect: CGRect) -> CGPoint {
-    CGPoint(x: rect.minX + x * rect.width, y: rect.minY + y * rect.height)
-}
-
-/// MX Master–inspired top view in top-left origin space (y grows down).
-func mouseBody(in rect: CGRect) -> CGPath {
-    let path = CGMutablePath()
-    path.move(to: point(0.58, 0.04, in: rect))
-    path.addCurve(
-        to: point(0.86, 0.16, in: rect),
-        control1: point(0.70, 0.03, in: rect),
-        control2: point(0.80, 0.07, in: rect)
-    )
-    path.addCurve(
-        to: point(0.92, 0.46, in: rect),
-        control1: point(0.92, 0.26, in: rect),
-        control2: point(0.94, 0.36, in: rect)
-    )
-    path.addCurve(
-        to: point(0.84, 0.80, in: rect),
-        control1: point(0.90, 0.58, in: rect),
-        control2: point(0.88, 0.72, in: rect)
-    )
-    path.addCurve(
-        to: point(0.58, 0.96, in: rect),
-        control1: point(0.78, 0.92, in: rect),
-        control2: point(0.68, 0.97, in: rect)
-    )
-    path.addCurve(
-        to: point(0.32, 0.90, in: rect),
-        control1: point(0.48, 0.95, in: rect),
-        control2: point(0.38, 0.94, in: rect)
-    )
-    path.addCurve(
-        to: point(0.16, 0.68, in: rect),
-        control1: point(0.22, 0.84, in: rect),
-        control2: point(0.14, 0.78, in: rect)
-    )
-    path.addCurve(
-        to: point(0.06, 0.46, in: rect),
-        control1: point(0.12, 0.60, in: rect),
-        control2: point(0.04, 0.54, in: rect)
-    )
-    path.addCurve(
-        to: point(0.16, 0.28, in: rect),
-        control1: point(0.08, 0.38, in: rect),
-        control2: point(0.10, 0.32, in: rect)
-    )
-    path.addCurve(
-        to: point(0.34, 0.10, in: rect),
-        control1: point(0.22, 0.22, in: rect),
-        control2: point(0.26, 0.12, in: rect)
-    )
-    path.addCurve(
-        to: point(0.58, 0.04, in: rect),
-        control1: point(0.42, 0.06, in: rect),
-        control2: point(0.52, 0.04, in: rect)
-    )
-    path.closeSubpath()
-    return path
+    static let plate = NSColor(srgbRed: 0.04, green: 0.16, blue: 0.30, alpha: 1)
+    static let panel = NSColor(srgbRed: 0.06, green: 0.22, blue: 0.38, alpha: 1)
+    static let ink = NSColor(srgbRed: 0.55, green: 0.82, blue: 0.98, alpha: 1)
+    static let inkHot = NSColor(srgbRed: 0.78, green: 0.94, blue: 1.0, alpha: 1)
 }
 
 func drawIcon(pixels: Int) -> NSBitmapImageRep {
@@ -96,61 +33,222 @@ func drawIcon(pixels: Int) -> NSBitmapImageRep {
     guard let context = NSGraphicsContext(bitmapImageRep: rep) else { fatalError("context") }
     NSGraphicsContext.current = context
     let cg = context.cgContext
-    // Top-left origin for the unit paths below.
     cg.translateBy(x: 0, y: CGFloat(pixels))
     cg.scaleBy(x: 1, y: -1)
 
-    let bounds = CGRect(x: 0, y: 0, width: pixels, height: pixels)
-    let colors = [Palette.top.cgColor, Palette.bottom.cgColor] as CFArray
-    let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1])!
-    cg.drawLinearGradient(
-        gradient,
-        start: CGPoint(x: 0, y: 0),
-        end: CGPoint(x: 0, y: CGFloat(pixels)),
-        options: []
-    )
+    let s = CGFloat(pixels)
+    drawPlate(cg: cg, size: s)
+    drawGrid(cg: cg, size: s)
 
-    let mark = bounds.insetBy(dx: CGFloat(pixels) * 0.22, dy: CGFloat(pixels) * 0.12)
-    cg.setFillColor(Palette.mouse.cgColor)
-    cg.addPath(mouseBody(in: mark))
-    cg.fillPath()
+    // Content inset so the system squircle mask keeps the mark clear.
+    let pad = s * 0.16
+    let field = CGRect(x: pad, y: pad, width: s - pad * 2, height: s - pad * 2)
 
-    let wheelW = mark.width * 0.10
-    let wheelH = mark.height * 0.14
-    let wheelRect = CGRect(
-        x: mark.minX + mark.width * 0.53 - wheelW / 2,
-        y: mark.minY + mark.height * 0.14,
-        width: wheelW,
-        height: wheelH
-    )
-    cg.setFillColor(Palette.ink.withAlphaComponent(0.42).cgColor)
-    cg.addPath(CGPath(roundedRect: wheelRect, cornerWidth: wheelW / 2, cornerHeight: wheelW / 2, transform: nil))
-    cg.fillPath()
-
-    cg.setStrokeColor(Palette.ink.withAlphaComponent(0.30).cgColor)
-    cg.setLineWidth(max(1, CGFloat(pixels) * 0.010))
-    cg.setLineCap(.round)
-    cg.move(to: point(0.58, 0.05, in: mark))
-    cg.addLine(to: CGPoint(x: wheelRect.midX, y: wheelRect.minY))
-    cg.strokePath()
-
-    func duoArc(offset: CGFloat, alpha: CGFloat, width: CGFloat) {
-        cg.setStrokeColor(Palette.accent.withAlphaComponent(alpha).cgColor)
-        cg.setLineWidth(width)
-        cg.setLineCap(.round)
-        cg.move(to: point(0.16 + offset, 0.28, in: mark))
-        cg.addCurve(
-            to: point(0.12 + offset, 0.70, in: mark),
-            control1: point(0.06 + offset, 0.40, in: mark),
-            control2: point(0.04 + offset, 0.56, in: mark)
-        )
-        cg.strokePath()
-    }
-    duoArc(offset: 0.00, alpha: 1.0, width: max(1.5, CGFloat(pixels) * 0.032))
-    duoArc(offset: 0.07, alpha: 0.68, width: max(1.2, CGFloat(pixels) * 0.026))
+    drawKeyboard(cg: cg, field: field, size: s)
+    drawMouse(cg: cg, field: field, size: s)
+    drawDuoNode(cg: cg, field: field, size: s)
 
     NSGraphicsContext.restoreGraphicsState()
     return rep
+}
+
+func drawPlate(cg: CGContext, size: CGFloat) {
+    let colors = [Palette.panel.cgColor, Palette.plate.cgColor] as CFArray
+    let gradient = CGGradient(
+        colorsSpace: CGColorSpaceCreateDeviceRGB(),
+        colors: colors,
+        locations: [0, 1]
+    )!
+    cg.drawLinearGradient(gradient, start: .zero, end: CGPoint(x: 0, y: size), options: [])
+}
+
+func drawGrid(cg: CGContext, size: CGFloat) {
+    let step = size * 0.08
+    cg.setStrokeColor(Palette.ink.withAlphaComponent(0.16).cgColor)
+    cg.setLineWidth(max(1, size * 0.004))
+    var x: CGFloat = 0
+    while x <= size {
+        cg.move(to: CGPoint(x: x, y: 0))
+        cg.addLine(to: CGPoint(x: x, y: size))
+        x += step
+    }
+    var y: CGFloat = 0
+    while y <= size {
+        cg.move(to: CGPoint(x: 0, y: y))
+        cg.addLine(to: CGPoint(x: size, y: y))
+        y += step
+    }
+    cg.strokePath()
+
+    // Major ticks every 5 cells.
+    cg.setStrokeColor(Palette.ink.withAlphaComponent(0.28).cgColor)
+    cg.setLineWidth(max(1.2, size * 0.006))
+    x = 0
+    var index = 0
+    while x <= size {
+        if index.isMultiple(of: 5) {
+            cg.move(to: CGPoint(x: x, y: 0))
+            cg.addLine(to: CGPoint(x: x, y: size))
+        }
+        x += step
+        index += 1
+    }
+    y = 0
+    index = 0
+    while y <= size {
+        if index.isMultiple(of: 5) {
+            cg.move(to: CGPoint(x: 0, y: y))
+            cg.addLine(to: CGPoint(x: size, y: y))
+        }
+        y += step
+        index += 1
+    }
+    cg.strokePath()
+}
+
+func drawKeyboard(cg: CGContext, field: CGRect, size: CGFloat) {
+    let keyW = field.width * 0.58
+    let keyH = field.height * 0.34
+    let keyRect = CGRect(
+        x: field.minX + field.width * 0.02,
+        y: field.minY + field.height * 0.46,
+        width: keyW,
+        height: keyH
+    )
+    let radius = keyH * 0.18
+
+    cg.setFillColor(Palette.ink.withAlphaComponent(0.08).cgColor)
+    cg.addPath(CGPath(roundedRect: keyRect, cornerWidth: radius, cornerHeight: radius, transform: nil))
+    cg.fillPath()
+
+    cg.setStrokeColor(Palette.ink.cgColor)
+    cg.setLineWidth(max(2, size * 0.022))
+    cg.addPath(CGPath(roundedRect: keyRect, cornerWidth: radius, cornerHeight: radius, transform: nil))
+    cg.strokePath()
+
+    // Three key caps as blueprint slots.
+    let capW = keyW * 0.13
+    let capH = keyH * 0.28
+    let capY = keyRect.midY - capH / 2
+    let gap = keyW * 0.07
+    let startX = keyRect.midX - (capW * 3 + gap * 2) / 2
+    cg.setStrokeColor(Palette.inkHot.withAlphaComponent(0.85).cgColor)
+    cg.setLineWidth(max(1.4, size * 0.012))
+    for index in 0..<3 {
+        let x = startX + CGFloat(index) * (capW + gap)
+        let cap = CGRect(x: x, y: capY, width: capW, height: capH)
+        let capRadius = capH * 0.22
+        cg.addPath(CGPath(roundedRect: cap, cornerWidth: capRadius, cornerHeight: capRadius, transform: nil))
+        cg.strokePath()
+    }
+}
+
+func drawMouse(cg: CGContext, field: CGRect, size: CGFloat) {
+    let mouseW = field.width * 0.36
+    let mouseH = field.height * 0.62
+    let mouseRect = CGRect(
+        x: field.maxX - mouseW - field.width * 0.01,
+        y: field.minY + field.height * 0.04,
+        width: mouseW,
+        height: mouseH
+    )
+
+    let path = teardropPath(in: mouseRect)
+    cg.setFillColor(Palette.ink.withAlphaComponent(0.08).cgColor)
+    cg.addPath(path)
+    cg.fillPath()
+
+    cg.setStrokeColor(Palette.ink.cgColor)
+    cg.setLineWidth(max(2, size * 0.022))
+    cg.addPath(path)
+    cg.strokePath()
+
+    // Inner contour.
+    let inset = mouseRect.insetBy(dx: mouseW * 0.12, dy: mouseH * 0.08)
+    cg.setStrokeColor(Palette.ink.withAlphaComponent(0.45).cgColor)
+    cg.setLineWidth(max(1.2, size * 0.01))
+    cg.addPath(teardropPath(in: inset))
+    cg.strokePath()
+
+    // Wheel well.
+    let wheelW = mouseW * 0.20
+    let wheelH = mouseH * 0.14
+    let wheel = CGRect(
+        x: mouseRect.midX - wheelW / 2,
+        y: mouseRect.minY + mouseH * 0.18,
+        width: wheelW,
+        height: wheelH
+    )
+    cg.setStrokeColor(Palette.inkHot.cgColor)
+    cg.setLineWidth(max(1.5, size * 0.012))
+    cg.addPath(CGPath(roundedRect: wheel, cornerWidth: wheelW / 2, cornerHeight: wheelW / 2, transform: nil))
+    cg.strokePath()
+
+    // Dashed centerline.
+    cg.setStrokeColor(Palette.ink.withAlphaComponent(0.55).cgColor)
+    cg.setLineWidth(max(1, size * 0.008))
+    cg.setLineDash(phase: 0, lengths: [max(3, size * 0.018), max(3, size * 0.018)])
+    cg.move(to: CGPoint(x: mouseRect.midX, y: mouseRect.minY + mouseH * 0.08))
+    cg.addLine(to: CGPoint(x: mouseRect.midX, y: mouseRect.maxY - mouseH * 0.08))
+    cg.strokePath()
+    cg.setLineDash(phase: 0, lengths: [])
+}
+
+func teardropPath(in rect: CGRect) -> CGPath {
+    // Unit-space teardrop (nose at top), matching MouseOutline.
+    let units: [(CGFloat, CGFloat)] = [
+        (0.50, 0.008), (0.55, 0.008), (0.66, 0.04), (0.76, 0.12),
+        (0.76, 0.12), (0.90, 0.24), (0.99, 0.44), (0.96, 0.64),
+        (0.96, 0.64), (0.93, 0.82), (0.76, 0.98), (0.50, 0.992),
+        (0.50, 0.992), (0.24, 0.98), (0.07, 0.82), (0.04, 0.64),
+        (0.04, 0.64), (0.01, 0.44), (0.10, 0.24), (0.24, 0.12),
+        (0.24, 0.12), (0.34, 0.04), (0.45, 0.008), (0.50, 0.008),
+    ]
+    func point(_ u: (CGFloat, CGFloat)) -> CGPoint {
+        CGPoint(x: rect.minX + u.0 * rect.width, y: rect.minY + u.1 * rect.height)
+    }
+    let path = CGMutablePath()
+    path.move(to: point(units[0]))
+    for index in stride(from: 0, to: units.count, by: 4) {
+        path.addCurve(
+            to: point(units[index + 3]),
+            control1: point(units[index + 1]),
+            control2: point(units[index + 2])
+        )
+    }
+    path.closeSubpath()
+    return path
+}
+
+func drawDuoNode(cg: CGContext, field: CGRect, size: CGFloat) {
+    // Crosshair node where keyboard and mouse meet — the “duo” lock.
+    let node = CGPoint(
+        x: field.minX + field.width * 0.52,
+        y: field.minY + field.height * 0.48
+    )
+    let radius = size * 0.035
+    cg.setFillColor(Palette.plate.cgColor)
+    cg.fillEllipse(in: CGRect(x: node.x - radius, y: node.y - radius, width: radius * 2, height: radius * 2))
+    cg.setStrokeColor(Palette.inkHot.cgColor)
+    cg.setLineWidth(max(1.8, size * 0.016))
+    cg.strokeEllipse(in: CGRect(x: node.x - radius, y: node.y - radius, width: radius * 2, height: radius * 2))
+
+    let tick = size * 0.028
+    cg.setStrokeColor(Palette.inkHot.cgColor)
+    cg.setLineWidth(max(1.2, size * 0.01))
+    cg.move(to: CGPoint(x: node.x, y: node.y - radius - tick))
+    cg.addLine(to: CGPoint(x: node.x, y: node.y - radius * 0.35))
+    cg.move(to: CGPoint(x: node.x, y: node.y + radius * 0.35))
+    cg.addLine(to: CGPoint(x: node.x, y: node.y + radius + tick))
+    cg.move(to: CGPoint(x: node.x - radius - tick, y: node.y))
+    cg.addLine(to: CGPoint(x: node.x - radius * 0.35, y: node.y))
+    cg.move(to: CGPoint(x: node.x + radius * 0.35, y: node.y))
+    cg.addLine(to: CGPoint(x: node.x + radius + tick, y: node.y))
+    cg.strokePath()
+
+    cg.setFillColor(Palette.inkHot.cgColor)
+    let dot = size * 0.012
+    cg.fillEllipse(in: CGRect(x: node.x - dot / 2, y: node.y - dot / 2, width: dot, height: dot))
 }
 
 func writePNG(_ rep: NSBitmapImageRep, to url: URL) throws {

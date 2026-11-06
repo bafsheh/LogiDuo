@@ -75,7 +75,7 @@ public struct MappingEditorView: View {
     private var illustrationSection: some View {
         Section {
             MouseIllustrationView(
-                layout: .mxMaster,
+                layout: model.illustrationLayout,
                 rows: model.rows(in: .buttons) + model.rows(in: .scrolling),
                 selection: $selectedSpot
             ) { spot in

@@ -73,7 +73,8 @@ final class AppCompositionRoot {
         let repository = ConfigurationRepository(store: FileConfigurationStore(), clock: ContinuousClock())
         self.configuration = repository
         self.profiles = ProfileController(repository: repository, coordinator: coordinator)
-        self.mappingsModel = MappingEditorViewModel(repository: repository, deviceButtonsAvailable: Self.divertsButtons)
+        self.mappingsModel = MappingEditorViewModel(
+            repository: repository, deviceButtonsAvailable: Self.divertsButtons, capabilities: Self.mouseCapabilities)
         self.profilesModel = ProfilesViewModel(repository: repository)
         self.scrollModel = ScrollSettingsViewModel(repository: repository)
         self.settingsModel = AppSettingsViewModel(loginItem: LoginItemAdapter(), repository: repository)
@@ -81,31 +82,28 @@ final class AppCompositionRoot {
         // One ledger for the journal file: two would each save a stale copy over the other's records.
         let ledger = RestorationLedger(store: FileRestorationJournalStore())
         self.recoveryModel = RecoveryViewModel(
-            service: Self.makeRecovery(ledger: ledger),
-            writesEnabled: Self.deviceWrites.allowsDiversion
-        )
+            service: Self.makeRecovery(ledger: ledger), writesEnabled: Self.deviceWrites.allowsDiversion)
         let directory = DeviceDirectory(
-            source: HIDDeviceMonitor(),
-            clock: ContinuousClock(),
-            authorization: Self.deviceWrites,
-            ledger: ledger
-        )
+            source: HIDDeviceMonitor(), clock: ContinuousClock(), authorization: Self.deviceWrites, ledger: ledger)
         self.devices = directory
         self.devicesModel = DevicesViewModel(
-            service: directory,
-            router: router,
-            settings: directory,
-            repository: repository,
-            writesEnabled: Self.deviceWrites == .enabled
-        )
+            service: directory, router: router, settings: directory, repository: repository,
+            writesEnabled: Self.deviceWrites == .enabled)
         self.deviceActions = DeviceActionController(directory: directory, repository: repository)
+        self.importModel = Self.makeImportModel(repository: repository, directory: directory)
+    }
+
+    private static func makeImportModel(
+        repository: ConfigurationRepository<ContinuousClock>,
+        directory: DeviceDirectory<ContinuousClock>
+    ) -> MouserImportViewModel {
         let importer = MouserImportService(
             repository: repository,
             backup: FileConfigurationStore(fileURL: MouserImportService<ContinuousClock>.defaultBackupURL()),
             mice: { await directory.knownDevices().filter { $0.category == .mouse }.map(\.id) },
             resolveApplication: InstalledApplicationResolver.resolve
         )
-        self.importModel = MouserImportViewModel(service: importer)
+        return MouserImportViewModel(service: importer)
     }
 
     /// The main window's screens.

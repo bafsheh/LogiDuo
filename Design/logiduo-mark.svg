@@ -6,22 +6,14 @@
     </linearGradient>
   </defs>
   <rect width="1024" height="1024" fill="url(#bg)"/>
-  <!-- Mark framed in a 560×760 box centered with macOS icon padding -->
-  <g transform="translate(232 123)">
-    <path fill="#F2FBFA" transform="scale(5.6)" d="M58 4
-      C70 3 80 7 86 16
-      C92 26 94 36 92 46
-      C90 58 88 72 84 80
-      C78 92 68 97 58 96
-      C48 95 38 94 32 90
-      C22 84 14 78 16 68
-      C12 60 4 54 6 46
-      C8 38 10 32 16 28
-      C22 22 26 12 34 10
-      C42 6 52 4 58 4 Z"/>
-    <rect x="268" y="98" width="56" height="98" rx="28" fill="#0E2027" fill-opacity="0.42"/>
-    <path d="M325 35 L325 98" stroke="#0E2027" stroke-opacity="0.3" stroke-width="8" stroke-linecap="round" fill="none"/>
-    <path d="M90 196 C34 280 22 392 67 490" stroke="#2EC4B6" stroke-width="26" stroke-linecap="round" fill="none"/>
-    <path d="M129 196 C73 280 61 392 106 490" stroke="#2EC4B6" stroke-opacity="0.68" stroke-width="22" stroke-linecap="round" fill="none"/>
-  </g>
+  <!-- Keyboard -->
+  <rect x="184" y="470" width="400" height="246" rx="54" fill="#F2FBFA"/>
+  <rect x="268" y="546" width="56" height="70" rx="14" fill="#0E2027" fill-opacity="0.30"/>
+  <rect x="356" y="546" width="56" height="70" rx="14" fill="#0E2027" fill-opacity="0.30"/>
+  <rect x="444" y="546" width="56" height="70" rx="14" fill="#0E2027" fill-opacity="0.30"/>
+  <!-- Mouse -->
+  <rect x="596" y="220" width="220" height="376" rx="110" fill="#F2FBFA"/>
+  <rect x="670" y="288" width="72" height="60" rx="36" fill="#0E2027" fill-opacity="0.38"/>
+  <!-- Duo ring -->
+  <circle cx="706" cy="500" r="46" fill="none" stroke="#2EC4B6" stroke-width="28"/>
 </svg>

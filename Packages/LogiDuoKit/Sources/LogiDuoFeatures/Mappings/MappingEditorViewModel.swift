@@ -53,15 +53,32 @@ public final class MappingEditorViewModel {
 
     private let repository: any ConfigurationRepositing
     private let deviceButtonsAvailable: Bool
+    /// Live (or catalog) capabilities that drive which spots the mouse drawing shows.
+    public private(set) var capabilities: MouseCapabilities
 
     /// Buttons that can carry gestures.
     public static let gestureButtons: [MouseButton] = [.middle, .back, .forward, .gesture]
 
     /// Creates a view model. `deviceButtonsAvailable` says whether LogiDuo may divert buttons
     /// macOS does not report (gesture, mode shift); without it their rows say they need device access.
-    public init(repository: any ConfigurationRepositing, deviceButtonsAvailable: Bool = false) {
+    public init(
+        repository: any ConfigurationRepositing,
+        deviceButtonsAvailable: Bool = false,
+        capabilities: MouseCapabilities = .undiscovered
+    ) {
         self.repository = repository
         self.deviceButtonsAvailable = deviceButtonsAvailable
+        self.capabilities = capabilities
+    }
+
+    /// Mouse drawing layout generated from the current capabilities.
+    public var illustrationLayout: MouseIllustrationLayout {
+        .make(capabilities: capabilities, deviceButtonsAvailable: deviceButtonsAvailable)
+    }
+
+    /// Replaces the capability set used for the illustration (and future capability-gated rows).
+    public func updateCapabilities(_ capabilities: MouseCapabilities) {
+        self.capabilities = capabilities
     }
 
     /// Application profiles, in priority order.
