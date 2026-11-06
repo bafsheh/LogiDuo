@@ -42,6 +42,10 @@ public struct RootScreens {
 public struct RootView: View {
     @Bindable private var router: AppRouter
     private let screens: RootScreens
+    /// Once per process — reopening the window after the first intro skips the splash.
+    @State private var showsSplash = !Self.didPresentSplash
+
+    private static var didPresentSplash = false
 
     /// Creates the root view.
     /// - Parameters:
@@ -53,12 +57,31 @@ public struct RootView: View {
     }
 
     public var body: some View {
-        NavigationSplitView {
-            SidebarView(selection: sidebarSelection)
-        } detail: {
-            DestinationView(destination: router.destination, screens: screens, router: router)
+        ZStack {
+            NavigationSplitView {
+                SidebarView(selection: sidebarSelection)
+            } detail: {
+                DestinationView(destination: router.destination, screens: screens, router: router)
+            }
+            .frame(minWidth: 720, minHeight: 480)
+            .opacity(showsSplash ? 0 : 1)
+
+            if showsSplash {
+                SplashView(isPresented: splashBinding)
+                    .transition(.opacity)
+            }
         }
-        .frame(minWidth: 720, minHeight: 480)
+        .animation(.easeInOut(duration: 0.25), value: showsSplash)
+    }
+
+    private var splashBinding: Binding<Bool> {
+        Binding(
+            get: { showsSplash },
+            set: { newValue in
+                showsSplash = newValue
+                if !newValue { Self.didPresentSplash = true }
+            }
+        )
     }
 
     private var sidebarSelection: Binding<SidebarDestination?> {
